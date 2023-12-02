@@ -29,7 +29,6 @@ defmodule ElasticsearchEx.MixProject do
 
   defp package do
     [
-      organization: :corecareinc,
       name: :elasticsearchex,
       files: ["lib", "mix.exs"],
       maintainers: ["Geoffrey Roguelon"],
