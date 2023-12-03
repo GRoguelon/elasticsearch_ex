@@ -1,8 +1,9 @@
 defmodule ElasticsearchExTest do
-  use ExUnit.Case
-  doctest ElasticsearchEx
+  use ExUnit.Case, async: true
 
-  test "greets the world" do
-    assert ElasticsearchEx.hello() == :world
+  describe "search/2" do
+    test "exposes a function of arity of 2" do
+      assert function_exported?(ElasticsearchEx, :search, 2)
+    end
   end
 end

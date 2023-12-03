@@ -40,6 +40,7 @@ defmodule ElasticsearchEx.MixProject do
 
   defp docs do
     [
+      formatters: ["html"],
       main: "readme",
       extras: ["README.md", "CHANGELOG.md"],
       source_ref: "v#{@version}",

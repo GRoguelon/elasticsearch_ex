@@ -1,18 +1,11 @@
 defmodule ElasticsearchEx do
   @moduledoc """
-  Documentation for `ElasticsearchEx`.
+  Provides some convenient functions.
   """
 
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> ElasticsearchEx.hello()
-      :world
-
+  Refer to `ElasticsearchEx.Api.Search.Core.search/2` documentation.
   """
-  def hello do
-    :world
-  end
+  @spec search(map(), keyword()) :: {:ok, Req.Response.t()} | {:error, Exception.t()}
+  defdelegate search(query, opts), to: ElasticsearchEx.Api.Search.Core
 end
