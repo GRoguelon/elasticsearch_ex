@@ -24,3 +24,7 @@ elasticsearch_ex-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Ignore Dialyzer files
+/priv/plts/*.plt
+/priv/plts/*.plt.hash

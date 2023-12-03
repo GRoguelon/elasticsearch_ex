@@ -15,7 +15,8 @@ defmodule ElasticsearchEx.MixProject do
       name: "Elasticsearch_ex",
       description: "Elasticsearch_ex is a client library for Elasticsearch",
       docs: docs(),
-      source_url: @source_url
+      source_url: @source_url,
+      dialyzer: dialyzer()
     ]
   end
 
@@ -37,7 +38,7 @@ defmodule ElasticsearchEx.MixProject do
     ]
   end
 
-  def docs do
+  defp docs do
     [
       main: "readme",
       extras: ["README.md", "CHANGELOG.md"],
@@ -51,11 +52,19 @@ defmodule ElasticsearchEx.MixProject do
     ]
   end
 
+  defp dialyzer do
+    [
+      plt_file: {:no_warn, "priv/plts/project.plt"},
+      ignore_warnings: ".dialyzer_ignore.exs"
+    ]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:bypass, "~> 2.1", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
       {:req, "~> 0.4"}
