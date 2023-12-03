@@ -5,10 +5,38 @@ defmodule ElasticsearchEx.Api.Search.Core do
   Most search APIs support [multi-target syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#api-multi-index), with the exception of the [explain API](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-explain.html).
   """
 
+  ## Module attributes
+
   @default_headers %{content_type: "application/json"}
+
+  @default_url "https://localhost:9200"
+
+  ## Typespecs
+
+  @typedoc "Represents the response from Elasticsearch."
+  @type response :: {:ok, Req.Response.t()} | {:error, Exception.t()}
+
+  @typedoc "Represents the body expected by the search API."
+  @type search_body :: map()
+
+  @typedoc "The possible individual options accepted by the search function.s"
+  @type search_opt :: {:http_method, :get | :post} | {:url, binary() | Req.Request.t()}
+
+  @typedoc "The possible options accepted by the search function.s"
+  @type search_opts :: [search_opt()]
+
+  ## Public functions
 
   @doc """
   Returns search hits that match the query defined in the request.
+
+  It expects the first argument to be a valid Elasticsearch query represented by an Elixir `Map`.
+
+  ### Options
+
+  * `url`: The string URL of the cluster or a `Req.Request` struct, defaults to
+  `http://localhost:9200/_search`
+  * `http_method`: The HTTP method used by the query, can be: `:post` (default) or `:get`
 
   ### Examples
 
@@ -46,10 +74,10 @@ defmodule ElasticsearchEx.Api.Search.Core do
          private: %{}
        }}
   """
-  @spec search(map(), keyword()) :: {:ok, Req.Response.t()} | {:error, Exception.t()}
+  @spec search(search_body(), search_opts()) :: response()
   def search(query, opts \\ []) when is_map(query) and is_list(opts) do
     method = Keyword.get(opts, :http_method, :post)
-    url = Keyword.fetch!(opts, :url)
+    url = Keyword.get(opts, :url, "#{@default_url}/_search")
 
     Req.request(url, method: method, headers: @default_headers, json: query)
   end
