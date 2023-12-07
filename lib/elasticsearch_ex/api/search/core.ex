@@ -14,7 +14,7 @@ defmodule ElasticsearchEx.Api.Search.Core do
   @type search_opt :: {:index, atom() | binary()}
 
   @typedoc "The possible options accepted by the search function.s"
-  @type search_opts :: [search_opt()]
+  @type search_opts :: [search_opt() | {atom(), any()}]
 
   @doc """
   Returns search hits that match the query defined in the request.

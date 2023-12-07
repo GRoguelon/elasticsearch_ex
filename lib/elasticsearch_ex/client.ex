@@ -15,30 +15,16 @@ defmodule ElasticsearchEx.Client do
 
   @default_headers %{@content_type_key => @application_json}
 
-  @success_code 200..299
-
   ## Public functions
 
   def request(method, path, headers \\ nil, body \\ nil, opts \\ []) do
-    uri = @default_url |> URI.merge(path)
+    {adapter_opts, query} = Keyword.pop(opts, :adapter_opts, [])
+    uri = prepare_uri(path, query)
     headers = prepare_headers(uri, headers)
     body = prepare_body!(headers, body)
+    result = AnyHttp.request(method, uri, headers, body, adapter_opts)
 
-    case AnyHttp.request(method, uri, headers, body, opts) do
-      {:ok, %AnyHttp.Response{status: status, headers: headers, body: body}}
-      when status in @success_code ->
-        body =
-          if json_response?(headers) and is_binary(body) do
-            Jason.decode!(body)
-          else
-            body
-          end
-
-        {:ok, body}
-
-      any ->
-        raise "Invalid response: #{inspect(any)}"
-    end
+    result |> maybe_decode_json_body!() |> parse_result()
   end
 
   @spec head(binary(), nil | map(), keyword()) :: :ok
@@ -79,9 +65,35 @@ defmodule ElasticsearchEx.Client do
 
   ## Private functions
 
-  @spec json_response?(map()) :: boolean()
-  defp json_response?(headers) when is_map(headers) do
-    Map.get(headers, @content_type_key) == [@application_json]
+  defp parse_result({:ok, %{status: status, body: body}}) when status in 200..299 do
+    {:ok, body}
+  end
+
+  defp parse_result({:ok, %{status: status} = response}) when status in 300..599 do
+    {:error, ElasticsearchEx.Error.exception(response)}
+  end
+
+  defp parse_result({:error, error}) do
+    raise "Unknown error: #{inspect(error)}"
+  end
+
+  defp maybe_decode_json_body!({:ok, %{headers: headers, body: body} = response} = result) do
+    content_type = Map.get(headers, @content_type_key)
+
+    if content_type == [@application_json] and is_binary(body) and body != "" do
+      {:ok, %{response | body: Jason.decode!(body)}}
+    else
+      result
+    end
+  end
+
+  defp maybe_decode_json_body!(any), do: any
+
+  @spec prepare_uri(binary(), keyword()) :: URI.t()
+  defp prepare_uri(path, query) do
+    uri_query = URI.encode_query(query)
+
+    @default_url |> URI.merge(path) |> then(&%{&1 | query: uri_query})
   end
 
   @spec prepare_headers(URI.t(), nil | any()) :: map()
