@@ -9,6 +9,8 @@ defmodule ElasticsearchEx.MixProject do
       app: :elasticsearch_ex,
       version: @version,
       elixir: "~> 1.13",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      elixirc_options: [debug_info: Mix.env() == :dev],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
@@ -27,6 +29,10 @@ defmodule ElasticsearchEx.MixProject do
       mod: {ElasticsearchEx.Application, []}
     ]
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp package do
     [
@@ -55,20 +61,27 @@ defmodule ElasticsearchEx.MixProject do
 
   defp dialyzer do
     [
-      plt_file: {:no_warn, "priv/plts/project.plt"},
-      ignore_warnings: ".dialyzer_ignore.exs"
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+      plt_add_apps: [:any_http, :jason],
+      list_unused_filters: true
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:bypass, "~> 2.1", only: :test},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.30", only: :dev, runtime: false},
+      {:any_http, "~> 0.2"},
       {:jason, "~> 1.4"},
-      {:req, "~> 0.4"}
+
+      ## Dev dependencies
+      {:ex_doc, "~> 0.30", only: :dev, runtime: false},
+
+      ## Test dependencies
+      {:bypass, "~> 2.1", only: :test},
+
+      ## Dev & Test dependencies
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end
 end
