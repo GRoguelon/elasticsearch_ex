@@ -85,6 +85,105 @@ defmodule ElasticsearchEx.Api.Search.Core do
     Client.post(path, nil, query, opts)
   end
 
+  @typedoc "Represents the body expected by the `search` API."
+  @type multi_search_body :: Enumerable.t()
+
+  @typedoc "The possible individual options accepted by the `search` function."
+  @type multi_search_opt :: {:index, atom() | binary()}
+
+  @typedoc "The possible options accepted by the `search` function."
+  @type multi_search_opts :: [search_opt() | {:http_opts, keyword()} | {atom(), any()}]
+
+  @doc """
+  Executes several searches with a single API request.
+
+  ### Query parameters
+
+  Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-multi-search.html#search-multi-search-api-query-params)
+  for a detailed list of the parameters.
+
+  ### Request body
+
+  Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-multi-search.html#search-multi-search-api-request-body)
+  for a detailed list of the body values.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.multi_search(
+      ...>   [
+      ...>     %{},
+      ...>     %{"query" => %{"match" => %{"message" => "this is a test"}}},
+      ...>     %{"index" => "my-index-000002"},
+      ...>     %{"query" => %{"match_all" => %{}}}
+      ...>   ],
+      ...>   allow_no_indices: false
+      ...> )
+      {:ok,
+       %{
+         "responses" => [
+           %{
+             "_shards" => %{
+               "failed" => 0,
+               "skipped" => 0,
+               "successful" => 2,
+               "total" => 2
+             },
+             "hits" => %{
+               "hits" => [
+                %{
+                   "_id" => "8-aORIwBU7w6JJjT4O86",
+                   "_index" => "my-index-000001",
+                   "_score" => 1.0,
+                   "_source" => %{
+                     "message": "this is a test"
+                   }
+                 }
+               ],
+               "max_score" => nil,
+               "total" => %{"relation" => "eq", "value" => 0}
+             },
+             "status" => 200,
+             "timed_out" => false,
+             "took" => 14
+           },
+           %{
+             "_shards" => %{
+               "failed" => 0,
+               "skipped" => 0,
+               "successful" => 1,
+               "total" => 1
+             },
+             "hits" => %{
+               "hits" => [
+                 %{
+                   "_id" => "8uaORIwBU7w6JJjTX-8-",
+                   "_index" => "my-index-000002",
+                   "_score" => 1.0,
+                   "_source" => %{
+                     "message": "this another test"
+                   }
+                 }
+               ],
+               "max_score" => 1.0,
+               "total" => %{"relation" => "eq", "value" => 3}
+             },
+             "status" => 200,
+             "timed_out" => false,
+             "took" => 11
+           }
+         ],
+         "took" => 21
+       }}
+  """
+  @spec multi_search(multi_search_body(), multi_search_opts()) :: Client.response()
+  def multi_search(queries, opts \\ []) when is_list(queries) and is_list(opts) do
+    {index, opts} = extract_index(opts)
+    path = merge_path_suffix(index, "_msearch")
+    body = ElasticsearchEx.Ndjson.encode!(queries)
+
+    Client.post(path, %{"content-type" => "application/x-ndjson"}, body, opts)
+  end
+
   @typedoc "Represents the body expected by the `async_search` API."
   @type async_search_body :: map()
 
