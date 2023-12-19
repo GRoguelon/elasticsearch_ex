@@ -62,7 +62,6 @@ defmodule ElasticsearchEx.MixProject do
   defp dialyzer do
     [
       plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
-      plt_add_apps: [:any_http, :jason],
       list_unused_filters: true
     ]
   end
