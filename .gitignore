@@ -28,3 +28,6 @@ elasticsearch_ex-*.tar
 # Ignore Dialyzer files
 /priv/plts/*.plt
 /priv/plts/*.plt.hash
+
+# Ignore Benchmark files
+benchee.exs

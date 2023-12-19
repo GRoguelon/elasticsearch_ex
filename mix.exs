@@ -75,6 +75,7 @@ defmodule ElasticsearchEx.MixProject do
       {:jason, "~> 1.4"},
 
       ## Dev dependencies
+      {:benchee, "~> 1.0", only: :dev},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
 
       ## Test dependencies

@@ -14,6 +14,7 @@
   * Added new functions related to `scroll`:
     - `ElasticsearchEx.Api.Search.Core.get_scroll/2`
     - `ElasticsearchEx.Api.Search.Core.clear_scroll/2`
+  * Added a new module `ElasticsearchEx.Ndjson` to manipulate NDJSON
 
 * **Changes:**
   * Added Github actions matrix to test different versions
