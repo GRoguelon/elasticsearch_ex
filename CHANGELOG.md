@@ -11,6 +11,7 @@
 
 * **Changes:**
   * Added Github actions matrix to test different versions
+  * Changed the development versions of Elixir and Erlang to 1.13.4 and 24.3.4.14
 
 ## v0.2.0 (2023-12-18)
 
