@@ -4,11 +4,21 @@ defmodule ElasticsearchEx.Api.Utils do
   ## Public functions
 
   @doc """
-  Extracts from the `opts` the index, the URL parameters and the adapter options.
+  Extracts from the `opts` the index and the other options.
   """
   @spec extract_index(keyword(), nil | atom() | binary()) :: {nil | atom() | binary(), keyword()}
   def extract_index(opts, default_index \\ nil) when is_list(opts) do
     Keyword.pop(opts, :index, default_index)
+  end
+
+  @doc """
+  Extracts from the `opts` the index and the other options.
+
+  Raises an exception if the option `index` is missing.
+  """
+  @spec extract_index!(keyword()) :: {nil | atom() | binary(), keyword()}
+  def extract_index!(opts) when is_list(opts) do
+    Keyword.pop!(opts, :index)
   end
 
   @doc """

@@ -5,7 +5,8 @@ defmodule ElasticsearchEx.Api.Search.Core do
   Most search APIs support [multi-target syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#api-multi-index), with the exception of the [explain API](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-explain.html).
   """
 
-  import ElasticsearchEx.Api.Utils, only: [extract_index: 1, merge_path_suffix: 2]
+  import ElasticsearchEx.Api.Utils,
+    only: [extract_index!: 1, extract_index: 1, merge_path_suffix: 2]
 
   alias ElasticsearchEx.Client
 
@@ -237,5 +238,52 @@ defmodule ElasticsearchEx.Api.Search.Core do
   def delete_async_search(async_search_id, opts \\ [])
       when is_binary(async_search_id) and is_list(opts) do
     Client.delete("/_async_search/#{async_search_id}", nil, nil, opts)
+  end
+
+  @typedoc "The possible individual options accepted by the `create_pit` function."
+  @type create_pit_opt :: {:index, atom() | binary()} | {:keep_alive, binary()}
+
+  @typedoc "The possible options accepted by the `create_pit` function."
+  @type create_pit_opts :: [create_pit_opt() | {:http_opts, keyword()} | {atom(), any()}]
+
+  @doc """
+  A search request by default executes against the most recent visible data of the target indices,
+  which is called point in time. Elasticsearch `pit` (point in time) is a lightweight view into the
+  state of the data as it existed when initiated. In some cases, it’s preferred to perform multiple
+  search requests using the same point in time. For example, if refreshes happen between
+  `search_after` requests, then the results of those requests might not be consistent as changes
+  happening between searches are only visible to the more recent point in time.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.create_pit(index: :my-index-000001, keep_alive: "5m")
+      {:ok,
+       %{
+         "id" => "gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA=="
+       }}
+  """
+  @spec create_pit(create_pit_opts()) :: Client.response()
+  def create_pit(opts \\ []) when is_list(opts) do
+    {index, opts} = extract_index!(opts)
+
+    Client.post("/#{index}/_pit", nil, nil, opts)
+  end
+
+  @typedoc "The possible PIT ID."
+  @type pit_id :: binary()
+
+  @doc """
+  Point-in-time is automatically closed when its `keep_alive` has been elapsed. However keeping
+  point-in-times has a cost. Point-in-times should be closed as soon as they are no longer used in
+  search requests.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.close_pit("gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA==")
+      {:ok, %{"num_freed" => 1, "succeeded" => true}}
+  """
+  @spec close_pit(pit_id(), [{:http_opts, keyword()} | {atom(), any()}]) :: Client.response()
+  def close_pit(pit_id, opts \\ []) when is_binary(pit_id) and is_list(opts) do
+    Client.delete("/_pit", nil, %{id: pit_id}, opts)
   end
 end
