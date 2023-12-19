@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.3.0
+## v0.3.0 (2023-12-19)
 
 * **New features:**
   * Added new functions related to `async_search`:
