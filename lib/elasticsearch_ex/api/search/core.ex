@@ -83,4 +83,159 @@ defmodule ElasticsearchEx.Api.Search.Core do
 
     Client.post(path, nil, query, opts)
   end
+
+  @typedoc "Represents the body expected by the `async_search` API."
+  @type async_search_body :: map()
+
+  @typedoc "The possible individual options accepted by the `async_search` function."
+  @type async_search_opt :: {:index, atom() | binary()}
+
+  @typedoc "The possible options accepted by the `async_search` function."
+  @type async_search_opts :: [async_search_opt() | {:http_opts, keyword()} | {atom(), any()}]
+
+  @doc """
+  Executes a search request asynchronously. It accepts the same parameters and request body as the
+  [search API](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
+
+  ### Query parameters
+
+  Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html#search-search-api-query-params)
+  for a detailed list of the parameters.
+
+  ### Request body
+
+  Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html#search-search-api-request-body)
+  for a detailed list of the parameters.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.async_search(
+      ...>   %{
+      ...>     aggs: %{sale_date: %{date_histogram: %{calendar_interval: "1d", field: "date"}}},
+      ...>     sort: [%{date: %{order: "asc"}}]
+      ...>   },
+      ...>   size: 0
+      ...> )
+      {:ok,
+       %{
+         "expiration_time_in_millis" => 1584377890986,
+         "id" => "FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=",
+         "is_partial" => true,
+         "is_running" => true,
+         "response" => %{
+           "_shards" => %{
+             "failed" => 0,
+             "skipped" => 0,
+             "successful" => 3,
+             "total" => 562
+           },
+           "hits" => %{
+             "hits" => [],
+             "max_score" => nil,
+             "total" => %{"relation" => "gte", "value" => 157483}
+           },
+           "num_reduce_phases" => 0,
+           "timed_out" => false,
+           "took" => 1122
+         },
+         "start_time_in_millis" => 1583945890986
+       }}
+  """
+  @spec async_search(async_search_body(), async_search_opts()) :: Client.response()
+  def async_search(query, opts \\ []) when is_map(query) and is_list(opts) do
+    {index, opts} = extract_index(opts)
+    path = merge_path_suffix(index, "_async_search")
+
+    Client.post(path, nil, query, opts)
+  end
+
+  @typedoc "Represents the ID returned by the `async_search` function."
+  @type async_search_id :: binary()
+
+  @doc """
+  The get async search API retrieves the results of a previously submitted async search request
+  given its id.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.get_async_search("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
+      {:ok,
+       %{
+         "completion_time_in_millis" => 1583945903130,
+         "expiration_time_in_millis" => 1584377890986,
+         "id" => "FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=",
+         "is_partial" => false,
+         "is_running" => false,
+         "response" => %{
+           "_shards" => %{
+             "failed" => 0,
+             "skipped" => 0,
+             "successful" => 188,
+             "total" => 562
+           },
+           "aggregations" => %{"sale_date" => %{"buckets" => []}},
+           "hits" => %{
+             "hits" => [],
+             "max_score" => nil,
+             "total" => %{"relation" => "eq", "value" => 456433}
+           },
+           "num_reduce_phases" => 46,
+           "timed_out" => false,
+           "took" => 12144
+         },
+         "start_time_in_millis" => 1583945890986
+       }}
+  """
+  @spec get_async_search(async_search_id(), [{:http_opts, keyword()} | {atom(), any()}]) ::
+          Client.response()
+  def get_async_search(async_search_id, opts \\ [])
+      when is_binary(async_search_id) and is_list(opts) do
+    Client.get("/_async_search/#{async_search_id}", nil, nil, opts)
+  end
+
+  @doc """
+  The get async search status API, without retrieving search results, shows only the status of a
+  previously submitted async search request given its id.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.get_async_search_status("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
+      {:ok,
+       %{
+         "_shards" => %{
+           "failed" => 0,
+           "skipped" => 0,
+           "successful" => 188,
+           "total" => 562
+         },
+         "expiration_time_in_millis" => 1584377890986,
+         "id" => "FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=",
+         "is_partial" => true,
+         "is_running" => true,
+         "start_time_in_millis" => 1583945890986
+       }}
+  """
+  @spec get_async_search_status(async_search_id(), [{:http_opts, keyword()} | {atom(), any()}]) ::
+          Client.response()
+  def get_async_search_status(async_search_id, opts \\ [])
+      when is_binary(async_search_id) and is_list(opts) do
+    Client.get("/_async_search/status/#{async_search_id}", nil, nil, opts)
+  end
+
+  @doc """
+  You can use the delete async search API to manually delete an async search by ID.
+  If the search is still running, the search request will be cancelled. Otherwise, the saved
+  search results are deleted.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.delete_async_search("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
+      nil
+  """
+  @spec delete_async_search(async_search_id(), [{:http_opts, keyword()} | {atom(), any()}]) ::
+          Client.response()
+  def delete_async_search(async_search_id, opts \\ [])
+      when is_binary(async_search_id) and is_list(opts) do
+    Client.delete("/_async_search/#{async_search_id}", nil, nil, opts)
+  end
 end

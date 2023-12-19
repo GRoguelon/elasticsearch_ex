@@ -2,6 +2,13 @@
 
 ## v0.3.0
 
+* **New features:**
+  * Added new functions related to `async_search`:
+    - `ElasticsearchEx.Api.Search.Core.async_search/2`
+    - `ElasticsearchEx.Api.Search.Core.get_async_search/2`
+    - `ElasticsearchEx.Api.Search.Core.get_async_search_status/2`
+    - `ElasticsearchEx.Api.Search.Core.delete_async_search/2`
+
 * **Changes:**
   * Added Github actions matrix to test different versions
 
