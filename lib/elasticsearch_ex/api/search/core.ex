@@ -286,4 +286,57 @@ defmodule ElasticsearchEx.Api.Search.Core do
   def close_pit(pit_id, opts \\ []) when is_binary(pit_id) and is_list(opts) do
     Client.delete("/_pit", nil, %{id: pit_id}, opts)
   end
+
+  @typedoc "The possible scroll ID."
+  @type scroll_id :: binary()
+
+  @doc """
+  Point-in-time is automatically closed when its `keep_alive` has been elapsed. However keeping
+  point-in-times has a cost. Point-in-times should be closed as soon as they are no longer used in
+  search requests.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.get_scroll(
+      ...>   "FGluY2x1ZGVfY29udGV4dF91dWlkDXF1ZXJ5QW5kRmV0Y2gBFnZaRlo5M2xHUzN1VFdLUUxTUDFXOUEAAAAAAAAAWRZBdENUeTlIalF2bWs4WGlOaEVFZTd3",
+      ...>   scroll: "1m"
+      ...> )
+      {:ok,
+       %{
+         "_scroll_id" => "FGluY2x1ZGVfY29udGV4dF91dWlkDXF1ZXJ5QW5kRmV0Y2gBFnZaRlo5M2xHUzN1VFdLUUxTUDFXOUEAAAAAAAAAXRZBdENUeTlIalF2bWs4WGlOaEVFZTd3",
+         "_shards" => %{
+           "failed" => 0,
+           "skipped" => 0,
+           "successful" => 1,
+           "total" => 1
+         },
+         "hits" => %{
+           "hits" => [],
+           "max_score" => nil,
+           "total" => %{"relation" => "eq", "value" => 3}
+         },
+         "timed_out" => false,
+         "took" => 1
+       }}
+  """
+  @spec get_scroll(scroll_id(), [{:http_opts, keyword()} | {atom(), any()}]) :: Client.response()
+  def get_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) and is_list(opts) do
+    Client.post("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
+  end
+
+  @doc """
+  Clears the search context and results for a scrolling search.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.clear_scroll(
+      ...>   "FGluY2x1ZGVfY29udGV4dF91dWlkDXF1ZXJ5QW5kRmV0Y2gBFnZaRlo5M2xHUzN1VFdLUUxTUDFXOUEAAAAAAAAAWRZBdENUeTlIalF2bWs4WGlOaEVFZTd3"
+      ...> )
+      {:ok, %{"num_freed" => 1, "succeeded" => true}}
+  """
+  @spec clear_scroll(scroll_id(), [{:http_opts, keyword()} | {atom(), any()}]) ::
+          Client.response()
+  def clear_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) and is_list(opts) do
+    Client.delete("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
+  end
 end

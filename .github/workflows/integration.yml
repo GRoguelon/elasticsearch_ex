@@ -99,16 +99,32 @@ jobs:
           install-hex: true
           install-rebar: true
 
-      - name: Restore Dialyzer environment
-        uses: actions/cache@v3
+      - name: Restore PLT cache
+        id: plt_cache
+        uses: actions/cache/restore@v3
         with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir
+          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir-
           path: |
             deps/
             _build/dev/
+            priv/plts
 
-      - name: Fetch the dependencies
-        run: mix deps.get
+      - name: Create PLTs
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        run: |
+          mix deps.get
+          mix dialyzer --plt
+
+      - name: Save PLT cache
+        uses: actions/cache/save@v3
+        if: steps.plt_cache.outputs.cache-hit != 'true'
+        with:
+          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir-${{ hashFiles('**/mix.lock') }}
+          path: |
+            deps/
+            _build/dev/
+            priv/plts
 
       - name: Run dialyzer
         run: mix dialyzer --format github

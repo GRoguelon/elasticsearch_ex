@@ -11,6 +11,9 @@
   * Added new functions related to `pit`:
     - `ElasticsearchEx.Api.Search.Core.create_pit/1`
     - `ElasticsearchEx.Api.Search.Core.close_pit/2`
+  * Added new functions related to `scroll`:
+    - `ElasticsearchEx.Api.Search.Core.get_scroll/2`
+    - `ElasticsearchEx.Api.Search.Core.clear_scroll/2`
 
 * **Changes:**
   * Added Github actions matrix to test different versions
