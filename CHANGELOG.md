@@ -17,6 +17,8 @@
   * Added a new module `ElasticsearchEx.Ndjson` to manipulate NDJSON
   * Added new functions related to `multi_search`:
     - `ElasticsearchEx.Api.Search.Core.multi_search/2`
+  * Added new functions related to `terms_enum`:
+    - `ElasticsearchEx.Api.Search.Core.terms_enum/2`
 
 * **Changes:**
   * Added Github actions matrix to test different versions

@@ -85,13 +85,13 @@ defmodule ElasticsearchEx.Api.Search.Core do
     Client.post(path, nil, query, opts)
   end
 
-  @typedoc "Represents the body expected by the `search` API."
+  @typedoc "Represents the body expected by the `multi_search` API."
   @type multi_search_body :: Enumerable.t()
 
-  @typedoc "The possible individual options accepted by the `search` function."
+  @typedoc "The possible individual options accepted by the `multi_search` function."
   @type multi_search_opt :: {:index, atom() | binary()}
 
-  @typedoc "The possible options accepted by the `search` function."
+  @typedoc "The possible options accepted by the `multi_search` function."
   @type multi_search_opts :: [search_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
@@ -339,10 +339,10 @@ defmodule ElasticsearchEx.Api.Search.Core do
     Client.delete("/_async_search/#{async_search_id}", nil, nil, opts)
   end
 
-  @typedoc "The possible individual options accepted by the `create_pit` function."
+  @typedoc "The possible individual options accepted by the `create_pit` function"
   @type create_pit_opt :: {:index, atom() | binary()} | {:keep_alive, binary()}
 
-  @typedoc "The possible options accepted by the `create_pit` function."
+  @typedoc "The possible options accepted by the `create_pit` function"
   @type create_pit_opts :: [create_pit_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
@@ -368,7 +368,7 @@ defmodule ElasticsearchEx.Api.Search.Core do
     Client.post("/#{index}/_pit", nil, nil, opts)
   end
 
-  @typedoc "The possible PIT ID."
+  @typedoc "The identifier for a Point in Time"
   @type pit_id :: binary()
 
   @doc """
@@ -386,7 +386,42 @@ defmodule ElasticsearchEx.Api.Search.Core do
     Client.delete("/_pit", nil, %{id: pit_id}, opts)
   end
 
-  @typedoc "The possible scroll ID."
+  @typedoc "Represents the body expected by the `terms_enum` API"
+  @type terms_enum_body :: map()
+
+  @typedoc "The possible individual options accepted by the `terms_enum` function"
+  @type terms_enum_opt :: {:index, atom() | binary()}
+
+  @typedoc "The possible options accepted by the `terms_enum` function"
+  @type terms_enum_opts :: [terms_enum_opt() | {:http_opts, keyword()} | {atom(), any()}]
+
+  @doc """
+  The terms enum API can be used to discover terms in the index that match a partial string.
+
+  Supported field types are `keyword`, `constant_keyword`, `flattened`, `version` and `ip`.
+
+  This is used for auto-complete.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.Core.terms_enum(%{"field" => "tags", "string" => "kiba"},
+      ...>   index: "stackoverflow"
+      ...> )
+      {:ok,
+       %{
+         "_shards" => %{"failed" => 0, "successful" => 1, "total" => 1},
+         "complete" => true,
+         "terms" => ["kibana"]
+       }}
+  """
+  @spec terms_enum(terms_enum_body(), terms_enum_opts()) :: Client.response()
+  def terms_enum(query, opts \\ []) when is_map(query) and is_list(opts) do
+    {index, opts} = extract_index!(opts)
+
+    Client.post("/#{index}/_terms_enum", nil, query, opts)
+  end
+
+  @typedoc "The identifier for a scroll"
   @type scroll_id :: binary()
 
   @doc """
