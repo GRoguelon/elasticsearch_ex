@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.0-dev
+## v0.2.0 (2023-12-18)
 
 * **New features:**
   * Delegated the function `ElasticsearchEx.Api.Search.Core.search/2` in `ElasticsearchEx` module ([PR-4](https://github.com/CoreCareinc/elasticsearch_ex/pull/4))
