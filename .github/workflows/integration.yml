@@ -14,103 +14,15 @@ concurrency:
   group: ${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+env:
+  ELIXIR_VERSION: 1.15.7
+  ERLANG_VERSION: 26.2.1
+
 jobs:
-  compile-dev:
-    name: "Compile dev"
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Erlang and Elixir
-        id: beam
-        uses: erlef/setup-beam@v1
-        with:
-          version-type: "strict"
-          version-file: ".tool-versions"
-          install-hex: true
-          install-rebar: true
-
-      - name: Restore the cache
-        id: cache_restore
-        uses: actions/cache/restore@v3
-        with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dev-${{ hashFiles('mix.lock') }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dev-
-          path: |
-            deps/
-            _build/dev/
-
-      - name: Compile the project
-        if: steps.cache_restore.outputs.cache-hit != 'true'
-        env:
-          MIX_ENV: dev
-        run: |
-          mix deps.get
-          mix deps.compile
-          mix compile
-
-      - name: Save cache
-        uses: actions/cache/save@v3
-        if: steps.cache_restore.outputs.cache-hit != 'true'
-        with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dev-${{ hashFiles('mix.lock') }}
-          path: |
-            deps/
-            _build/dev/
-
-  compile-test:
-    name: "Compile test"
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Erlang and Elixir
-        id: beam
-        uses: erlef/setup-beam@v1
-        with:
-          version-type: "strict"
-          version-file: ".tool-versions"
-          install-hex: true
-          install-rebar: true
-
-      - name: Restore the cache
-        id: cache_restore
-        uses: actions/cache/restore@v3
-        with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-test-${{ hashFiles('mix.lock') }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-test-
-          path: |
-            deps/
-            _build/test/
-
-      - name: Compile the project
-        if: steps.cache_restore.outputs.cache-hit != 'true'
-        env:
-          MIX_ENV: test
-        run: |
-          mix deps.get
-          mix deps.compile
-          mix compile
-
-      - name: Save cache
-        uses: actions/cache/save@v3
-        if: steps.cache_restore.outputs.cache-hit != 'true'
-        with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-test-${{ hashFiles('mix.lock') }}
-          path: |
-            deps/
-            _build/test/
-
   format:
     name: Check formatting
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    needs:
-      - compile-dev
     steps:
       - name: Git checkout
         uses: actions/checkout@v3
@@ -119,19 +31,21 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          version-type: "strict"
-          version-file: ".tool-versions"
+          otp-version: ${{ env.ERLANG_VERSION }}
+          elixir-version: ${{ env.ELIXIR_VERSION }}
           install-hex: true
           install-rebar: true
 
-      - name: Restore build
-        uses: actions/cache/restore@v3
+      - name: Restore formatting environment
+        uses: actions/cache@v3
         with:
-          fail-on-cache-miss: true
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dev-
+          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-format
           path: |
             deps/
             _build/dev/
+
+      - name: Fetch the dependencies
+        run: mix deps.get
 
       - name: Format code
         run: mix format --check-formatted
@@ -140,8 +54,6 @@ jobs:
     name: Run Credo
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    needs:
-      - compile-dev
     steps:
       - name: Git checkout
         uses: actions/checkout@v3
@@ -150,19 +62,21 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          version-type: "strict"
-          version-file: ".tool-versions"
+          otp-version: ${{ env.ERLANG_VERSION }}
+          elixir-version: ${{ env.ELIXIR_VERSION }}
           install-hex: true
           install-rebar: true
 
-      - name: Restore build
-        uses: actions/cache/restore@v3
+      - name: Restore Credo environment
+        uses: actions/cache@v3
         with:
-          fail-on-cache-miss: true
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dev-
+          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-credo
           path: |
             deps/
             _build/dev/
+
+      - name: Fetch the dependencies
+        run: mix deps.get
 
       - name: Run credo
         run: mix credo --format sarif
@@ -171,8 +85,7 @@ jobs:
     name: Run Dialyxir
     runs-on: ubuntu-22.04
     timeout-minutes: 20
-    needs:
-      - compile-dev
+
     steps:
       - name: Git checkout
         uses: actions/checkout@v3
@@ -181,38 +94,21 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          version-type: "strict"
-          version-file: ".tool-versions"
+          otp-version: ${{ env.ERLANG_VERSION }}
+          elixir-version: ${{ env.ELIXIR_VERSION }}
           install-hex: true
           install-rebar: true
 
-      - name: Restore build
-        uses: actions/cache/restore@v3
+      - name: Restore Dialyzer environment
+        uses: actions/cache@v3
         with:
-          fail-on-cache-miss: true
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dev-
+          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir
           path: |
             deps/
             _build/dev/
 
-      - name: Restore cache
-        id: cache_restore
-        uses: actions/cache/restore@v3
-        with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dialyxir-${{ hashFiles('mix.lock') }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dialyxir-
-          path: priv/plts/
-
-      - name: Create Dialyxir PLTs
-        if: steps.cache_restore.outputs.cache-hit != 'true'
-        run: mix dialyzer --plt
-
-      - name: Save cache
-        uses: actions/cache/save@v3
-        if: steps.cache_restore.outputs.cache-hit != 'true'
-        with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-dialyxir-${{ hashFiles('mix.lock') }}
-          path: priv/plts/
+      - name: Fetch the dependencies
+        run: mix deps.get
 
       - name: Run dialyzer
         run: mix dialyzer --format github
@@ -221,16 +117,100 @@ jobs:
     name: Run tests
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    needs:
-      - compile-test
-    # services:
-    #   elasticsearch:
-    #     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
-    #     ports: ["9200:9200"]
-    #     env:
-    #       discovery.type: "single-node"
-    #       ELASTIC_PASSWORD: "elastic"
-    #       ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          # Elixir 1.16.0-rc.1 / Elasticsearch 8.11.3
+          - elixir: "1.16.0-rc.1"
+            erlang: "26.2.1"
+            elasticsearch: "8.11.3"
+          - elixir: "1.16.0-rc.1"
+            erlang: "25.3.2.8"
+            elasticsearch: "8.11.3"
+          - elixir: "1.16.0-rc.1"
+            erlang: "24.3.4.15"
+            elasticsearch: "8.11.3"
+
+          # Elixir 1.16.0-rc.1 / Elasticsearch 7.17.16
+          - elixir: "1.16.0-rc.1"
+            erlang: "26.2.1"
+            elasticsearch: "7.17.16"
+          - elixir: "1.16.0-rc.1"
+            erlang: "25.3.2.8"
+            elasticsearch: "7.17.16"
+          - elixir: "1.16.0-rc.1"
+            erlang: "24.3.4.15"
+            elasticsearch: "7.17.16"
+
+          # Elixir 1.15.7 / Elasticsearch 8.11.3
+          - elixir: "1.15.7"
+            erlang: "26.2.1"
+            elasticsearch: "8.11.3"
+          - elixir: "1.15.7"
+            erlang: "25.3.2.8"
+            elasticsearch: "8.11.3"
+          - elixir: "1.15.7"
+            erlang: "24.3.4.15"
+            elasticsearch: "8.11.3"
+
+          # Elixir 1.15.7 / Elasticsearch 7.17.16
+          - elixir: "1.15.7"
+            erlang: "26.2.1"
+            elasticsearch: "7.17.16"
+          - elixir: "1.15.7"
+            erlang: "25.3.2.8"
+            elasticsearch: "7.17.16"
+          - elixir: "1.15.7"
+            erlang: "24.3.4.15"
+            elasticsearch: "7.17.16"
+
+          # Elixir 1.14.5 / Elasticsearch 8.11.3
+          - elixir: "1.14.5"
+            erlang: "26.2.1"
+            elasticsearch: "8.11.3"
+          - elixir: "1.14.5"
+            erlang: "25.3.2.8"
+            elasticsearch: "8.11.3"
+          - elixir: "1.14.5"
+            erlang: "24.3.4.15"
+            elasticsearch: "8.11.3"
+
+          # Elixir 1.14.5 / Elasticsearch 7.17.16
+          - elixir: "1.14.5"
+            erlang: "26.2.1"
+            elasticsearch: "7.17.16"
+          - elixir: "1.14.5"
+            erlang: "25.3.2.8"
+            elasticsearch: "7.17.16"
+          - elixir: "1.14.5"
+            erlang: "24.3.4.15"
+            elasticsearch: "7.17.16"
+
+          # Elixir 1.13.4 / Elasticsearch 8.11.3
+          - elixir: "1.13.4"
+            erlang: "25.3.2.8"
+            elasticsearch: "8.11.3"
+          - elixir: "1.13.4"
+            erlang: "24.3.4.15"
+            elasticsearch: "8.11.3"
+
+          # Elixir 1.13.4 / Elasticsearch 7.17.16
+          - elixir: "1.13.4"
+            erlang: "25.3.2.8"
+            elasticsearch: "7.17.16"
+          - elixir: "1.13.4"
+            erlang: "24.3.4.15"
+            elasticsearch: "7.17.16"
+
+    services:
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:${{ matrix.elasticsearch }}
+        ports: ["9200:9200"]
+        env:
+          discovery.type: "single-node"
+          ELASTIC_PASSWORD: "elastic"
+          ES_JAVA_OPTS: "-Xms512m -Xmx512m"
 
     steps:
       - name: Git checkout
@@ -240,19 +220,21 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          version-type: "strict"
-          version-file: ".tool-versions"
+          otp-version: ${{ matrix.erlang }}
+          elixir-version: ${{ matrix.elixir }}
           install-hex: true
           install-rebar: true
 
-      - name: Restore build
-        uses: actions/cache/restore@v3
+      - name: Restore formatting environment
+        uses: actions/cache@v3
         with:
-          fail-on-cache-miss: true
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-mix-test-
+          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-elasticsearch-${{ matrix.elasticsearch }}-test
           path: |
             deps/
             _build/test/
+
+      - name: Fetch the dependencies
+        run: mix deps.get
 
       - name: Run tests
         run: mix test

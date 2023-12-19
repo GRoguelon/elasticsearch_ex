@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0
+
+* **Changes:**
+  * Added Github actions matrix to test different versions
+
 ## v0.2.0 (2023-12-18)
 
 * **New features:**
