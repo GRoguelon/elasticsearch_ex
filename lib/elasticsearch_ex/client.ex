@@ -3,7 +3,7 @@ defmodule ElasticsearchEx.Client do
 
   ## Typespecs
 
-  @type response :: {:ok, term()}
+  @type response :: {:ok, term()} | {:error, ElasticsearchEx.Error.t()}
 
   ## Module attributes
 
@@ -18,11 +18,14 @@ defmodule ElasticsearchEx.Client do
   ## Public functions
 
   def request(method, path, headers \\ nil, body \\ nil, opts \\ []) do
-    {adapter_opts, query} = Keyword.pop(opts, :adapter_opts, [])
+    {http_opts, query} = Keyword.pop(opts, :http_opts, [])
     uri = prepare_uri(path, query)
     headers = prepare_headers(uri, headers)
     body = prepare_body!(headers, body)
-    result = AnyHttp.request(method, uri, headers, body, adapter_opts)
+    uri = %{uri | userinfo: nil}
+    result = AnyHttp.request(method, uri, headers, body, http_opts)
+
+    # uri |> URI.to_string() |> IO.inspect(label: "URL")
 
     result |> maybe_decode_json_body!() |> parse_result()
   end
@@ -90,6 +93,10 @@ defmodule ElasticsearchEx.Client do
   defp maybe_decode_json_body!(any), do: any
 
   @spec prepare_uri(binary(), keyword()) :: URI.t()
+  defp prepare_uri(path, []) do
+    URI.merge(@default_url, path)
+  end
+
   defp prepare_uri(path, query) do
     uri_query = URI.encode_query(query)
 
@@ -103,7 +110,18 @@ defmodule ElasticsearchEx.Client do
     Map.put(headers, "authorization", "Basic #{Base.encode64(userinfo)}")
   end
 
-  defp prepare_headers(_uri, headers), do: headers
+  defp prepare_headers(_uri, headers) when is_map(headers) do
+    @default_headers |> Map.merge(headers) |> Map.reject(fn {_key, value} -> is_nil(value) end)
+  end
+
+  defp prepare_headers(_uri, headers) when is_list(headers) do
+    keys = Enum.map(headers, fn {key, _value} -> key end)
+
+    default_headers =
+      @default_headers |> Map.reject(fn {key, _value} -> key in keys end) |> Enum.to_list()
+
+    Enum.reject(default_headers ++ headers, fn {_key, value} -> is_nil(value) end)
+  end
 
   @spec prepare_body!(map(), any()) :: any()
   defp prepare_body!(%{@content_type_key => content_type}, body)

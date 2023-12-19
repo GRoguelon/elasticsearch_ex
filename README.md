@@ -16,54 +16,44 @@ Documentation can be found at https://hexdocs.pm/elasticsearch_ex.
 
 ## Usage
 
-### Search
+### Configure your cluster
 
-Request:
 ```elixir
-url = Req.new(
-  url: "https://localhost:9200/_search",
-  auth: {:basic, "elastic:elastic"},
-  connect_options: [transport_opts: [verify: :verify_none]]
-)
+config :elasticsearch_ex, url: "https://elastic:elastic@localhost:9200"
+```
 
-ElasticsearchEx.Api.Search.Core.search(%{query: %{match_all: %{}}, size: 1}, url: url)
+### Search your cluster
+
+You can easily query your local Elasticsearch with:
+```elixir
+ElasticsearchEx.Api.Search.Core.search(%{query: %{match_all: %{}}, size: 1}, http_opts: [ssl: [verify: :verify_none]])
 ```
 
 Response:
 ```elixir
 {:ok,
- %Req.Response{
-   status: 200,
-   headers: %{
-     "content-type" => ["application/json"],
-     "transfer-encoding" => ["chunked"],
-     "x-elastic-product" => ["Elasticsearch"]
+ %{
+   "_shards" => %{
+     "failed" => 0,
+     "skipped" => 0,
+     "successful" => 2,
+     "total" => 2
    },
-   body: %{
-     "_shards" => %{
-       "failed" => 0,
-       "skipped" => 0,
-       "successful" => 0,
-       "total" => 0
-     },
-     "hits" => %{
-       "hits" => [],
-       "max_score" => 0.0,
-       "total" => %{"relation" => "eq", "value" => 0}
-     },
-     "timed_out" => false,
-     "took" => 2
+   "hits" => %{
+     "hits" => [
+       %{
+         "_id" => "8uaORIwBU7w6JJjTX-8-",
+         "_index" => "my_index",
+         "_score" => 1.0,
+         "_source" => %{
+           ...
+         }
+       }
+     ],
+     "max_score" => 1.0,
+     "total" => %{"relation" => "eq", "value" => 3}
    },
-   trailers: %{},
-   private: %{}
+   "timed_out" => false,
+   "took" => 7
  }}
-```
-
-You can also change the HTTP method used by specifying the options `http_method: :get` when calling the function `search/2`.
-
-```elixir
-ElasticsearchEx.Api.Search.Core.search(%{query: %{match_all: %{}}, size: 1},
-  url: url,
-  http_method: :get
-)
 ```
