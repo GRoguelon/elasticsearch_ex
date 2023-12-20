@@ -8,10 +8,6 @@ concurrency:
   group: release
   cancel-in-progress: true
 
-env:
-  ELIXIR_VERSION: 1.15.7
-  ERLANG_VERSION: 26.2.1
-
 jobs:
   release:
     name: Release
@@ -24,8 +20,8 @@ jobs:
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ env.ERLANG_VERSION }}
-          elixir-version: ${{ env.ELIXIR_VERSION }}
+          version-type: "strict"
+          version-file: ".tool-versions"
           install-hex: true
           install-rebar: true
 

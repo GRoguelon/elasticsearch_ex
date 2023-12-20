@@ -6,17 +6,9 @@ defmodule ElasticsearchEx.Api.Document.Single do
   import ElasticsearchEx.Api.Utils, only: [extract_index!: 1]
 
   alias ElasticsearchEx.Client
+  alias ElasticsearchEx.Error
 
   ## Public functions
-
-  @typedoc "Represents the source of a document"
-  @type source :: map()
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type index_opt :: {:index, atom() | binary()} | {:id, binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type index_opts :: [index_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Adds a JSON document to the specified data stream or index and makes it searchable. If the
@@ -78,7 +70,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "result" => "created"
        }}
   """
-  @spec index(source(), index_opts()) :: Client.response()
+  @spec index(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def index(document, opts \\ []) when is_map(document) and is_list(opts) do
     {index, opts} = extract_index!(opts)
     {document_id, opts} = Keyword.pop(opts, :id)
@@ -86,12 +78,6 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
     Client.post(path, nil, document, opts)
   end
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type create_opt :: {:index, atom() | binary()} | {:id, binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type create_opts :: [create_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Adds a JSON document to the specified data stream or index and makes it searchable.
@@ -128,19 +114,13 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "result" => "created"
        }}
   """
-  @spec create(source(), create_opts()) :: Client.response()
+  @spec create(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def create(document, opts \\ []) when is_map(document) and is_list(opts) do
     {index, opts} = extract_index!(opts)
     {document_id, opts} = Keyword.pop!(opts, :id)
 
     Client.post("#{index}/_doc/#{document_id}", nil, document, opts)
   end
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type get_document_opt :: {:index, atom() | binary()} | {:id, binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type get_document_opts :: [get_document_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Retrieves the specified JSON document from an index.
@@ -174,19 +154,13 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "found" => true
        }}
   """
-  @spec get_document(get_document_opts()) :: Client.response()
+  @spec get_document(keyword()) :: {:ok, term()} | {:error, Error.t()}
   def get_document(opts \\ []) when is_list(opts) do
     {index, opts} = extract_index!(opts)
     {document_id, opts} = Keyword.pop!(opts, :id)
 
     Client.get("#{index}/_doc/#{document_id}", nil, nil, opts)
   end
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type get_source_opt :: {:index, atom() | binary()} | {:id, binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type get_source_opts :: [get_source_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Retrieves the specified JSON source from an index.
@@ -212,21 +186,13 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "user" => %{"id" => "kimchy"}
        }}
   """
-  @spec get_source(get_source_opts()) :: Client.response()
+  @spec get_source(keyword()) :: {:ok, term()} | {:error, Error.t()}
   def get_source(opts \\ []) when is_list(opts) do
     {index, opts} = extract_index!(opts)
     {document_id, opts} = Keyword.pop!(opts, :id)
 
     Client.get("#{index}/_source/#{document_id}", nil, nil, opts)
   end
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type document_exists_opt :: {:index, atom() | binary()} | {:id, binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type document_exists_opts :: [
-          document_exists_opt() | {:http_opts, keyword()} | {atom(), any()}
-        ]
 
   @doc """
   Checks if the specified JSON document from an index exists.
@@ -241,19 +207,13 @@ defmodule ElasticsearchEx.Api.Document.Single do
       iex> ElasticsearchEx.Api.Document.Single.document_exists?(index: "my-index-000001", id: "0")
       true
   """
-  @spec document_exists?(document_exists_opts()) :: boolean()
+  @spec document_exists?(keyword()) :: boolean()
   def document_exists?(opts \\ []) when is_list(opts) do
     {index, opts} = extract_index!(opts)
     {document_id, opts} = Keyword.pop!(opts, :id)
 
     Client.head("#{index}/_doc/#{document_id}", nil, opts) == :ok
   end
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type source_exists_opt :: {:index, atom() | binary()} | {:id, binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type source_exists_opts :: [source_exists_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Checks if the specified JSON source from an index exists.
@@ -268,19 +228,13 @@ defmodule ElasticsearchEx.Api.Document.Single do
       iex> ElasticsearchEx.Api.Document.Single.source_exists?(index: "my-index-000001", id: "0")
       true
   """
-  @spec source_exists?(source_exists_opts()) :: boolean()
+  @spec source_exists?(keyword()) :: boolean()
   def source_exists?(opts \\ []) when is_list(opts) do
     {index, opts} = extract_index!(opts)
     {document_id, opts} = Keyword.pop!(opts, :id)
 
     Client.head("#{index}/_source/#{document_id}", nil, opts) == :ok
   end
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type delete_opt :: {:index, atom() | binary()} | {:id, binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type delete_opts :: [delete_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Removes a JSON document from the specified index.
@@ -314,22 +268,13 @@ defmodule ElasticsearchEx.Api.Document.Single do
          ...
        }}
   """
-  @spec delete(delete_opts()) :: Client.response()
+  @spec delete(keyword()) :: {:ok, term()} | {:error, Error.t()}
   def delete(opts \\ []) do
     {index, opts} = extract_index!(opts)
     {document_id, opts} = Keyword.pop!(opts, :id)
 
     Client.delete("#{index}/_doc/#{document_id}", nil, nil, opts)
   end
-
-  @typedoc "It describes the query sent to update the document."
-  @type update_query :: map()
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type update_opt :: {:index, atom() | binary()} | {:id, binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type update_opts :: [update_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Updates a document using the specified script.
@@ -344,7 +289,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html#update-api-example)
   for a detailed list of the body values.
   """
-  @spec update(update_query(), delete_opts()) :: Client.response()
+  @spec update(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def update(document, opts \\ []) do
     {index, opts} = extract_index!(opts)
     {document_id, opts} = Keyword.pop!(opts, :id)

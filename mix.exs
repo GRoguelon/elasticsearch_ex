@@ -18,7 +18,8 @@ defmodule ElasticsearchEx.MixProject do
       description: "Elasticsearch_ex is a client library for Elasticsearch",
       docs: docs(),
       source_url: @source_url,
-      dialyzer: dialyzer()
+      dialyzer: dialyzer(),
+      preferred_cli_env: ["test.watch": :test]
     ]
   end
 
@@ -67,7 +68,6 @@ defmodule ElasticsearchEx.MixProject do
   defp dialyzer do
     [
       plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
-      plt_add_apps: [:req, :castore],
       list_unused_filters: true
     ]
   end
@@ -75,11 +75,8 @@ defmodule ElasticsearchEx.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:any_http, "~> 0.2"},
-      # Required because AnyHTTP uses :public_key.cacerts_get() which was introduced recently.
-      {:castore, "~> 1.0", optional: true},
+      {:any_http, "~> 0.6"},
       {:jason, "~> 1.4"},
-      {:req, "~> 0.4", optional: true},
 
       ## Dev dependencies
       {:benchee, "~> 1.0", only: :dev},
@@ -90,7 +87,8 @@ defmodule ElasticsearchEx.MixProject do
 
       ## Dev & Test dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 end

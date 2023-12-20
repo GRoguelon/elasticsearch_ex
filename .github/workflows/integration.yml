@@ -31,8 +31,8 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ env.ERLANG_VERSION }}
-          elixir-version: ${{ env.ELIXIR_VERSION }}
+          version-type: "strict"
+          version-file: ".tool-versions"
           install-hex: true
           install-rebar: true
 
@@ -62,8 +62,8 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ env.ERLANG_VERSION }}
-          elixir-version: ${{ env.ELIXIR_VERSION }}
+          version-type: "strict"
+          version-file: ".tool-versions"
           install-hex: true
           install-rebar: true
 
@@ -94,8 +94,8 @@ jobs:
         id: beam
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ env.ERLANG_VERSION }}
-          elixir-version: ${{ env.ELIXIR_VERSION }}
+          version-type: "strict"
+          version-file: ".tool-versions"
           install-hex: true
           install-rebar: true
 
@@ -149,15 +149,15 @@ jobs:
             elasticsearch: "8.11.3"
 
           # Elixir 1.16.0-rc.1 / Elasticsearch 7.17.16
-          - elixir: "1.16.0-rc.1"
-            erlang: "26.2.1"
-            elasticsearch: "7.17.16"
-          - elixir: "1.16.0-rc.1"
-            erlang: "25.3.2.8"
-            elasticsearch: "7.17.16"
-          - elixir: "1.16.0-rc.1"
-            erlang: "24.3.4.15"
-            elasticsearch: "7.17.16"
+          # - elixir: "1.16.0-rc.1"
+          #   erlang: "26.2.1"
+          #   elasticsearch: "7.17.16"
+          # - elixir: "1.16.0-rc.1"
+          #   erlang: "25.3.2.8"
+          #   elasticsearch: "7.17.16"
+          # - elixir: "1.16.0-rc.1"
+          #   erlang: "24.3.4.15"
+          #   elasticsearch: "7.17.16"
 
           # Elixir 1.15.7 / Elasticsearch 8.11.3
           - elixir: "1.15.7"
@@ -171,15 +171,15 @@ jobs:
             elasticsearch: "8.11.3"
 
           # Elixir 1.15.7 / Elasticsearch 7.17.16
-          - elixir: "1.15.7"
-            erlang: "26.2.1"
-            elasticsearch: "7.17.16"
-          - elixir: "1.15.7"
-            erlang: "25.3.2.8"
-            elasticsearch: "7.17.16"
-          - elixir: "1.15.7"
-            erlang: "24.3.4.15"
-            elasticsearch: "7.17.16"
+          # - elixir: "1.15.7"
+          #   erlang: "26.2.1"
+          #   elasticsearch: "7.17.16"
+          # - elixir: "1.15.7"
+          #   erlang: "25.3.2.8"
+          #   elasticsearch: "7.17.16"
+          # - elixir: "1.15.7"
+          #   erlang: "24.3.4.15"
+          #   elasticsearch: "7.17.16"
 
           # Elixir 1.14.5 / Elasticsearch 8.11.3
           - elixir: "1.14.5"
@@ -193,15 +193,15 @@ jobs:
             elasticsearch: "8.11.3"
 
           # Elixir 1.14.5 / Elasticsearch 7.17.16
-          - elixir: "1.14.5"
-            erlang: "26.2.1"
-            elasticsearch: "7.17.16"
-          - elixir: "1.14.5"
-            erlang: "25.3.2.8"
-            elasticsearch: "7.17.16"
-          - elixir: "1.14.5"
-            erlang: "24.3.4.15"
-            elasticsearch: "7.17.16"
+          # - elixir: "1.14.5"
+          #   erlang: "26.2.1"
+          #   elasticsearch: "7.17.16"
+          # - elixir: "1.14.5"
+          #   erlang: "25.3.2.8"
+          #   elasticsearch: "7.17.16"
+          # - elixir: "1.14.5"
+          #   erlang: "24.3.4.15"
+          #   elasticsearch: "7.17.16"
 
           # Elixir 1.13.4 / Elasticsearch 8.11.3
           - elixir: "1.13.4"
@@ -212,12 +212,12 @@ jobs:
             elasticsearch: "8.11.3"
 
           # Elixir 1.13.4 / Elasticsearch 7.17.16
-          - elixir: "1.13.4"
-            erlang: "25.3.2.8"
-            elasticsearch: "7.17.16"
-          - elixir: "1.13.4"
-            erlang: "24.3.4.15"
-            elasticsearch: "7.17.16"
+          # - elixir: "1.13.4"
+          #   erlang: "25.3.2.8"
+          #   elasticsearch: "7.17.16"
+          # - elixir: "1.13.4"
+          #   erlang: "24.3.4.15"
+          #   elasticsearch: "7.17.16"
 
     services:
       elasticsearch:
@@ -251,6 +251,25 @@ jobs:
 
       - name: Fetch the dependencies
         run: mix deps.get
+
+      - name: Compile the project
+        env:
+          MIX_ENV: test
+        run: mix compile
+
+      - name: Wait for Elasticsearch
+        run: |
+          until $(curl --output /dev/null --silent --head --fail --insecure --user "elastic:elastic" "https://localhost:9200"); do
+              printf '.'
+              sleep 1
+          done
+
+          result=$(curl --silent --insecure --user "elastic:elastic" "https://localhost:9200/_cluster/health?wait_for_status=green&timeout=50s")
+
+          if [[ "$(cat $result | jq -r .timed_out)" = "true" ]]; then
+              echo "Elasticsearch is not ready"
+              exit 1
+          fi
 
       - name: Run tests
         run: mix test

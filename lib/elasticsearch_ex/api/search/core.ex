@@ -9,17 +9,13 @@ defmodule ElasticsearchEx.Api.Search.Core do
     only: [extract_index!: 1, extract_index: 1, merge_path_suffix: 2]
 
   alias ElasticsearchEx.Client
+  alias ElasticsearchEx.Error
+
+  ## Module attributes
+
+  @ndjson_headers Client.ndjson()
 
   ## Public functions
-
-  @typedoc "Represents the body expected by the `search` API."
-  @type search_body :: map()
-
-  @typedoc "The possible individual options accepted by the `search` function."
-  @type search_opt :: {:index, atom() | binary()}
-
-  @typedoc "The possible options accepted by the `search` function."
-  @type search_opts :: [search_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Returns search hits that match the query defined in the request.
@@ -77,22 +73,13 @@ defmodule ElasticsearchEx.Api.Search.Core do
          "took" => 5
        }}
   """
-  @spec search(search_body(), search_opts()) :: Client.response()
+  @spec search(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def search(query, opts \\ []) when is_map(query) and is_list(opts) do
     {index, opts} = extract_index(opts)
     path = merge_path_suffix(index, "_search")
 
     Client.post(path, nil, query, opts)
   end
-
-  @typedoc "Represents the body expected by the `multi_search` API."
-  @type multi_search_body :: Enumerable.t()
-
-  @typedoc "The possible individual options accepted by the `multi_search` function."
-  @type multi_search_opt :: {:index, atom() | binary()}
-
-  @typedoc "The possible options accepted by the `multi_search` function."
-  @type multi_search_opts :: [search_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Executes several searches with a single API request.
@@ -175,23 +162,13 @@ defmodule ElasticsearchEx.Api.Search.Core do
          "took" => 21
        }}
   """
-  @spec multi_search(multi_search_body(), multi_search_opts()) :: Client.response()
+  @spec multi_search([map()], keyword()) :: {:ok, term()} | {:error, Error.t()}
   def multi_search(queries, opts \\ []) when is_list(queries) and is_list(opts) do
     {index, opts} = extract_index(opts)
     path = merge_path_suffix(index, "_msearch")
-    body = ElasticsearchEx.Ndjson.encode!(queries)
 
-    Client.post(path, %{"content-type" => "application/x-ndjson"}, body, opts)
+    Client.post(path, @ndjson_headers, queries, opts)
   end
-
-  @typedoc "Represents the body expected by the `async_search` API."
-  @type async_search_body :: map()
-
-  @typedoc "The possible individual options accepted by the `async_search` function."
-  @type async_search_opt :: {:index, atom() | binary()}
-
-  @typedoc "The possible options accepted by the `async_search` function."
-  @type async_search_opts :: [async_search_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   Executes a search request asynchronously. It accepts the same parameters and request body as the
@@ -241,16 +218,13 @@ defmodule ElasticsearchEx.Api.Search.Core do
          "start_time_in_millis" => 1583945890986
        }}
   """
-  @spec async_search(async_search_body(), async_search_opts()) :: Client.response()
+  @spec async_search(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def async_search(query, opts \\ []) when is_map(query) and is_list(opts) do
     {index, opts} = extract_index(opts)
     path = merge_path_suffix(index, "_async_search")
 
     Client.post(path, nil, query, opts)
   end
-
-  @typedoc "Represents the ID returned by the `async_search` function."
-  @type async_search_id :: binary()
 
   @doc """
   The get async search API retrieves the results of a previously submitted async search request
@@ -286,8 +260,7 @@ defmodule ElasticsearchEx.Api.Search.Core do
          "start_time_in_millis" => 1583945890986
        }}
   """
-  @spec get_async_search(async_search_id(), [{:http_opts, keyword()} | {atom(), any()}]) ::
-          Client.response()
+  @spec get_async_search(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def get_async_search(async_search_id, opts \\ [])
       when is_binary(async_search_id) and is_list(opts) do
     Client.get("/_async_search/#{async_search_id}", nil, nil, opts)
@@ -315,8 +288,7 @@ defmodule ElasticsearchEx.Api.Search.Core do
          "start_time_in_millis" => 1583945890986
        }}
   """
-  @spec get_async_search_status(async_search_id(), [{:http_opts, keyword()} | {atom(), any()}]) ::
-          Client.response()
+  @spec get_async_search_status(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def get_async_search_status(async_search_id, opts \\ [])
       when is_binary(async_search_id) and is_list(opts) do
     Client.get("/_async_search/status/#{async_search_id}", nil, nil, opts)
@@ -332,18 +304,11 @@ defmodule ElasticsearchEx.Api.Search.Core do
       iex> ElasticsearchEx.Api.Search.Core.delete_async_search("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
       nil
   """
-  @spec delete_async_search(async_search_id(), [{:http_opts, keyword()} | {atom(), any()}]) ::
-          Client.response()
+  @spec delete_async_search(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def delete_async_search(async_search_id, opts \\ [])
       when is_binary(async_search_id) and is_list(opts) do
     Client.delete("/_async_search/#{async_search_id}", nil, nil, opts)
   end
-
-  @typedoc "The possible individual options accepted by the `create_pit` function"
-  @type create_pit_opt :: {:index, atom() | binary()} | {:keep_alive, binary()}
-
-  @typedoc "The possible options accepted by the `create_pit` function"
-  @type create_pit_opts :: [create_pit_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   A search request by default executes against the most recent visible data of the target indices,
@@ -361,15 +326,12 @@ defmodule ElasticsearchEx.Api.Search.Core do
          "id" => "gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA=="
        }}
   """
-  @spec create_pit(create_pit_opts()) :: Client.response()
+  @spec create_pit(keyword()) :: {:ok, term()} | {:error, Error.t()}
   def create_pit(opts \\ []) when is_list(opts) do
     {index, opts} = extract_index!(opts)
 
-    Client.post("/#{index}/_pit", nil, nil, opts)
+    Client.post("/#{index}/_pit", nil, "", opts)
   end
-
-  @typedoc "The identifier for a Point in Time"
-  @type pit_id :: binary()
 
   @doc """
   Point-in-time is automatically closed when its `keep_alive` has been elapsed. However keeping
@@ -381,19 +343,10 @@ defmodule ElasticsearchEx.Api.Search.Core do
       iex> ElasticsearchEx.Api.Search.Core.close_pit("gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA==")
       {:ok, %{"num_freed" => 1, "succeeded" => true}}
   """
-  @spec close_pit(pit_id(), [{:http_opts, keyword()} | {atom(), any()}]) :: Client.response()
+  @spec close_pit(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def close_pit(pit_id, opts \\ []) when is_binary(pit_id) and is_list(opts) do
     Client.delete("/_pit", nil, %{id: pit_id}, opts)
   end
-
-  @typedoc "Represents the body expected by the `terms_enum` API"
-  @type terms_enum_body :: map()
-
-  @typedoc "The possible individual options accepted by the `terms_enum` function"
-  @type terms_enum_opt :: {:index, atom() | binary()}
-
-  @typedoc "The possible options accepted by the `terms_enum` function"
-  @type terms_enum_opts :: [terms_enum_opt() | {:http_opts, keyword()} | {atom(), any()}]
 
   @doc """
   The terms enum API can be used to discover terms in the index that match a partial string.
@@ -414,15 +367,12 @@ defmodule ElasticsearchEx.Api.Search.Core do
          "terms" => ["kibana"]
        }}
   """
-  @spec terms_enum(terms_enum_body(), terms_enum_opts()) :: Client.response()
+  @spec terms_enum(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def terms_enum(query, opts \\ []) when is_map(query) and is_list(opts) do
     {index, opts} = extract_index!(opts)
 
     Client.post("/#{index}/_terms_enum", nil, query, opts)
   end
-
-  @typedoc "The identifier for a scroll"
-  @type scroll_id :: binary()
 
   @doc """
   Point-in-time is automatically closed when its `keep_alive` has been elapsed. However keeping
@@ -453,7 +403,7 @@ defmodule ElasticsearchEx.Api.Search.Core do
          "took" => 1
        }}
   """
-  @spec get_scroll(scroll_id(), [{:http_opts, keyword()} | {atom(), any()}]) :: Client.response()
+  @spec get_scroll(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def get_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) and is_list(opts) do
     Client.post("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
   end
@@ -468,8 +418,7 @@ defmodule ElasticsearchEx.Api.Search.Core do
       ...> )
       {:ok, %{"num_freed" => 1, "succeeded" => true}}
   """
-  @spec clear_scroll(scroll_id(), [{:http_opts, keyword()} | {atom(), any()}]) ::
-          Client.response()
+  @spec clear_scroll(binary(), keyword()) :: {:ok, term()} | {:error, Error.t()}
   def clear_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) and is_list(opts) do
     Client.delete("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
   end
