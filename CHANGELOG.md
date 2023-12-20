@@ -1,7 +1,21 @@
 # Changelog
 
 
-## v0.4.0
+## v0.5.0 (2023-12-20)
+
+* **New features:**
+  * Added the ability to specify clusters which configure an endpoint, default headers and default
+  options
+
+* **Changes:**
+  * Removed the function to make `PATCH` request which isn't used by Elasticsearch
+  * Removed most of the Dialyzer types causing issues
+  * Added all the tests for `ElasticsearchEx.Api.Search.Core`
+
+* **Bug fixes:**
+  * Fixed an issue preventing to make `POST` request without body
+
+## v0.4.0 (2023-12-19)
 
 * **New features:**
   * Added new functions related to single document operations:
