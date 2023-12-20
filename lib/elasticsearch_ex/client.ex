@@ -1,5 +1,7 @@
 defmodule ElasticsearchEx.Client do
-  @moduledoc false
+  @moduledoc """
+  Provides the functions to make HTTP calls.
+  """
 
   ## Typespecs
 

@@ -1,5 +1,19 @@
 # Changelog
 
+
+## v0.4.0
+
+* **New features:**
+  * Added new functions related to single document operations:
+    * `ElasticsearchEx.Api.Document.Single.index/2`
+    * `ElasticsearchEx.Api.Document.Single.create/2`
+    * `ElasticsearchEx.Api.Document.Single.get_document/1`
+    * `ElasticsearchEx.Api.Document.Single.get_source/1`
+    * `ElasticsearchEx.Api.Document.Single.document_exists?/1`
+    * `ElasticsearchEx.Api.Document.Single.source_exists?/1`
+    * `ElasticsearchEx.Api.Document.Single.delete/1`
+    * `ElasticsearchEx.Api.Document.Single.update/2`
+
 ## v0.3.1 (2023-12-19)
 
 * **Changes:**

@@ -36,6 +36,20 @@ defmodule ElasticsearchEx.Error do
   end
 
   @impl true
+  def exception(%AnyHttp.Response{
+        status: 404,
+        body: %{"_id" => doc_id, "result" => "not_found"} = body
+      }) do
+    %__MODULE__{
+      status: 404,
+      reason: "Document with ID: `#{doc_id}` not found",
+      root_cause: nil,
+      type: "not_found",
+      original: body
+    }
+  end
+
+  @impl true
   @spec message(t()) :: binary()
   def message(%__MODULE__{reason: reason}) do
     reason
