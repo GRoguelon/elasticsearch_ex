@@ -30,14 +30,14 @@ defmodule ElasticsearchEx.Client do
     result |> maybe_decode_json_body!() |> parse_result()
   end
 
-  @spec head(binary(), nil | map(), keyword()) :: :ok
+  @spec head(binary(), nil | map(), keyword()) :: :ok | :error
   def head(path, headers \\ nil, opts \\ []) do
     case request(:head, path, headers, nil, opts) do
       {:ok, nil} ->
         :ok
 
-      others ->
-        others
+      {:error, %ElasticsearchEx.Error{}} ->
+        :error
     end
   end
 

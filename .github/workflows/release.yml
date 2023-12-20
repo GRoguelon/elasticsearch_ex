@@ -1,0 +1,36 @@
+name: Continuous Delivery
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: release
+  cancel-in-progress: true
+
+env:
+  ELIXIR_VERSION: 1.15.7
+  ERLANG_VERSION: 26.2.1
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ env.ERLANG_VERSION }}
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          install-hex: true
+          install-rebar: true
+
+      - name: Publish package
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: |
+          mix hex.publish --yes

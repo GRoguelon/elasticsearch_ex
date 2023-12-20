@@ -103,7 +103,7 @@ jobs:
         id: plt_cache
         uses: actions/cache/restore@v3
         with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir-${{ hashFiles('mix.lock') }}
           restore-keys: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir-
           path: |
             deps/
@@ -120,7 +120,7 @@ jobs:
         uses: actions/cache/save@v3
         if: steps.plt_cache.outputs.cache-hit != 'true'
         with:
-          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-erlang-${{ steps.beam.outputs.otp-version }}-elixir-${{ steps.beam.outputs.elixir-version }}-dialyxir-${{ hashFiles('mix.lock') }}
           path: |
             deps/
             _build/dev/

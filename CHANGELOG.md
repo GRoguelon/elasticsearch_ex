@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.3.1 (2023-12-19)
+
+* **Changes:**
+  * Added unit tests for:
+    * `ElasticsearchEx.Api.Utils`
+    * `ElasticsearchEx.Client`
+    * `ElasticsearchEx.Error`
+    * `ElasticsearchEx.Ndjson`
+
+* **Bug fixes:**
+  * Fixed the return value for the function `ElasticsearchEx.Client.head/2` in case of error
+  * Fixed the typespec for the function `ElasticsearchEx.Client.head/2` in case of error
+  * Added the ability to have no body to create an exception with `ElasticsearchEx.Error`
+  * Ensured the `ElasticsearchEx.Error.original` attribute is provided
+
 ## v0.3.0 (2023-12-19)
 
 * **New features:**

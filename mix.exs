@@ -2,7 +2,7 @@ defmodule ElasticsearchEx.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/GRoguelon/elasticsearch_ex"
-  @version "0.3.0"
+  @version "0.3.1"
 
   def project do
     [
@@ -54,6 +54,9 @@ defmodule ElasticsearchEx.MixProject do
       groups_for_modules: [
         API: [
           ElasticsearchEx.Api.Search.Core
+        ],
+        Utils: [
+          ElasticsearchEx.Ndjson
         ]
       ]
     ]
@@ -62,6 +65,7 @@ defmodule ElasticsearchEx.MixProject do
   defp dialyzer do
     [
       plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+      plt_add_apps: [:req, :castore],
       list_unused_filters: true
     ]
   end
@@ -73,6 +77,7 @@ defmodule ElasticsearchEx.MixProject do
       # Required because AnyHTTP uses :public_key.cacerts_get() which was introduced recently.
       {:castore, "~> 1.0", optional: true},
       {:jason, "~> 1.4"},
+      {:req, "~> 0.4", optional: true},
 
       ## Dev dependencies
       {:benchee, "~> 1.0", only: :dev},
