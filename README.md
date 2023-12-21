@@ -33,11 +33,17 @@ config :elasticsearch_ex,
   }
 ```
 
+### Index a document
+
+```elixir
+ElasticsearchEx.index(%{message: "Hello World!"}, index: "my-index")
+```
+
 ### Search your cluster
 
 You can easily query your local Elasticsearch with:
 ```elixir
-ElasticsearchEx.Api.Search.Core.search(%{query: %{match_all: %{}}, size: 1})
+ElasticsearchEx.search(%{query: %{match_all: %{}}, size: 1}, index: "my-index")
 ```
 
 Response:
@@ -54,10 +60,10 @@ Response:
      "hits" => [
        %{
          "_id" => "8uaORIwBU7w6JJjTX-8-",
-         "_index" => "my_index",
+         "_index" => "my-index",
          "_score" => 1.0,
          "_source" => %{
-           ...
+           "message" => "Hello World!"
          }
        }
      ],

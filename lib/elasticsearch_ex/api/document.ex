@@ -1,12 +1,16 @@
-defmodule ElasticsearchEx.Api.Document.Single do
+defmodule ElasticsearchEx.Api.Document do
   @moduledoc """
   Provides the APIs for the single document operations.
   """
 
-  import ElasticsearchEx.Api.Utils, only: [extract_index!: 1]
+  import ElasticsearchEx.Api.Utils,
+    only: [
+      extract_required_index_and_optional_id!: 1,
+      extract_required_index_and_required_id!: 1,
+      merge_path_items: 1
+    ]
 
   alias ElasticsearchEx.Client
-  alias ElasticsearchEx.Error
 
   ## Public functions
 
@@ -29,7 +33,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   Without a specific document ID:
 
-      iex> ElasticsearchEx.Api.Document.Single.index(
+      iex> ElasticsearchEx.Api.Document.index(
       ...>   %{
       ...>     "@timestamp": "2099-11-15T13:12:00",
       ...>     message: "GET /search HTTP/1.1 200 1070000",
@@ -50,7 +54,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   With a specific document ID:
 
-      iex> ElasticsearchEx.Api.Document.Single.index(
+      iex> ElasticsearchEx.Api.Document.index(
       ...>   %{
       ...>     "@timestamp": "2099-11-15T13:12:00",
       ...>     message: "GET /search HTTP/1.1 200 1070000",
@@ -70,11 +74,10 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "result" => "created"
        }}
   """
-  @spec index(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
+  @spec index(map(), keyword()) :: ElasticsearchEx.response()
   def index(document, opts \\ []) when is_map(document) and is_list(opts) do
-    {index, opts} = extract_index!(opts)
-    {document_id, opts} = Keyword.pop(opts, :id)
-    path = if(is_nil(document_id), do: "#{index}/_doc", else: "#{index}/_doc/#{document_id}")
+    {index, document_id, opts} = extract_required_index_and_optional_id!(opts)
+    path = merge_path_items([index, "_doc", document_id])
 
     Client.post(path, nil, document, opts)
   end
@@ -94,7 +97,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Single.create(
+      iex> ElasticsearchEx.Api.Document.create(
       ...>   %{
       ...>     "@timestamp": "2099-11-15T13:12:00",
       ...>     message: "GET /search HTTP/1.1 200 1070000",
@@ -114,10 +117,9 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "result" => "created"
        }}
   """
-  @spec create(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
+  @spec create(map(), keyword()) :: ElasticsearchEx.response()
   def create(document, opts \\ []) when is_map(document) and is_list(opts) do
-    {index, opts} = extract_index!(opts)
-    {document_id, opts} = Keyword.pop!(opts, :id)
+    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
 
     Client.post("#{index}/_doc/#{document_id}", nil, document, opts)
   end
@@ -132,7 +134,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Single.get_document(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.get_document(index: "my-index-000001", id: "0")
       {:ok,
        %{
          "_id" => "0",
@@ -154,10 +156,9 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "found" => true
        }}
   """
-  @spec get_document(keyword()) :: {:ok, term()} | {:error, Error.t()}
+  @spec get_document(keyword()) :: ElasticsearchEx.response()
   def get_document(opts \\ []) when is_list(opts) do
-    {index, opts} = extract_index!(opts)
-    {document_id, opts} = Keyword.pop!(opts, :id)
+    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
 
     Client.get("#{index}/_doc/#{document_id}", nil, nil, opts)
   end
@@ -172,7 +173,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Single.get_source(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.get_source(index: "my-index-000001", id: "0")
       {:ok,
        %{
          "@timestamp" => "2099-11-15T14:12:12",
@@ -186,10 +187,9 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "user" => %{"id" => "kimchy"}
        }}
   """
-  @spec get_source(keyword()) :: {:ok, term()} | {:error, Error.t()}
+  @spec get_source(keyword()) :: ElasticsearchEx.response()
   def get_source(opts \\ []) when is_list(opts) do
-    {index, opts} = extract_index!(opts)
-    {document_id, opts} = Keyword.pop!(opts, :id)
+    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
 
     Client.get("#{index}/_source/#{document_id}", nil, nil, opts)
   end
@@ -204,13 +204,12 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Single.document_exists?(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.document_exists?(index: "my-index-000001", id: "0")
       true
   """
   @spec document_exists?(keyword()) :: boolean()
   def document_exists?(opts \\ []) when is_list(opts) do
-    {index, opts} = extract_index!(opts)
-    {document_id, opts} = Keyword.pop!(opts, :id)
+    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
 
     Client.head("#{index}/_doc/#{document_id}", nil, opts) == :ok
   end
@@ -225,13 +224,12 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Single.source_exists?(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.source_exists?(index: "my-index-000001", id: "0")
       true
   """
   @spec source_exists?(keyword()) :: boolean()
   def source_exists?(opts \\ []) when is_list(opts) do
-    {index, opts} = extract_index!(opts)
-    {document_id, opts} = Keyword.pop!(opts, :id)
+    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
 
     Client.head("#{index}/_source/#{document_id}", nil, opts) == :ok
   end
@@ -246,7 +244,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Single.delete(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.delete(index: "my-index-000001", id: "0")
       {:ok,
        %{
          "_id" => "0",
@@ -258,7 +256,7 @@ defmodule ElasticsearchEx.Api.Document.Single do
          "result" => "deleted"
        }}
 
-      iex> ElasticsearchEx.Api.Document.Single.delete(index: "my-index-000001", id: "1")
+      iex> ElasticsearchEx.Api.Document.delete(index: "my-index-000001", id: "1")
       {:error,
        %ElasticsearchEx.Error{
          reason: "Document with ID: `1` not found",
@@ -268,10 +266,9 @@ defmodule ElasticsearchEx.Api.Document.Single do
          ...
        }}
   """
-  @spec delete(keyword()) :: {:ok, term()} | {:error, Error.t()}
+  @spec delete(keyword()) :: ElasticsearchEx.response()
   def delete(opts \\ []) do
-    {index, opts} = extract_index!(opts)
-    {document_id, opts} = Keyword.pop!(opts, :id)
+    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
 
     Client.delete("#{index}/_doc/#{document_id}", nil, nil, opts)
   end
@@ -288,12 +285,35 @@ defmodule ElasticsearchEx.Api.Document.Single do
 
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html#update-api-example)
   for a detailed list of the body values.
-  """
-  @spec update(map(), keyword()) :: {:ok, term()} | {:error, Error.t()}
-  def update(document, opts \\ []) do
-    {index, opts} = extract_index!(opts)
-    {document_id, opts} = Keyword.pop!(opts, :id)
 
-    Client.post("#{index}/_doc/#{document_id}", nil, document, opts)
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Document.update(
+      ...>   %{
+      ...>     script: %{
+      ...>       source: "ctx._source.message = params.message",
+      ...>       lang: "painless",
+      ...>       params: %{message: "Bye World"}
+      ...>     }
+      ...>   },
+      ...>   index: "my-index-000001",
+      ...>   id: "0"
+      ...> )
+      {:ok,
+       %{
+         "_id" => "0",
+         "_index" => "my-index-000001",
+         "_primary_term" => 1,
+         "_seq_no" => 1,
+         "_version" => 2,
+         "_shards" => %{"failed" => 0, "successful" => 1, "total" => 1},
+         "result" => "updated"
+       }}
+  """
+  @spec update(map(), keyword()) :: ElasticsearchEx.response()
+  def update(document, opts \\ []) do
+    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
+
+    Client.post("#{index}/_update/#{document_id}", nil, document, opts)
   end
 end

@@ -43,7 +43,7 @@ defmodule ElasticsearchEx.Client do
     request(:get, path, headers, body, opts)
   end
 
-  def post(path, headers \\ nil, body \\ nil, opts \\ []) do
+  def post(path, headers \\ nil, body \\ "", opts \\ []) do
     request(:post, path, headers, body, opts)
   end
 

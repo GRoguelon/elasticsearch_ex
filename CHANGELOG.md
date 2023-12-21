@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.6.0 (2023-12-21)
+
+* **New features:**
+  * Delegated `ElasticsearchEx.index/2`
+
+* **Changes:**
+  * Renamed the modules to remove the scope (tests are untouched)
+  * Added more tests
+
+* **Bug fixes:**
+  * Fixed a bug on `ElasticsearchEx.Api.Document.update/2` preventing to update.
+
 ## v0.5.0 (2023-12-20)
 
 * **New features:**
@@ -10,7 +22,7 @@
 * **Changes:**
   * Removed the function to make `PATCH` request which isn't used by Elasticsearch
   * Removed most of the Dialyzer types causing issues
-  * Added all the tests for `ElasticsearchEx.Api.Search.Core`
+  * Added all the tests for `ElasticsearchEx.Api.Search`
 
 * **Bug fixes:**
   * Fixed an issue preventing to make `POST` request without body
@@ -19,14 +31,14 @@
 
 * **New features:**
   * Added new functions related to single document operations:
-    * `ElasticsearchEx.Api.Document.Single.index/2`
-    * `ElasticsearchEx.Api.Document.Single.create/2`
-    * `ElasticsearchEx.Api.Document.Single.get_document/1`
-    * `ElasticsearchEx.Api.Document.Single.get_source/1`
-    * `ElasticsearchEx.Api.Document.Single.document_exists?/1`
-    * `ElasticsearchEx.Api.Document.Single.source_exists?/1`
-    * `ElasticsearchEx.Api.Document.Single.delete/1`
-    * `ElasticsearchEx.Api.Document.Single.update/2`
+    * `ElasticsearchEx.Api.Document.index/2`
+    * `ElasticsearchEx.Api.Document.create/2`
+    * `ElasticsearchEx.Api.Document.get_document/1`
+    * `ElasticsearchEx.Api.Document.get_source/1`
+    * `ElasticsearchEx.Api.Document.document_exists?/1`
+    * `ElasticsearchEx.Api.Document.source_exists?/1`
+    * `ElasticsearchEx.Api.Document.delete/1`
+    * `ElasticsearchEx.Api.Document.update/2`
 
 ## v0.3.1 (2023-12-19)
 
@@ -47,21 +59,21 @@
 
 * **New features:**
   * Added new functions related to `async_search`:
-    - `ElasticsearchEx.Api.Search.Core.async_search/2`
-    - `ElasticsearchEx.Api.Search.Core.get_async_search/2`
-    - `ElasticsearchEx.Api.Search.Core.get_async_search_status/2`
-    - `ElasticsearchEx.Api.Search.Core.delete_async_search/2`
+    - `ElasticsearchEx.Api.Search.async_search/2`
+    - `ElasticsearchEx.Api.Search.get_async_search/2`
+    - `ElasticsearchEx.Api.Search.get_async_search_status/2`
+    - `ElasticsearchEx.Api.Search.delete_async_search/2`
   * Added new functions related to `pit`:
-    - `ElasticsearchEx.Api.Search.Core.create_pit/1`
-    - `ElasticsearchEx.Api.Search.Core.close_pit/2`
+    - `ElasticsearchEx.Api.Search.create_pit/1`
+    - `ElasticsearchEx.Api.Search.close_pit/2`
   * Added new functions related to `scroll`:
-    - `ElasticsearchEx.Api.Search.Core.get_scroll/2`
-    - `ElasticsearchEx.Api.Search.Core.clear_scroll/2`
+    - `ElasticsearchEx.Api.Search.get_scroll/2`
+    - `ElasticsearchEx.Api.Search.clear_scroll/2`
   * Added a new module `ElasticsearchEx.Ndjson` to manipulate NDJSON
   * Added new functions related to `multi_search`:
-    - `ElasticsearchEx.Api.Search.Core.multi_search/2`
+    - `ElasticsearchEx.Api.Search.multi_search/2`
   * Added new functions related to `terms_enum`:
-    - `ElasticsearchEx.Api.Search.Core.terms_enum/2`
+    - `ElasticsearchEx.Api.Search.terms_enum/2`
 
 * **Changes:**
   * Added Github actions matrix to test different versions
@@ -70,7 +82,7 @@
 ## v0.2.0 (2023-12-18)
 
 * **New features:**
-  * Delegated the function `ElasticsearchEx.Api.Search.Core.search/2` in `ElasticsearchEx` module ([PR-4](https://github.com/CoreCareinc/elasticsearch_ex/pull/4))
+  * Delegated the function `ElasticsearchEx.Api.Search.search/2` in `ElasticsearchEx` module
   * Added a `ElasticsearchEx.Error` exception to return an error.
 
 * **Changes:**
