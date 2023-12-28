@@ -1,12 +1,7 @@
 # Changelog
 
 
-## v0.6.1 (2023-12-28)
-
-* **Changes:**
-  * Updated the dependency `any_http` to get rid of the issue with Dialyzer
-
-## v0.6.0 (2023-12-21)
+## v0.6.0 (2023-12-28)
 
 * **New features:**
   * Delegated `ElasticsearchEx.index/2`
@@ -14,6 +9,7 @@
 * **Changes:**
   * Renamed the modules to remove the scope (tests are untouched)
   * Added more tests
+  * Updated the dependency `any_http` to get rid of the issue with Dialyzer
 
 * **Bug fixes:**
   * Fixed a bug on `ElasticsearchEx.Api.Document.update/2` preventing to update.
