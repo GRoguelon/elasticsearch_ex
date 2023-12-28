@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.6.1 (2023-12-28)
+
+* **Changes:**
+  * Removed an option from the package preventing Dialyzer to work properly when it's used as dependency
+
 ## v0.6.0 (2023-12-28)
 
 * **New features:**
