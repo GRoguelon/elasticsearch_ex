@@ -2,7 +2,7 @@ defmodule ElasticsearchEx.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/GRoguelon/elasticsearch_ex"
-  @version "0.6.0"
+  @version "0.6.1"
 
   def project do
     [
@@ -68,7 +68,6 @@ defmodule ElasticsearchEx.MixProject do
 
   defp dialyzer do
     [
-      plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
       list_unused_filters: true
     ]
   end

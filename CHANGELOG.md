@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.6.1 (2023-12-28)
+
+* **Changes:**
+  * Updated the dependency `any_http` to get rid of the issue with Dialyzer
+
 ## v0.6.0 (2023-12-21)
 
 * **New features:**
