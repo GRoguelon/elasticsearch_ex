@@ -14,10 +14,6 @@ concurrency:
   group: ${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
-env:
-  ELIXIR_VERSION: 1.15.7
-  ERLANG_VERSION: 26.2.1
-
 jobs:
   format:
     name: Check formatting
@@ -135,86 +131,86 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          # Elixir 1.16.0-rc.1 / Elasticsearch 8.11.3
-          - elixir: "1.16.0-rc.1"
-            erlang: "26.2.1"
-            elasticsearch: "8.11.3"
-          - elixir: "1.16.0-rc.1"
-            erlang: "25.3.2.8"
-            elasticsearch: "8.11.3"
-          - elixir: "1.16.0-rc.1"
-            erlang: "24.3.4.15"
-            elasticsearch: "8.11.3"
+          # Elixir 1.16.2 / Elasticsearch 8.13.0
+          - elixir: "1.16.2"
+            erlang: "26.2.3"
+            elasticsearch: "8.13.0"
+          - elixir: "1.16.2"
+            erlang: "25.3.2.10"
+            elasticsearch: "8.13.0"
+          - elixir: "1.16.2"
+            erlang: "24.3.4.16"
+            elasticsearch: "8.13.0"
 
-          # Elixir 1.16.0-rc.1 / Elasticsearch 7.17.16
-          # - elixir: "1.16.0-rc.1"
-          #   erlang: "26.2.1"
+          # Elixir 1.16.2 / Elasticsearch 7.17.16
+          # - elixir: "1.16.2"
+          #   erlang: "26.2.3"
           #   elasticsearch: "7.17.16"
-          # - elixir: "1.16.0-rc.1"
-          #   erlang: "25.3.2.8"
+          # - elixir: "1.16.2"
+          #   erlang: "25.3.2.10"
           #   elasticsearch: "7.17.16"
-          # - elixir: "1.16.0-rc.1"
-          #   erlang: "24.3.4.15"
+          # - elixir: "1.16.2"
+          #   erlang: "24.3.4.16"
           #   elasticsearch: "7.17.16"
 
-          # Elixir 1.15.7 / Elasticsearch 8.11.3
+          # Elixir 1.15.7 / Elasticsearch 8.13.0
           - elixir: "1.15.7"
-            erlang: "26.2.1"
-            elasticsearch: "8.11.3"
+            erlang: "26.2.3"
+            elasticsearch: "8.13.0"
           - elixir: "1.15.7"
-            erlang: "25.3.2.8"
-            elasticsearch: "8.11.3"
+            erlang: "25.3.2.10"
+            elasticsearch: "8.13.0"
           - elixir: "1.15.7"
-            erlang: "24.3.4.15"
-            elasticsearch: "8.11.3"
+            erlang: "24.3.4.16"
+            elasticsearch: "8.13.0"
 
           # Elixir 1.15.7 / Elasticsearch 7.17.16
           # - elixir: "1.15.7"
-          #   erlang: "26.2.1"
+          #   erlang: "26.2.3"
           #   elasticsearch: "7.17.16"
           # - elixir: "1.15.7"
-          #   erlang: "25.3.2.8"
+          #   erlang: "25.3.2.10"
           #   elasticsearch: "7.17.16"
           # - elixir: "1.15.7"
-          #   erlang: "24.3.4.15"
+          #   erlang: "24.3.4.16"
           #   elasticsearch: "7.17.16"
 
-          # Elixir 1.14.5 / Elasticsearch 8.11.3
+          # Elixir 1.14.5 / Elasticsearch 8.13.0
           - elixir: "1.14.5"
-            erlang: "26.2.1"
-            elasticsearch: "8.11.3"
+            erlang: "26.2.3"
+            elasticsearch: "8.13.0"
           - elixir: "1.14.5"
-            erlang: "25.3.2.8"
-            elasticsearch: "8.11.3"
+            erlang: "25.3.2.10"
+            elasticsearch: "8.13.0"
           - elixir: "1.14.5"
-            erlang: "24.3.4.15"
-            elasticsearch: "8.11.3"
+            erlang: "24.3.4.16"
+            elasticsearch: "8.13.0"
 
           # Elixir 1.14.5 / Elasticsearch 7.17.16
           # - elixir: "1.14.5"
-          #   erlang: "26.2.1"
+          #   erlang: "26.2.3"
           #   elasticsearch: "7.17.16"
           # - elixir: "1.14.5"
-          #   erlang: "25.3.2.8"
+          #   erlang: "25.3.2.10"
           #   elasticsearch: "7.17.16"
           # - elixir: "1.14.5"
-          #   erlang: "24.3.4.15"
+          #   erlang: "24.3.4.16"
           #   elasticsearch: "7.17.16"
 
-          # Elixir 1.13.4 / Elasticsearch 8.11.3
+          # Elixir 1.13.4 / Elasticsearch 8.13.0
           - elixir: "1.13.4"
-            erlang: "25.3.2.8"
-            elasticsearch: "8.11.3"
+            erlang: "25.3.2.10"
+            elasticsearch: "8.13.0"
           - elixir: "1.13.4"
-            erlang: "24.3.4.15"
-            elasticsearch: "8.11.3"
+            erlang: "24.3.4.16"
+            elasticsearch: "8.13.0"
 
           # Elixir 1.13.4 / Elasticsearch 7.17.16
           # - elixir: "1.13.4"
-          #   erlang: "25.3.2.8"
+          #   erlang: "25.3.2.10"
           #   elasticsearch: "7.17.16"
           # - elixir: "1.13.4"
-          #   erlang: "24.3.4.15"
+          #   erlang: "24.3.4.16"
           #   elasticsearch: "7.17.16"
 
     services:

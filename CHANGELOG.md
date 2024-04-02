@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v0.6.2 (2024-04-01)
+
+* **Changes:**
+  * Updated the dependencies
+  * Updated Erlang/Elixir/Elasticsearch versions in the testing matrix
+
 ## v0.6.1 (2023-12-28)
 
 * **Changes:**
