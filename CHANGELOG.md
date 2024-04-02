@@ -1,6 +1,14 @@
 # Changelog
 
 
+## v0.7.0
+
+* **Changes:**
+  * Renamed `ElasticsearchEx.Api.Document.get_document/1` to `ElasticsearchEx.Api.Document.get/1`
+  * Moved `ElasticsearchEx.Api.Document.get_source/1` to `ElasticsearchEx.Api.Source.get/1`
+  * Renamed `ElasticsearchEx.Api.Document.document_exists?/1` to `ElasticsearchEx.Api.Document.exists?/1`
+  * Moved `ElasticsearchEx.Api.Document.source_exists?/1` by `ElasticsearchEx.Api.Source.exists?/1`
+
 ## v0.6.2 (2024-04-01)
 
 * **Changes:**

@@ -1,5 +1,5 @@
 defmodule ElasticsearchEx.Api.Document.SingleTest do
-  use ElasticsearchEx.ConnCase, async: true
+  use ElasticsearchEx.ConnCase
 
   alias ElasticsearchEx.Api.Document
 
@@ -66,16 +66,16 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
     end
   end
 
-  describe "get_document/2" do
+  describe "get/1" do
     test "raises an exception if missing index", %{fake_id: doc_id} do
       assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.get_document(id: doc_id)
+        Document.get(id: doc_id)
       end
     end
 
     test "raises an exception if missing ID" do
       assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.get_document(index: @index_name)
+        Document.get(index: @index_name)
       end
     end
 
@@ -89,64 +89,26 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
                 "_version" => 1,
                 "_source" => %{"message" => "Hello World 1!"},
                 "found" => true
-              }} = Document.get_document(index: @index_name, id: doc_id)
+              }} = Document.get(index: @index_name, id: doc_id)
     end
   end
 
-  describe "get_source/2" do
+  describe "exists?/1" do
     test "raises an exception if missing index", %{fake_id: doc_id} do
       assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.get_source(id: doc_id)
+        Document.exists?(id: doc_id)
       end
     end
 
     test "raises an exception if missing ID" do
       assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.get_source(index: @index_name)
-      end
-    end
-
-    test "returns a sucessful response", %{doc_ids: [doc_id | _]} do
-      assert {:ok, %{"message" => "Hello World 1!"}} =
-               Document.get_source(index: @index_name, id: doc_id)
-    end
-  end
-
-  describe "document_exists?/2" do
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.document_exists?(id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.document_exists?(index: @index_name)
+        Document.exists?(index: @index_name)
       end
     end
 
     test "returns a sucessful response", %{doc_ids: [doc_id | _], fake_id: fake_id} do
-      refute Document.document_exists?(index: @index_name, id: fake_id)
-      assert Document.document_exists?(index: @index_name, id: doc_id)
-    end
-  end
-
-  describe "source_exists?/2" do
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.source_exists?(id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.source_exists?(index: @index_name)
-      end
-    end
-
-    test "returns a sucessful response", %{doc_ids: [doc_id | _], fake_id: fake_id} do
-      refute Document.source_exists?(index: @index_name, id: fake_id)
-      assert Document.source_exists?(index: @index_name, id: doc_id)
+      refute Document.exists?(index: @index_name, id: fake_id)
+      assert Document.exists?(index: @index_name, id: doc_id)
     end
   end
 

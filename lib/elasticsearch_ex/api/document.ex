@@ -134,7 +134,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.get_document(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.get(index: "my-index-000001", id: "0")
       {:ok,
        %{
          "_id" => "0",
@@ -156,42 +156,25 @@ defmodule ElasticsearchEx.Api.Document do
          "found" => true
        }}
   """
-  @spec get_document(keyword()) :: ElasticsearchEx.response()
-  def get_document(opts \\ []) when is_list(opts) do
+  @spec get(keyword()) :: ElasticsearchEx.response()
+  def get(opts \\ []) when is_list(opts) do
     {index, document_id, opts} = extract_required_index_and_required_id!(opts)
 
     Client.get("#{index}/_doc/#{document_id}", nil, nil, opts)
   end
 
-  @doc """
-  Retrieves the specified JSON source from an index.
+  # TODO: Remove with v1.0.0
+  @doc false
+  @deprecated "Use ElasticsearchEx.Api.Document.get/1 instead"
+  def get_document(opts \\ []) when is_list(opts) do
+    get(opts)
+  end
 
-  ### Query parameters
-
-  Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html#docs-get-api-query-params)
-  for a detailed list of the parameters.
-
-  ### Examples
-
-      iex> ElasticsearchEx.Api.Document.get_source(index: "my-index-000001", id: "0")
-      {:ok,
-       %{
-         "@timestamp" => "2099-11-15T14:12:12",
-         "http" => %{
-           "request" => %{"method" => "get"},
-           "response" => %{"bytes" => 1_070_000, "status_code" => 200},
-           "version" => "1.1"
-         },
-         "message" => "GET /search HTTP/1.1 200 1070000",
-         "source" => %{"ip" => "127.0.0.1"},
-         "user" => %{"id" => "kimchy"}
-       }}
-  """
-  @spec get_source(keyword()) :: ElasticsearchEx.response()
+  # TODO: Remove with v1.0.0
+  @doc false
+  @deprecated "Use ElasticsearchEx.Api.Source.get/1 instead"
   def get_source(opts \\ []) when is_list(opts) do
-    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
-
-    Client.get("#{index}/_source/#{document_id}", nil, nil, opts)
+    ElasticsearchEx.Api.Source.get(opts)
   end
 
   @doc """
@@ -204,34 +187,28 @@ defmodule ElasticsearchEx.Api.Document do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.document_exists?(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.exists?(index: "my-index-000001", id: "0")
       true
   """
-  @spec document_exists?(keyword()) :: boolean()
-  def document_exists?(opts \\ []) when is_list(opts) do
+  @spec exists?(keyword()) :: boolean()
+  def exists?(opts \\ []) when is_list(opts) do
     {index, document_id, opts} = extract_required_index_and_required_id!(opts)
 
     Client.head("#{index}/_doc/#{document_id}", nil, opts) == :ok
   end
 
-  @doc """
-  Checks if the specified JSON source from an index exists.
+  # TODO: Remove with v1.0.0
+  @doc false
+  @deprecated "Use ElasticsearchEx.Api.Document.exists?/1 instead"
+  def document_exists?(opts \\ []) when is_list(opts) do
+    exists?(opts)
+  end
 
-  ### Query parameters
-
-  Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html#docs-get-api-query-params)
-  for a detailed list of the parameters.
-
-  ### Examples
-
-      iex> ElasticsearchEx.Api.Document.source_exists?(index: "my-index-000001", id: "0")
-      true
-  """
-  @spec source_exists?(keyword()) :: boolean()
+  # TODO: Remove with v1.0.0
+  @doc false
+  @deprecated "Use ElasticsearchEx.Api.Source.exists?/1 instead"
   def source_exists?(opts \\ []) when is_list(opts) do
-    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
-
-    Client.head("#{index}/_source/#{document_id}", nil, opts) == :ok
+    ElasticsearchEx.Api.Source.exists?(opts)
   end
 
   @doc """

@@ -26,6 +26,8 @@ defmodule ElasticsearchEx.ConnCase do
   end
 
   def create_index(index_name, properties) do
+    ElasticsearchEx.Client.delete("/#{index_name}", nil, nil)
+
     {:ok, _} =
       ElasticsearchEx.Client.put("/#{index_name}", nil, %{
         mappings: %{dynamic: :strict, properties: properties},
