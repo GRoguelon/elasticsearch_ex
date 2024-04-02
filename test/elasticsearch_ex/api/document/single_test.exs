@@ -93,6 +93,161 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
     end
   end
 
+  describe "multi_get/1" do
+    test "raises an exception if missing docs and ids" do
+      assert_raise ArgumentError,
+                   "missing option `docs` or `ids`",
+                   fn ->
+                     Document.multi_get()
+                   end
+    end
+  end
+
+  describe "multi_get/1 with :ids" do
+    test "raises an exception if missing IDs" do
+      assert_raise ArgumentError, "missing option `docs` or `ids`", fn ->
+        Document.multi_get(index: @index_name)
+      end
+    end
+
+    test "returns a sucessful response", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
+      assert {:ok,
+              %{
+                "docs" => [
+                  %{
+                    "_id" => ^doc_id,
+                    "_index" => @index_name,
+                    "_primary_term" => 1,
+                    "_seq_no" => 0,
+                    "_source" => %{"message" => "Hello World 1!"},
+                    "_version" => 1,
+                    "found" => true
+                  },
+                  %{
+                    "_id" => ^fake_id,
+                    "_index" => @index_name,
+                    "found" => false
+                  }
+                ]
+              }} = Document.multi_get(index: @index_name, ids: [doc_id, fake_id])
+    end
+  end
+
+  describe "multi_get/1 with :docs" do
+    test "raises an exception if missing ID" do
+      assert_raise ArgumentError, "missing option `docs` or `ids`", fn ->
+        Document.multi_get(index: @index_name)
+      end
+    end
+
+    test "raises an exception with index and binaries", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
+      assert_raise ArgumentError, "use the option `ids` instead of `docs`", fn ->
+        Document.multi_get(index: @index_name, docs: [doc_id, fake_id])
+      end
+    end
+
+    test "raises an exception with no index and binaries", %{
+      fake_id: fake_id,
+      doc_ids: [doc_id | _]
+    } do
+      assert_raise ArgumentError, "use the option `ids` instead of `docs`", fn ->
+        Document.multi_get(docs: [doc_id, fake_id])
+      end
+    end
+
+    test "returns a sucessful response with tuple", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
+      assert {:ok,
+              %{
+                "docs" => [
+                  %{
+                    "_id" => ^doc_id,
+                    "_index" => @index_name,
+                    "_primary_term" => 1,
+                    "_seq_no" => 0,
+                    "_source" => %{"message" => "Hello World 1!"},
+                    "_version" => 1,
+                    "found" => true
+                  },
+                  %{
+                    "_id" => ^fake_id,
+                    "_index" => @index_name,
+                    "found" => false
+                  }
+                ]
+              }} = Document.multi_get(docs: [{@index_name, doc_id}, {@index_name, fake_id}])
+    end
+
+    test "returns a sucessful response with map", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
+      assert {:ok,
+              %{
+                "docs" => [
+                  %{
+                    "_id" => ^doc_id,
+                    "_index" => @index_name,
+                    "_primary_term" => 1,
+                    "_seq_no" => 0,
+                    "_version" => 1,
+                    "found" => true
+                  },
+                  %{
+                    "_id" => ^fake_id,
+                    "_index" => @index_name,
+                    "found" => false
+                  }
+                ]
+              }} =
+               Document.multi_get(
+                 docs: [
+                   %{index: @index_name, id: doc_id, source: false},
+                   %{index: @index_name, id: fake_id}
+                 ]
+               )
+    end
+
+    test "returns a sucessful response with map 2", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
+      assert {:ok,
+              %{
+                "docs" => [
+                  %{
+                    "_id" => ^doc_id,
+                    "_index" => @index_name,
+                    "_primary_term" => 1,
+                    "_seq_no" => 0,
+                    "_version" => 1,
+                    "found" => true
+                  },
+                  %{
+                    "_id" => ^fake_id,
+                    "_index" => @index_name,
+                    "found" => false
+                  }
+                ]
+              }} =
+               Document.multi_get(
+                 docs: [
+                   %{_index: @index_name, _id: doc_id, _source: false},
+                   %{_index: @index_name, _id: fake_id}
+                 ]
+               )
+    end
+
+    test "raises an exception if no ID" do
+      assert_raise ArgumentError,
+                   ~s<missing option `id` in the map, got: `%{_index: "test_api_document_single"}`>,
+                   fn ->
+                     Document.multi_get(docs: [%{_index: @index_name}])
+                   end
+    end
+
+    test "raises an exception if no index", %{fake_id: fake_id} do
+      assert_raise ArgumentError,
+                   ~s<missing option `index` in the map, got: `%{_id: "#{fake_id}"}`>,
+                   fn ->
+                     Document.multi_get(docs: [%{_id: fake_id}])
+                   end
+    end
+  end
+
   describe "exists?/1" do
     test "raises an exception if missing index", %{fake_id: doc_id} do
       assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
