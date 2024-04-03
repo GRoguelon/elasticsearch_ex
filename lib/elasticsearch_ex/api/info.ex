@@ -7,8 +7,6 @@ defmodule ElasticsearchEx.Api.Info do
 
   ## Typespecs
 
-  @type index :: ElasticsearchEx.index()
-
   @type opts :: ElasticsearchEx.opts()
 
   ## Public functions

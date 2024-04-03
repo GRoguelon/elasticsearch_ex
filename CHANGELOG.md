@@ -5,6 +5,7 @@
 
 * **New features:**
   * Added `ElasticsearchEx.Api.Info.xpack/1`
+  * Added `ElasticsearchEx.Api.Usage.xpack/1`
 
 ## v1.1.0 (2024-04-04)
 

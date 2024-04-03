@@ -55,6 +55,7 @@ defmodule ElasticsearchEx.MixProject do
         API: [
           ElasticsearchEx.Api.Cat,
           ElasticsearchEx.Api.Info,
+          ElasticsearchEx.Api.Usage,
           ElasticsearchEx.Api.Document,
           ElasticsearchEx.Api.Document.Source,
           ElasticsearchEx.Api.Search
