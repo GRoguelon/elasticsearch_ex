@@ -41,6 +41,7 @@ defmodule ElasticsearchEx.Api.Document.Source do
          "user" => %{"id" => "kimchy"}
        }}
   """
+  @doc since: "1.0.0"
   @spec get(index(), document_id(), keyword()) :: ElasticsearchEx.response()
   def get(index, document_id, opts \\ [])
       when is_index(index) and is_document_id(document_id) and is_list(opts) do
@@ -60,6 +61,7 @@ defmodule ElasticsearchEx.Api.Document.Source do
       iex> ElasticsearchEx.Api.Document.Source.exists?("0", "my-index-000001")
       true
   """
+  @doc since: "1.0.0"
   @spec exists?(index(), document_id(), keyword()) :: boolean()
   def exists?(index, document_id, opts \\ [])
       when is_index(index) and is_document_id(document_id) and is_list(opts) do

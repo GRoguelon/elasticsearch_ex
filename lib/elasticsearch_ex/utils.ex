@@ -5,6 +5,11 @@ defmodule ElasticsearchEx.Utils do
 
   ## Public functions
 
+  @spec generate_path(Enumerable.t()) :: binary()
+  def generate_path(segments) when is_enum(segments) and segments != [] do
+    ["" | segments] |> Enum.reject(&is_nil/1) |> Enum.join("/")
+  end
+
   @spec format_path(nil | Enumerable.t() | binary(), atom() | binary()) :: binary()
   def format_path(nil, operation) when is_identifier(operation) do
     "/#{operation}"

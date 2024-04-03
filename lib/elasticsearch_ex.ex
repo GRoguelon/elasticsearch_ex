@@ -22,12 +22,14 @@ defmodule ElasticsearchEx do
   @doc """
   Refer to `ElasticsearchEx.Api.Search.search/2` documentation.
   """
+  @doc since: "1.0.0"
   @spec search(query(), index(), keyword()) :: response()
   defdelegate search(query, index \\ nil, opts \\ []), to: ElasticsearchEx.Api.Search
 
   @doc """
   Refer to `ElasticsearchEx.Api.Document.index/4` documentation.
   """
+  @doc since: "1.0.0"
   @spec index(source(), index(), nil | document_id(), keyword()) :: response()
   defdelegate index(source, index, document_id \\ nil, opts \\ []),
     to: ElasticsearchEx.Api.Document

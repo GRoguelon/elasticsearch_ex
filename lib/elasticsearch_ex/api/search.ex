@@ -82,6 +82,7 @@ defmodule ElasticsearchEx.Api.Search do
          "took" => 5
        }}
   """
+  @doc since: "1.0.0"
   @spec search(query(), index(), opts()) :: ElasticsearchEx.response()
   def search(query, index \\ nil, opts \\ [])
       when is_map(query) and is_index(index) and is_list(opts) do
@@ -171,6 +172,7 @@ defmodule ElasticsearchEx.Api.Search do
          "took" => 21
        }}
   """
+  @doc since: "1.0.0"
   @spec multi_search([query()], nil | index(), opts()) :: ElasticsearchEx.response()
   def multi_search(queries, index \\ nil, opts \\ []) when is_list(queries) and is_list(opts) do
     index
@@ -226,6 +228,7 @@ defmodule ElasticsearchEx.Api.Search do
          "start_time_in_millis" => 1583945890986
        }}
   """
+  @doc since: "1.0.0"
   @spec async_search(query(), nil | index(), opts()) :: ElasticsearchEx.response()
   def async_search(query, index \\ nil, opts \\ [])
       when is_map(query) and is_list(opts) do
@@ -268,6 +271,7 @@ defmodule ElasticsearchEx.Api.Search do
          "start_time_in_millis" => 1583945890986
        }}
   """
+  @doc since: "1.0.0"
   @spec get_async_search(binary(), opts()) :: ElasticsearchEx.response()
   def get_async_search(async_search_id, opts \\ [])
       when is_binary(async_search_id) and is_list(opts) do
@@ -296,6 +300,7 @@ defmodule ElasticsearchEx.Api.Search do
          "start_time_in_millis" => 1583945890986
        }}
   """
+  @doc since: "1.0.0"
   @spec get_async_search_status(binary(), opts()) :: ElasticsearchEx.response()
   def get_async_search_status(async_search_id, opts \\ [])
       when is_binary(async_search_id) and is_list(opts) do
@@ -312,6 +317,7 @@ defmodule ElasticsearchEx.Api.Search do
       iex> ElasticsearchEx.Api.Search.delete_async_search("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
       nil
   """
+  @doc since: "1.0.0"
   @spec delete_async_search(binary(), opts()) :: ElasticsearchEx.response()
   def delete_async_search(async_search_id, opts \\ [])
       when is_binary(async_search_id) and is_list(opts) do
@@ -334,6 +340,7 @@ defmodule ElasticsearchEx.Api.Search do
          "id" => "gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA=="
        }}
   """
+  @doc since: "1.0.0"
   @spec create_pit(index(), opts()) :: ElasticsearchEx.response()
   def create_pit(index, opts \\ []) when is_index(index) and is_list(opts) do
     index
@@ -351,6 +358,7 @@ defmodule ElasticsearchEx.Api.Search do
       iex> ElasticsearchEx.Api.Search.close_pit("gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA==")
       {:ok, %{"num_freed" => 1, "succeeded" => true}}
   """
+  @doc since: "1.0.0"
   @spec close_pit(binary(), opts()) :: ElasticsearchEx.response()
   def close_pit(pit_id, opts \\ []) when is_binary(pit_id) and is_list(opts) do
     Client.delete("/_pit", nil, %{id: pit_id}, opts)
@@ -375,6 +383,7 @@ defmodule ElasticsearchEx.Api.Search do
          "terms" => ["kibana"]
        }}
   """
+  @doc since: "1.0.0"
   @spec terms_enum(map(), index(), opts()) :: ElasticsearchEx.response()
   def terms_enum(query, index, opts \\ [])
       when is_map(query) and is_index(index) and is_list(opts) do
@@ -412,6 +421,7 @@ defmodule ElasticsearchEx.Api.Search do
          "took" => 1
        }}
   """
+  @doc since: "1.0.0"
   @spec get_scroll(binary(), opts()) :: ElasticsearchEx.response()
   def get_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) and is_list(opts) do
     Client.post("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
@@ -427,6 +437,7 @@ defmodule ElasticsearchEx.Api.Search do
       ...> )
       {:ok, %{"num_freed" => 1, "succeeded" => true}}
   """
+  @doc since: "1.0.0"
   @spec clear_scroll(binary(), opts()) :: ElasticsearchEx.response()
   def clear_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) and is_list(opts) do
     Client.delete("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
@@ -448,6 +459,7 @@ defmodule ElasticsearchEx.Api.Search do
   for a detailed list of the body values.
 
   """
+  @doc since: "1.0.0"
   @spec explain(query(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def explain(query, index, document_id, opts \\ [])
       when is_map(query) and is_index(index) and is_document_id(document_id) and is_list(opts) do
@@ -466,6 +478,7 @@ defmodule ElasticsearchEx.Api.Search do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-field-caps.html#search-field-caps-api-query-params)
   for a detailed list of the parameters.
   """
+  @doc since: "1.0.0"
   @spec field_capabilities(binary() | [binary()], nil | index(), opts()) ::
           ElasticsearchEx.response()
   def field_capabilities(fields, index \\ nil, opts \\ []) when is_list(opts) do
@@ -495,6 +508,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   **Warning:** The Profile API is a debugging tool and adds significant overhead to search execution.
   """
+  @doc since: "1.0.0"
   @spec profile(query(), nil | index(), opts()) :: ElasticsearchEx.response()
   def profile(query, index \\ nil, opts \\ []) when is_map(query) and is_list(opts) do
     query
@@ -510,6 +524,7 @@ defmodule ElasticsearchEx.Api.Search do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-rank-eval.html#search-rank-eval-api-query-params)
   for a detailed list of the parameters.
   """
+  @doc since: "1.0.0"
   @spec rank_evaluation(map(), index(), opts()) :: ElasticsearchEx.response()
   def rank_evaluation(body, index, opts \\ [])
       when is_map(body) and is_index(index) and is_list(opts) do
@@ -526,6 +541,7 @@ defmodule ElasticsearchEx.Api.Search do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-shards.html#search-shards-api-query-params)
   for a detailed list of the parameters.
   """
+  @doc since: "1.0.0"
   @spec search_shards(index(), opts()) :: ElasticsearchEx.response()
   def search_shards(index, opts \\ []) when is_index(index) and is_list(opts) do
     index
@@ -541,6 +557,7 @@ defmodule ElasticsearchEx.Api.Search do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html#search-validate-api-query-params)
   for a detailed list of the parameters.
   """
+  @doc since: "1.0.0"
   @spec validate(query(), nil | index(), opts()) :: ElasticsearchEx.response()
   def validate(query, index \\ nil, opts \\ []) when is_map(query) and is_list(opts) do
     index
@@ -558,6 +575,7 @@ defmodule ElasticsearchEx.Api.Search do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-template-api.html#search-template-api-query-params)
   for a detailed list of the parameters.
   """
+  @doc since: "1.0.0"
   @spec search_template(map(), nil | index(), opts()) :: ElasticsearchEx.response()
   def search_template(body, index \\ nil, opts \\ []) when is_map(body) and is_list(opts) do
     unless is_map_key(body, :id) do
@@ -577,6 +595,7 @@ defmodule ElasticsearchEx.Api.Search do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-search-template.html#multi-search-template-api-query-params)
   for a detailed list of the parameters.
   """
+  @doc since: "1.0.0"
   @spec multi_search_template(Enumerable.t(), nil | index(), opts()) :: ElasticsearchEx.response()
   def multi_search_template(body, index \\ nil, opts \\ [])
       when is_enum(body) and is_list(opts) do
@@ -602,6 +621,7 @@ defmodule ElasticsearchEx.Api.Search do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/render-search-template-api.html#render-search-template-api-request-body)
   for a detailed list of the request body.
   """
+  @doc since: "1.0.0"
   @spec render_search_template(map(), nil | binary(), opts()) :: ElasticsearchEx.response()
   def render_search_template(body, template_id \\ nil, opts \\ [])
       when is_map(body) and is_list(opts) do
@@ -620,6 +640,7 @@ defmodule ElasticsearchEx.Api.Search do
   Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-vector-tile-api.html#search-vector-tile-api-query-params)
   for a detailed list of the parameters.
   """
+  @doc since: "1.0.0"
   @spec search_vector_tile(index(), atom() | binary(), integer(), integer(), integer(), opts()) ::
           ElasticsearchEx.response()
   def search_vector_tile(index, field, zoom, x, y, opts \\ [])

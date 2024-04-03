@@ -5,6 +5,16 @@ defmodule ElasticsearchEx.UtilsTest do
 
   ## Tests
 
+  describe "generate_path/1" do
+    test "returns a binary with non-nil values" do
+      assert Utils.generate_path([:_search, "my-index-1"]) == "/_search/my-index-1"
+    end
+
+    test "returns a binary with nil values" do
+      assert Utils.generate_path([:_search, nil]) == "/_search"
+    end
+  end
+
   describe "format_path/2" do
     test "returns a binary with nil" do
       assert Utils.format_path(nil, :_test) == "/_test"

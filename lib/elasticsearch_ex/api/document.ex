@@ -82,6 +82,7 @@ defmodule ElasticsearchEx.Api.Document do
          "result" => "created"
        }}
   """
+  @doc since: "1.0.0"
   @spec index(source(), index(), nil | document_id(), opts()) :: ElasticsearchEx.response()
   def index(source, index, document_id \\ nil, opts \\ [])
 
@@ -130,6 +131,7 @@ defmodule ElasticsearchEx.Api.Document do
          "result" => "created"
        }}
   """
+  @doc since: "1.0.0"
   @spec create(source(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def create(source, index, document_id, opts \\ [])
       when is_map(source) and is_index(index) and is_document_id(document_id) and is_list(opts) do
@@ -168,6 +170,7 @@ defmodule ElasticsearchEx.Api.Document do
          "found" => true
        }}
   """
+  @doc since: "1.0.0"
   @spec get(index(), document_id(), opts()) :: ElasticsearchEx.response()
   def get(index, document_id, opts \\ [])
       when is_index(index) and is_document_id(document_id) and is_list(opts) do
@@ -211,6 +214,7 @@ defmodule ElasticsearchEx.Api.Document do
          ]
        }}
   """
+  @doc since: "1.0.0"
   @spec get_ids([document_id()], index(), opts()) :: ElasticsearchEx.response()
   def get_ids(document_ids, index, opts \\ [])
 
@@ -269,6 +273,7 @@ defmodule ElasticsearchEx.Api.Document do
          ]
        }}
   """
+  @doc since: "1.0.0"
   @spec get_docs([map()], nil | index(), opts()) :: ElasticsearchEx.response()
   def get_docs(documents, index \\ nil, opts \\ [])
       when is_list(documents) and (is_nil(index) or is_index(index)) and is_list(opts) do
@@ -363,6 +368,7 @@ defmodule ElasticsearchEx.Api.Document do
       iex> ElasticsearchEx.Api.Document.multi_get([{"my-index-000001", "BrS8nI4BpDBWjw9UUTk5"}, "my-index-000001"])
       ** (ArgumentError) invalid value, expected a list of maps or document IDs, got: `[{"my-index-000001", "BrS8nI4BpDBWjw9UUTk5"}, "my-index-000001"]`
   """
+  @doc since: "1.0.0"
   @spec multi_get(list(), nil | index(), opts()) :: ElasticsearchEx.response()
   def multi_get(values, index \\ nil, opts \\ []) when is_list(values) and is_list(opts) do
     cond do
@@ -391,6 +397,7 @@ defmodule ElasticsearchEx.Api.Document do
       iex> ElasticsearchEx.Api.Document.exists?(index: "my-index-000001", id: "0")
       true
   """
+  @doc since: "1.0.0"
   @spec exists?(index(), document_id(), opts()) :: boolean()
   def exists?(index, document_id, opts \\ [])
       when is_index(index) and is_document_id(document_id) and is_list(opts) do
@@ -429,6 +436,7 @@ defmodule ElasticsearchEx.Api.Document do
          ...
        }}
   """
+  @doc since: "1.0.0"
   @spec delete(index(), document_id(), opts()) :: ElasticsearchEx.response()
   def delete(index, document_id, opts \\ [])
       when is_index(index) and is_document_id(document_id) and is_list(opts) do
@@ -472,6 +480,7 @@ defmodule ElasticsearchEx.Api.Document do
          "result" => "updated"
        }}
   """
+  @doc since: "1.0.0"
   @spec update(source(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def update(source, index, document_id, opts \\ [])
       when is_map(source) and is_index(index) and is_document_id(document_id) and is_list(opts) do

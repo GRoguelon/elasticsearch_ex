@@ -7,7 +7,7 @@
 ```elixir
 def deps do
   [
-    {:elasticsearch_ex, "~> 0.5"}
+    {:elasticsearch_ex, "~> 1.1"}
   ]
 end
 ```
@@ -36,14 +36,14 @@ config :elasticsearch_ex,
 ### Index a document
 
 ```elixir
-ElasticsearchEx.index(%{message: "Hello World!"}, index: "my-index")
+ElasticsearchEx.index(%{message: "Hello World!"}, "my-index")
 ```
 
 ### Search your cluster
 
 You can easily query your local Elasticsearch with:
 ```elixir
-ElasticsearchEx.search(%{query: %{match_all: %{}}, size: 1}, index: "my-index")
+ElasticsearchEx.search(%{query: %{match_all: %{}}, size: 1}, "my-index")
 ```
 
 Response:

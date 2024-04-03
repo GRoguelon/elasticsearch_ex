@@ -1,6 +1,35 @@
 # Changelog
 
 
+## v1.1.0 (2024-04-04)
+
+* **New features:**
+  * Added `ElasticsearchEx.Api.Cat.aliases/2`
+  * Added `ElasticsearchEx.Api.Cat.allocation/2`
+  * Added `ElasticsearchEx.Api.Cat.anomaly_detectors/2`
+  * Added `ElasticsearchEx.Api.Cat.component_templates/2`
+  * Added `ElasticsearchEx.Api.Cat.count/2`
+  * Added `ElasticsearchEx.Api.Cat.data_frame_analytics/2`
+  * Added `ElasticsearchEx.Api.Cat.datafeeds/2`
+  * Added `ElasticsearchEx.Api.Cat.fielddata/2`
+  * Added `ElasticsearchEx.Api.Cat.health/2`
+  * Added `ElasticsearchEx.Api.Cat.indices/2`
+  * Added `ElasticsearchEx.Api.Cat.master/1`
+  * Added `ElasticsearchEx.Api.Cat.nodeattrs/1`
+  * Added `ElasticsearchEx.Api.Cat.nodes/1`
+  * Added `ElasticsearchEx.Api.Cat.pending_tasks/1`
+  * Added `ElasticsearchEx.Api.Cat.plugins/1`
+  * Added `ElasticsearchEx.Api.Cat.recovery/2`
+  * Added `ElasticsearchEx.Api.Cat.repositories/1`
+  * Added `ElasticsearchEx.Api.Cat.segments/2`
+  * Added `ElasticsearchEx.Api.Cat.shards/2`
+  * Added `ElasticsearchEx.Api.Cat.snapshots/2`
+  * Added `ElasticsearchEx.Api.Cat.tasks/1`
+  * Added `ElasticsearchEx.Api.Cat.templates/2`
+  * Added `ElasticsearchEx.Api.Cat.thread_pool/2`
+  * Added `ElasticsearchEx.Api.Cat.trained_models/1`
+  * Added `ElasticsearchEx.Api.Cat.transforms/2`
+  *
 ## v1.0.0 (2024-04-03)
 
 * **Breaking Changes:**
