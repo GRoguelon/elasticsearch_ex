@@ -15,7 +15,7 @@ defmodule ElasticsearchEx.Client do
 
   ## Public functions
 
-  def request(method, path, headers, body, opts \\ []) do
+  def request(method, path, headers, body, opts \\ []) when is_list(opts) do
     {cluster, opts} = get_cluster_configuration(opts)
     {http_opts, query} = prepare_options(cluster, opts)
     uri = prepare_uri(cluster, path, query)

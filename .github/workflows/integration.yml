@@ -14,6 +14,9 @@ concurrency:
   group: ${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+env:
+  HEX_HTTP_TIMEOUT: 120
+
 jobs:
   format:
     name: Check formatting

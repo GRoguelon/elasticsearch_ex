@@ -85,7 +85,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec search(query(), index(), opts()) :: ElasticsearchEx.response()
   def search(query, index \\ nil, opts \\ [])
-      when is_map(query) and is_index(index) and is_list(opts) do
+      when is_map(query) and is_index(index) do
     index
     |> format_path(:_search)
     |> Client.post(nil, query, opts)
@@ -174,7 +174,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec multi_search([query()], nil | index(), opts()) :: ElasticsearchEx.response()
-  def multi_search(queries, index \\ nil, opts \\ []) when is_list(queries) and is_list(opts) do
+  def multi_search(queries, index \\ nil, opts \\ []) when is_list(queries) do
     index
     |> format_path(:_msearch)
     |> Client.post(@ndjson_headers, queries, opts)
@@ -231,7 +231,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec async_search(query(), nil | index(), opts()) :: ElasticsearchEx.response()
   def async_search(query, index \\ nil, opts \\ [])
-      when is_map(query) and is_list(opts) do
+      when is_map(query) do
     index
     |> format_path(:_async_search)
     |> Client.post(nil, query, opts)
@@ -274,7 +274,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec get_async_search(binary(), opts()) :: ElasticsearchEx.response()
   def get_async_search(async_search_id, opts \\ [])
-      when is_binary(async_search_id) and is_list(opts) do
+      when is_binary(async_search_id) do
     Client.get("/_async_search/#{async_search_id}", nil, nil, opts)
   end
 
@@ -303,7 +303,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec get_async_search_status(binary(), opts()) :: ElasticsearchEx.response()
   def get_async_search_status(async_search_id, opts \\ [])
-      when is_binary(async_search_id) and is_list(opts) do
+      when is_binary(async_search_id) do
     Client.get("/_async_search/status/#{async_search_id}", nil, nil, opts)
   end
 
@@ -320,7 +320,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec delete_async_search(binary(), opts()) :: ElasticsearchEx.response()
   def delete_async_search(async_search_id, opts \\ [])
-      when is_binary(async_search_id) and is_list(opts) do
+      when is_binary(async_search_id) do
     Client.delete("/_async_search/#{async_search_id}", nil, nil, opts)
   end
 
@@ -342,7 +342,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec create_pit(index(), opts()) :: ElasticsearchEx.response()
-  def create_pit(index, opts \\ []) when is_index(index) and is_list(opts) do
+  def create_pit(index, opts \\ []) when is_index(index) do
     index
     |> format_path(:_pit)
     |> Client.post(nil, "", opts)
@@ -360,7 +360,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec close_pit(binary(), opts()) :: ElasticsearchEx.response()
-  def close_pit(pit_id, opts \\ []) when is_binary(pit_id) and is_list(opts) do
+  def close_pit(pit_id, opts \\ []) when is_binary(pit_id) do
     Client.delete("/_pit", nil, %{id: pit_id}, opts)
   end
 
@@ -386,7 +386,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec terms_enum(map(), index(), opts()) :: ElasticsearchEx.response()
   def terms_enum(query, index, opts \\ [])
-      when is_map(query) and is_index(index) and is_list(opts) do
+      when is_map(query) and is_index(index) do
     index
     |> format_path(:_terms_enum)
     |> Client.post(nil, query, opts)
@@ -423,7 +423,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec get_scroll(binary(), opts()) :: ElasticsearchEx.response()
-  def get_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) and is_list(opts) do
+  def get_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) do
     Client.post("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
   end
 
@@ -439,7 +439,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec clear_scroll(binary(), opts()) :: ElasticsearchEx.response()
-  def clear_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) and is_list(opts) do
+  def clear_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) do
     Client.delete("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
   end
 
@@ -462,7 +462,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec explain(query(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def explain(query, index, document_id, opts \\ [])
-      when is_map(query) and is_index(index) and is_document_id(document_id) and is_list(opts) do
+      when is_map(query) and is_index(index) and is_document_id(document_id) do
     index
     |> format_path(:_explain, document_id)
     |> Client.post(nil, query, opts)
@@ -481,7 +481,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec field_capabilities(binary() | [binary()], nil | index(), opts()) ::
           ElasticsearchEx.response()
-  def field_capabilities(fields, index \\ nil, opts \\ []) when is_list(opts) do
+  def field_capabilities(fields, index \\ nil, opts \\ []) do
     fields_str =
       cond do
         is_binary(fields) ->
@@ -510,7 +510,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec profile(query(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def profile(query, index \\ nil, opts \\ []) when is_map(query) and is_list(opts) do
+  def profile(query, index \\ nil, opts \\ []) when is_map(query) do
     query
     |> Map.put(:profile, true)
     |> search(index, opts)
@@ -527,7 +527,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec rank_evaluation(map(), index(), opts()) :: ElasticsearchEx.response()
   def rank_evaluation(body, index, opts \\ [])
-      when is_map(body) and is_index(index) and is_list(opts) do
+      when is_map(body) and is_index(index) do
     index
     |> format_path(:_rank_eval)
     |> Client.post(nil, body, opts)
@@ -543,7 +543,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec search_shards(index(), opts()) :: ElasticsearchEx.response()
-  def search_shards(index, opts \\ []) when is_index(index) and is_list(opts) do
+  def search_shards(index, opts \\ []) when is_index(index) do
     index
     |> format_path(:_search_shards)
     |> Client.get(nil, nil, opts)
@@ -559,7 +559,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec validate(query(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def validate(query, index \\ nil, opts \\ []) when is_map(query) and is_list(opts) do
+  def validate(query, index \\ nil, opts \\ []) when is_map(query) do
     index
     |> format_path(:"_validate/query")
     |> Client.post(nil, query, opts)
@@ -577,7 +577,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec search_template(map(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def search_template(body, index \\ nil, opts \\ []) when is_map(body) and is_list(opts) do
+  def search_template(body, index \\ nil, opts \\ []) when is_map(body) do
     unless is_map_key(body, :id) do
       raise ArgumentError, "missing key `:id` in the map, got: `#{inspect(body)}`"
     end
@@ -598,7 +598,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec multi_search_template(Enumerable.t(), nil | index(), opts()) :: ElasticsearchEx.response()
   def multi_search_template(body, index \\ nil, opts \\ [])
-      when is_enum(body) and is_list(opts) do
+      when is_enum(body) do
     queries =
       Enum.flat_map(body, fn
         {header, body} when is_map(header) and is_map(body) ->
@@ -624,7 +624,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec render_search_template(map(), nil | binary(), opts()) :: ElasticsearchEx.response()
   def render_search_template(body, template_id \\ nil, opts \\ [])
-      when is_map(body) and is_list(opts) do
+      when is_map(body) do
     path = [:"_render/template", template_id] |> Enum.reject(&is_nil/1) |> Enum.join("/")
 
     Client.post(path, nil, body, opts)
@@ -645,7 +645,7 @@ defmodule ElasticsearchEx.Api.Search do
           ElasticsearchEx.response()
   def search_vector_tile(index, field, zoom, x, y, opts \\ [])
       when is_index(index) and is_identifier(field) and is_integer(zoom) and zoom in 0..29 and
-             is_integer(x) and is_integer(y) and is_list(opts) do
+             is_integer(x) and is_integer(y) do
     Client.get("#{index}/_mvt/#{field}/#{zoom}/#{x}/#{y}", nil, nil, opts)
   end
 end

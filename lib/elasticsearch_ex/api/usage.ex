@@ -313,7 +313,7 @@ defmodule ElasticsearchEx.Api.Usage do
   """
   @doc since: "1.2.0"
   @spec xpack(opts()) :: ElasticsearchEx.response()
-  def xpack(opts \\ []) when is_list(opts) do
+  def xpack(opts \\ []) do
     Client.get("/_xpack/usage", nil, nil, opts)
   end
 end
