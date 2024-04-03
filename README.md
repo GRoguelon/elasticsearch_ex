@@ -7,7 +7,7 @@
 ```elixir
 def deps do
   [
-    {:elasticsearch_ex, "~> 1.1"}
+    {:elasticsearch_ex, "~> 1.2"}
   ]
 end
 ```
