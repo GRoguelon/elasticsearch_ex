@@ -6,6 +6,12 @@
 * **New features:**
   * Added `ElasticsearchEx.Stream` module to stream documents
 
+* **Changes:**
+  * Removed extra `is_list(opts)` from the API because it's already checked in the HTTP client
+
+* **Bug fixes:**
+  * Fixed a bug on `ElasticsearchEx.Api.Search.search/2` to allow `index` to be `nil`
+
 ## v1.2.0 (2024-04-04)
 
 * **New features:**

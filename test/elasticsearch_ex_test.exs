@@ -12,4 +12,10 @@ defmodule ElasticsearchExTest do
       assert {:index, 4} in ElasticsearchEx.__info__(:functions)
     end
   end
+
+  describe "stream/3" do
+    test "exposes a function of arity of 3" do
+      assert {:stream, 3} in ElasticsearchEx.__info__(:functions)
+    end
+  end
 end
