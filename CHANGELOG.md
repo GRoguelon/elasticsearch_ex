@@ -1,16 +1,46 @@
 # Changelog
 
 
-## v0.7.0
+## v1.0.0 (2024-04-03)
+
+* **Breaking Changes:**
+
+  Changed the signatures of the functions to have dedicated arguments alongside options.
 
 * **New features:**
-  * Added `ElasticsearchEx.Api.Document.multi_get/1`
+  * Added `ElasticsearchEx.Api.Document.Source.get/3`
+  * Added `ElasticsearchEx.Api.Document.Source.exists?/3`
+  * Added `ElasticsearchEx.Api.Document.get_ids/3`
+  * Added `ElasticsearchEx.Api.Document.get_docs/3`
+  * Added `ElasticsearchEx.Api.Document.multi_get/3`
+  * Added `ElasticsearchEx.Api.Search.explain/4`
+  * Added `ElasticsearchEx.Api.Search.field_capabilities/3`
+  * Added `ElasticsearchEx.Api.Search.profile/3`
+  * Added `ElasticsearchEx.Api.Search.rank_evaluation/3`
+  * Added `ElasticsearchEx.Api.Search.search_shards/2`
+  * Added `ElasticsearchEx.Api.Search.validate/3`
+  * Added `ElasticsearchEx.Api.Search.search_template/3`
+  * Added `ElasticsearchEx.Api.Search.multi_search_template/3`
+  * Added `ElasticsearchEx.Api.Search.render_search_template/3`
+  * Added `ElasticsearchEx.Api.Search.search_vector_tile/6`
 
 * **Changes:**
-  * Renamed `ElasticsearchEx.Api.Document.get_document/1` to `ElasticsearchEx.Api.Document.get/1`
-  * Moved `ElasticsearchEx.Api.Document.get_source/1` to `ElasticsearchEx.Api.Document.Source.get/1`
-  * Renamed `ElasticsearchEx.Api.Document.document_exists?/1` to `ElasticsearchEx.Api.Document.exists?/1`
-  * Moved `ElasticsearchEx.Api.Document.source_exists?/1` by `ElasticsearchEx.Api.Document.Source.exists?/1`
+  * Rewrote functions to extract arguments from options:
+
+    * `ElasticsearchEx.Api.Document.index/4`
+    * `ElasticsearchEx.Api.Document.create/4`
+    * `ElasticsearchEx.Api.Document.get/3`
+    * `ElasticsearchEx.Api.Document.exists?/3`
+    * `ElasticsearchEx.Api.Document.update/4`
+    * `ElasticsearchEx.Api.Document.delete/3`
+    * `ElasticsearchEx.Api.Search.search/3`
+    * `ElasticsearchEx.Api.Search.multi_search/3`
+    * `ElasticsearchEx.Api.Search.async_search/3`
+    * `ElasticsearchEx.Api.Search.get_async_search/2`
+    * `ElasticsearchEx.Api.Search.get_async_search_status/2`
+    * `ElasticsearchEx.Api.Search.delete_async_search/2`
+    * `ElasticsearchEx.Api.Search.create_pit/2`
+    * `ElasticsearchEx.Api.Search.close_pit/2`
 
 ## v0.6.2 (2024-04-01)
 
