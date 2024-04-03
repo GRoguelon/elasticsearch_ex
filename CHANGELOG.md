@@ -1,7 +1,7 @@
 # Changelog
 
 
-## v1.2.0
+## v1.2.0 (2024-04-04)
 
 * **New features:**
   * Added `ElasticsearchEx.Api.Info.xpack/1`
