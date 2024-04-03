@@ -196,7 +196,7 @@ defmodule ElasticsearchEx.Api.Search.TestingTest do
                          "first_relevant" => -1
                        }
                      },
-                     "metric_score" => 0.0,
+                     "metric_score" => +0.0,
                      "unrated_docs" => [
                        %{
                          "_id" => _,
@@ -210,7 +210,7 @@ defmodule ElasticsearchEx.Api.Search.TestingTest do
                    }
                  },
                  "failures" => %{},
-                 "metric_score" => 0.0
+                 "metric_score" => +0.0
                }
              } =
                Search.rank_evaluation(
