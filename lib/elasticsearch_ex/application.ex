@@ -7,6 +7,8 @@ defmodule ElasticsearchEx.Application do
 
   @impl true
   def start(_type, _args) do
+    :erlang.system_flag(:backtrace_depth, 20)
+
     children = [
       # Starts a worker by calling: ElasticsearchEx.Worker.start_link(arg)
       # {ElasticsearchEx.Worker, arg}

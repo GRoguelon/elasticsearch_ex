@@ -3,12 +3,17 @@ defmodule ElasticsearchEx.Api.Document.Source do
   Provides the APIs for document source operations.
   """
 
-  import ElasticsearchEx.Api.Utils,
-    only: [
-      extract_required_index_and_required_id!: 1
-    ]
+  import ElasticsearchEx.Guards
 
   alias ElasticsearchEx.Client
+
+  ## Typespecs
+
+  @type document_id :: ElasticsearchEx.document_id()
+
+  @type index :: ElasticsearchEx.index()
+
+  @type opts :: ElasticsearchEx.opts()
 
   ## Public functions
 
@@ -22,7 +27,7 @@ defmodule ElasticsearchEx.Api.Document.Source do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Source.get(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.Source.get("0", "my-index-000001")
       {:ok,
        %{
          "@timestamp" => "2099-11-15T14:12:12",
@@ -36,11 +41,10 @@ defmodule ElasticsearchEx.Api.Document.Source do
          "user" => %{"id" => "kimchy"}
        }}
   """
-  @spec get(keyword()) :: ElasticsearchEx.response()
-  def get(opts \\ []) when is_list(opts) do
-    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
-
-    Client.get("#{index}/_source/#{document_id}", nil, nil, opts)
+  @spec get(index(), document_id(), keyword()) :: ElasticsearchEx.response()
+  def get(index, document_id, opts \\ [])
+      when is_index(index) and is_document_id(document_id) and is_list(opts) do
+    Client.get("/#{index}/_source/#{document_id}", nil, nil, opts)
   end
 
   @doc """
@@ -53,13 +57,12 @@ defmodule ElasticsearchEx.Api.Document.Source do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Source.exists?(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.Api.Document.Source.exists?("0", "my-index-000001")
       true
   """
-  @spec exists?(keyword()) :: boolean()
-  def exists?(opts \\ []) when is_list(opts) do
-    {index, document_id, opts} = extract_required_index_and_required_id!(opts)
-
-    Client.head("#{index}/_source/#{document_id}", nil, opts) == :ok
+  @spec exists?(index(), document_id(), keyword()) :: boolean()
+  def exists?(index, document_id, opts \\ [])
+      when is_index(index) and is_document_id(document_id) and is_list(opts) do
+    Client.head("/#{index}/_source/#{document_id}", nil, opts) == :ok
   end
 end

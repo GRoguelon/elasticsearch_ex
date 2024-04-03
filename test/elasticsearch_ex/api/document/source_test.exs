@@ -5,7 +5,7 @@ defmodule ElasticsearchEx.Api.Document.SourceTest do
 
   ## Module attributes
 
-  @index_name "test_api_source"
+  @index_name "test_api_document_source"
 
   ## Tests
 
@@ -18,39 +18,20 @@ defmodule ElasticsearchEx.Api.Document.SourceTest do
   end
 
   describe "get/1" do
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Source.get(id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Source.get(index: @index_name)
-      end
-    end
-
     test "returns a sucessful response", %{doc_ids: [doc_id | _]} do
-      assert {:ok, %{"message" => "Hello World 1!"}} = Source.get(index: @index_name, id: doc_id)
+      assert {:ok, %{"message" => "Hello World 1!"}} =
+               Source.get(@index_name, doc_id, _source_includes: "message")
+    end
+
+    test "returns a sucessful response 2", %{doc_ids: [doc_id | _]} do
+      assert {:ok, %{}} = Source.get(@index_name, doc_id, _source_includes: "message2")
     end
   end
 
   describe "exists?/1" do
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Source.exists?(id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Source.exists?(index: @index_name)
-      end
-    end
-
     test "returns a sucessful response", %{doc_ids: [doc_id | _], fake_id: fake_id} do
-      refute Source.exists?(index: @index_name, id: fake_id)
-      assert Source.exists?(index: @index_name, id: doc_id)
+      refute Source.exists?(@index_name, fake_id)
+      assert Source.exists?(@index_name, doc_id)
     end
   end
 end

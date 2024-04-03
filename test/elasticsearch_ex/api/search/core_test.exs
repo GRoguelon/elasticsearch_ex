@@ -16,7 +16,7 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
     {:ok, doc_ids: index_documents(@index_name, 3)}
   end
 
-  describe "search/2" do
+  describe "search/3" do
     test "returns a sucessful response", %{doc_ids: [doc_id | _]} do
       assert {:ok,
               %{
@@ -35,11 +35,11 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
                 },
                 "timed_out" => false,
                 "took" => _took
-              }} = Search.search(%{query: %{term: %{_id: doc_id}}, size: 1}, index: @index_name)
+              }} = Search.search(%{query: %{term: %{_id: doc_id}}, size: 1}, @index_name)
     end
   end
 
-  describe "multi_search/2" do
+  describe "multi_search/3" do
     test "returns a sucessful response", %{doc_ids: [doc_id1 | [doc_id2 | _]]} do
       assert {
                :ok,
@@ -101,12 +101,12 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
                    %{index: @index_name},
                    %{query: %{term: %{_id: doc_id2}}, _source: false, size: 1}
                  ],
-                 index: @index_name
+                 @index_name
                )
     end
   end
 
-  describe "async_search/2" do
+  describe "async_search/3" do
     test "returns a sucessful response", %{doc_ids: [doc_id | _]} do
       assert {:ok,
               %{
@@ -181,10 +181,6 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
   end
 
   describe "create_pit/1" do
-    test "raises an exception if missing index" do
-      assert_raise KeyError, fn -> Search.create_pit() end
-    end
-
     test "returns a sucessful response" do
       assert {:ok, %{"id" => pit_id}} = create_pit()
       assert is_binary(pit_id)
@@ -200,12 +196,6 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
   end
 
   describe "terms_enum/2" do
-    test "raises an exception if missing index" do
-      assert_raise KeyError, fn ->
-        Search.terms_enum(%{field: :message, string: "hello", case_insensitive: true})
-      end
-    end
-
     test "returns a sucessful response" do
       assert {:ok,
               %{
@@ -213,8 +203,9 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
                 "complete" => true,
                 "terms" => ["Hello World 1!", "Hello World 2!", "Hello World 3!"]
               }} =
-               Search.terms_enum(%{field: :message, string: "hello", case_insensitive: true},
-                 index: @index_name
+               Search.terms_enum(
+                 %{field: :message, string: "hello", case_insensitive: true},
+                 @index_name
                )
     end
   end
@@ -242,9 +233,10 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
                  "took" => _
                }
              } =
-               Search.search(%{query: %{match_all: %{}}, size: 1},
-                 scroll: "5s",
-                 index: @index_name
+               Search.search(
+                 %{query: %{match_all: %{}}, size: 1},
+                 @index_name,
+                 scroll: "5s"
                )
 
       assert {
@@ -273,9 +265,10 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
   describe "clear_scroll/2" do
     test "returns a sucessful response" do
       assert {:ok, %{"_scroll_id" => scroll_id}} =
-               Search.search(%{query: %{match_all: %{}}, size: 1},
-                 scroll: "5s",
-                 index: @index_name
+               Search.search(
+                 %{query: %{match_all: %{}}, size: 1},
+                 @index_name,
+                 scroll: "5s"
                )
 
       assert {:ok, %{"num_freed" => 1, "succeeded" => true}} = Search.clear_scroll(scroll_id)
@@ -286,14 +279,15 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
 
   defp async_search(doc_id) do
     {:ok, _} =
-      Search.async_search(%{query: %{term: %{_id: doc_id}}, size: 1},
-        index: @index_name,
+      Search.async_search(
+        %{query: %{term: %{_id: doc_id}}, size: 1},
+        @index_name,
         keep_on_completion: true,
         keep_alive: "5s"
       )
   end
 
   defp create_pit do
-    {:ok, _} = Search.create_pit(index: @index_name, keep_alive: "5s")
+    {:ok, _} = Search.create_pit(@index_name, keep_alive: "5s")
   end
 end

@@ -18,10 +18,6 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
   end
 
   describe "index/2" do
-    test "raises an exception if missing index" do
-      assert_raise KeyError, fn -> Document.index(%{message: "Hello"}) end
-    end
-
     test "returns a sucessful response" do
       assert {:ok,
               %{
@@ -32,23 +28,11 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
                 "_shards" => %{"failed" => 0, "successful" => 1, "total" => 1},
                 "_version" => 1,
                 "result" => "created"
-              }} = Document.index(%{message: "Hello new message"}, index: @index_name)
+              }} = Document.index(%{message: "Hello new message"}, @index_name)
     end
   end
 
   describe "create/2" do
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.create(%{message: "Hello"}, id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.create(%{message: "Hello"}, index: @index_name)
-      end
-    end
-
     test "returns a sucessful response" do
       doc_id = generate_id()
 
@@ -61,24 +45,11 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
                 "_shards" => %{"failed" => 0, "successful" => 1, "total" => 1},
                 "_version" => 1,
                 "result" => "created"
-              }} =
-               Document.create(%{message: "Hello new message"}, index: @index_name, id: doc_id)
+              }} = Document.create(%{message: "Hello new message"}, @index_name, doc_id)
     end
   end
 
   describe "get/1" do
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.get(id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.get(index: @index_name)
-      end
-    end
-
     test "returns a sucessful response", %{doc_ids: [doc_id | _]} do
       assert {:ok,
               %{
@@ -89,197 +60,18 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
                 "_version" => 1,
                 "_source" => %{"message" => "Hello World 1!"},
                 "found" => true
-              }} = Document.get(index: @index_name, id: doc_id)
-    end
-  end
-
-  describe "multi_get/1" do
-    test "raises an exception if missing docs and ids" do
-      assert_raise ArgumentError,
-                   "missing option `docs` or `ids`",
-                   fn ->
-                     Document.multi_get()
-                   end
-    end
-  end
-
-  describe "multi_get/1 with :ids" do
-    test "raises an exception if missing IDs" do
-      assert_raise ArgumentError, "missing option `docs` or `ids`", fn ->
-        Document.multi_get(index: @index_name)
-      end
-    end
-
-    test "returns a sucessful response", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
-      assert {:ok,
-              %{
-                "docs" => [
-                  %{
-                    "_id" => ^doc_id,
-                    "_index" => @index_name,
-                    "_primary_term" => 1,
-                    "_seq_no" => 0,
-                    "_source" => %{"message" => "Hello World 1!"},
-                    "_version" => 1,
-                    "found" => true
-                  },
-                  %{
-                    "_id" => ^fake_id,
-                    "_index" => @index_name,
-                    "found" => false
-                  }
-                ]
-              }} = Document.multi_get(index: @index_name, ids: [doc_id, fake_id])
-    end
-  end
-
-  describe "multi_get/1 with :docs" do
-    test "raises an exception if missing ID" do
-      assert_raise ArgumentError, "missing option `docs` or `ids`", fn ->
-        Document.multi_get(index: @index_name)
-      end
-    end
-
-    test "raises an exception with index and binaries", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
-      assert_raise ArgumentError, "use the option `ids` instead of `docs`", fn ->
-        Document.multi_get(index: @index_name, docs: [doc_id, fake_id])
-      end
-    end
-
-    test "raises an exception with no index and binaries", %{
-      fake_id: fake_id,
-      doc_ids: [doc_id | _]
-    } do
-      assert_raise ArgumentError, "use the option `ids` instead of `docs`", fn ->
-        Document.multi_get(docs: [doc_id, fake_id])
-      end
-    end
-
-    test "returns a sucessful response with tuple", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
-      assert {:ok,
-              %{
-                "docs" => [
-                  %{
-                    "_id" => ^doc_id,
-                    "_index" => @index_name,
-                    "_primary_term" => 1,
-                    "_seq_no" => 0,
-                    "_source" => %{"message" => "Hello World 1!"},
-                    "_version" => 1,
-                    "found" => true
-                  },
-                  %{
-                    "_id" => ^fake_id,
-                    "_index" => @index_name,
-                    "found" => false
-                  }
-                ]
-              }} = Document.multi_get(docs: [{@index_name, doc_id}, {@index_name, fake_id}])
-    end
-
-    test "returns a sucessful response with map", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
-      assert {:ok,
-              %{
-                "docs" => [
-                  %{
-                    "_id" => ^doc_id,
-                    "_index" => @index_name,
-                    "_primary_term" => 1,
-                    "_seq_no" => 0,
-                    "_version" => 1,
-                    "found" => true
-                  },
-                  %{
-                    "_id" => ^fake_id,
-                    "_index" => @index_name,
-                    "found" => false
-                  }
-                ]
-              }} =
-               Document.multi_get(
-                 docs: [
-                   %{index: @index_name, id: doc_id, source: false},
-                   %{index: @index_name, id: fake_id}
-                 ]
-               )
-    end
-
-    test "returns a sucessful response with map 2", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
-      assert {:ok,
-              %{
-                "docs" => [
-                  %{
-                    "_id" => ^doc_id,
-                    "_index" => @index_name,
-                    "_primary_term" => 1,
-                    "_seq_no" => 0,
-                    "_version" => 1,
-                    "found" => true
-                  },
-                  %{
-                    "_id" => ^fake_id,
-                    "_index" => @index_name,
-                    "found" => false
-                  }
-                ]
-              }} =
-               Document.multi_get(
-                 docs: [
-                   %{_index: @index_name, _id: doc_id, _source: false},
-                   %{_index: @index_name, _id: fake_id}
-                 ]
-               )
-    end
-
-    test "raises an exception if no ID" do
-      assert_raise ArgumentError,
-                   ~s<missing option `id` in the map, got: `%{_index: "test_api_document_single"}`>,
-                   fn ->
-                     Document.multi_get(docs: [%{_index: @index_name}])
-                   end
-    end
-
-    test "raises an exception if no index", %{fake_id: fake_id} do
-      assert_raise ArgumentError,
-                   ~s<missing option `index` in the map, got: `%{_id: "#{fake_id}"}`>,
-                   fn ->
-                     Document.multi_get(docs: [%{_id: fake_id}])
-                   end
+              }} = Document.get(@index_name, doc_id)
     end
   end
 
   describe "exists?/1" do
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.exists?(id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.exists?(index: @index_name)
-      end
-    end
-
     test "returns a sucessful response", %{doc_ids: [doc_id | _], fake_id: fake_id} do
-      refute Document.exists?(index: @index_name, id: fake_id)
-      assert Document.exists?(index: @index_name, id: doc_id)
+      refute Document.exists?(@index_name, fake_id)
+      assert Document.exists?(@index_name, doc_id)
     end
   end
 
   describe "delete/2" do
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.delete(id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.delete(index: @index_name)
-      end
-    end
-
     test "returns a sucessful response", %{doc_ids: [_ | [_ | [doc_id3 | _]]]} do
       assert {:ok,
               %{
@@ -290,7 +82,7 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
                 "_version" => 2,
                 "_shards" => %{"failed" => 0, "successful" => 1, "total" => 1},
                 "result" => "deleted"
-              }} = Document.delete(index: @index_name, id: doc_id3)
+              }} = Document.delete(@index_name, doc_id3)
     end
 
     test "returns a unsucessful response", %{fake_id: doc_id} do
@@ -311,7 +103,7 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
                 root_cause: nil,
                 status: 404,
                 type: "not_found"
-              }} = Document.delete(index: @index_name, id: doc_id)
+              }} = Document.delete(@index_name, doc_id)
     end
   end
 
@@ -321,18 +113,6 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
       lang: "painless",
       params: %{message: "Bye World"}
     }
-
-    test "raises an exception if missing index", %{fake_id: doc_id} do
-      assert_raise KeyError, ~s<key :index not found in: [id: "#{doc_id}"]>, fn ->
-        Document.update(%{script: @script}, id: doc_id)
-      end
-    end
-
-    test "raises an exception if missing ID" do
-      assert_raise KeyError, "key :id not found in: []", fn ->
-        Document.update(%{script: @script}, index: @index_name)
-      end
-    end
 
     test "returns a sucessful response", %{doc_ids: [_ | [_ | [_ | [doc_id4]]]]} do
       assert {:ok,
@@ -344,7 +124,7 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
                 "_version" => 2,
                 "_shards" => %{"failed" => 0, "successful" => 1, "total" => 1},
                 "result" => "updated"
-              }} = Document.update(%{script: @script}, index: @index_name, id: doc_id4)
+              }} = Document.update(%{script: @script}, @index_name, doc_id4)
     end
 
     test "returns a successful response when document doesn't exist", %{fake_id: doc_id} do
@@ -382,7 +162,7 @@ defmodule ElasticsearchEx.Api.Document.SingleTest do
                  status: 404,
                  type: "document_missing_exception"
                }
-             } = Document.update(%{script: @script}, index: @index_name, id: doc_id)
+             } = Document.update(%{script: @script}, @index_name, doc_id)
     end
   end
 end

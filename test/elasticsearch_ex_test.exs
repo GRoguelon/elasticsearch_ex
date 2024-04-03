@@ -7,9 +7,9 @@ defmodule ElasticsearchExTest do
     end
   end
 
-  describe "index/2" do
-    test "exposes a function of arity of 2" do
-      assert {:index, 2} in ElasticsearchEx.__info__(:functions)
+  describe "index/4" do
+    test "exposes a function of arity of 4" do
+      assert {:index, 4} in ElasticsearchEx.__info__(:functions)
     end
   end
 end
