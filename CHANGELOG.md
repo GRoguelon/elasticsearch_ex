@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.3.0 (2024-04-04)
+
+* **New features:**
+  * Added `ElasticsearchEx.Stream` module to stream documents
+
 ## v1.2.0 (2024-04-04)
 
 * **New features:**
