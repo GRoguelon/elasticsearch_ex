@@ -84,8 +84,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec search(query(), index(), opts()) :: ElasticsearchEx.response()
-  def search(query, index \\ nil, opts \\ [])
-      when is_map(query) and is_index(index) do
+  def search(query, index \\ nil, opts \\ []) when is_map(query) do
     index
     |> format_path(:_search)
     |> Client.post(nil, query, opts)

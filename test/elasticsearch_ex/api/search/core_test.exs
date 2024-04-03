@@ -37,6 +37,25 @@ defmodule ElasticsearchEx.Api.Search.CoreTest do
                 "took" => _took
               }} = Search.search(%{query: %{term: %{_id: doc_id}}, size: 1}, @index_name)
     end
+
+    test "returns a sucessful response with no index", %{doc_ids: [doc_id | _]} do
+      assert {:ok,
+              %{
+                "_shards" => %{
+                  "failed" => 0,
+                  "skipped" => 0,
+                  "successful" => total,
+                  "total" => total
+                },
+                "hits" => %{
+                  "hits" => _hits,
+                  "max_score" => 1.0,
+                  "total" => %{"relation" => "eq", "value" => 1}
+                },
+                "timed_out" => false,
+                "took" => _took
+              }} = Search.search(%{query: %{term: %{_id: doc_id}}, size: 1})
+    end
   end
 
   describe "multi_search/3" do
