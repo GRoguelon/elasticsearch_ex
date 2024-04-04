@@ -122,6 +122,9 @@ defmodule ElasticsearchEx.Stream do
     end
   end
 
+  @spec after_fun(acc()) :: :ok
+  defp after_fun({pit, _search_after}), do: after_fun(pit)
+
   @spec after_fun(pit()) :: :ok
   defp after_fun(%{id: pit_id}) do
     case SearchApi.close_pit(pit_id) do
