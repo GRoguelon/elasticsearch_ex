@@ -20,11 +20,32 @@ defmodule ElasticsearchEx do
   ## Public functions
 
   @doc """
+  Refer to `ElasticsearchEx.Api.Search.search/0` documentation.
+  """
+  @doc since: "1.5.0"
+  @spec search() :: response()
+  defdelegate search(), to: ElasticsearchEx.Api.Search
+
+  @doc """
+  Refer to `ElasticsearchEx.Api.Search.search/1` documentation.
+  """
+  @doc since: "1.5.0"
+  @spec search(query() | index() | opts()) :: response()
+  defdelegate search(query_or_index_or_opts), to: ElasticsearchEx.Api.Search
+
+  @doc """
   Refer to `ElasticsearchEx.Api.Search.search/2` documentation.
+  """
+  @doc since: "1.5.0"
+  @spec search(query() | index(), index() | opts()) :: response()
+  defdelegate search(query_or_index, index_or_opts), to: ElasticsearchEx.Api.Search
+
+  @doc """
+  Refer to `ElasticsearchEx.Api.Search.search/3` documentation.
   """
   @doc since: "1.0.0"
   @spec search(query(), index(), keyword()) :: response()
-  defdelegate search(query, index \\ nil, opts \\ []), to: ElasticsearchEx.Api.Search
+  defdelegate search(query, index, opts), to: ElasticsearchEx.Api.Search
 
   @doc """
   Refer to `ElasticsearchEx.Api.Document.index/4` documentation.

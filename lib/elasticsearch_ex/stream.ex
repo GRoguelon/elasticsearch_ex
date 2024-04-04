@@ -5,6 +5,8 @@ defmodule ElasticsearchEx.Stream do
 
   require Logger
 
+  import ElasticsearchEx.Guards, only: [is_index: 1]
+
   alias ElasticsearchEx.Api.Search, as: SearchApi
 
   ## Types
@@ -12,6 +14,8 @@ defmodule ElasticsearchEx.Stream do
   @type query :: ElasticsearchEx.query()
 
   @type index :: ElasticsearchEx.index()
+
+  @type opts :: ElasticsearchEx.opts()
 
   @typep pit :: %{required(:id) => binary(), required(:keep_alive) => binary()}
 
@@ -24,6 +28,25 @@ defmodule ElasticsearchEx.Stream do
   @sort_shard_doc [%{_shard_doc: :asc}]
 
   ## Public functions
+
+  @doc since: "1.5.0"
+  @spec stream(query()) :: Enumerable.t()
+  def stream(query) do
+    stream(query, nil, [])
+  end
+
+  @doc since: "1.5.0"
+  def stream(query, index_or_opts)
+
+  @spec stream(query(), index()) :: Enumerable.t()
+  def stream(query, index) when is_index(index) do
+    stream(query, index, [])
+  end
+
+  @spec stream(query(), opts()) :: Enumerable.t()
+  def stream(query, opts) when is_list(opts) do
+    stream(query, nil, opts)
+  end
 
   @doc """
   Runs an Elasticsearch by returning a `Stream` which is perfect for browsing large volume of data.
@@ -39,13 +62,13 @@ defmodule ElasticsearchEx.Stream do
       #Function<52.124013645/2 in Stream.resource/3>
   """
   @doc since: "1.3.0"
-  @spec stream(query(), nil | index(), keyword()) :: Enumerable.t()
-  def stream(query, index \\ nil, params \\ []) do
-    {keep_alive, params} = Keyword.pop(params, :keep_alive, "10s")
-    {per_page, params} = Keyword.pop(params, :per_page, 100)
+  @spec stream(query(), nil | index(), opts()) :: Enumerable.t()
+  def stream(query, index, opts) do
+    {keep_alive, opts} = Keyword.pop(opts, :keep_alive, "10s")
+    {per_page, opts} = Keyword.pop(opts, :per_page, 100)
     prepared_query = prepare_query(query, per_page)
 
-    Stream.resource(start_fun(index, keep_alive), next_fun(prepared_query, params), &after_fun/1)
+    Stream.resource(start_fun(index, keep_alive), next_fun(prepared_query, opts), &after_fun/1)
   end
 
   ## Private functions
@@ -81,7 +104,7 @@ defmodule ElasticsearchEx.Stream do
       "Searching through the PIT: #{pit.id} and search_after: #{inspect(search_after)}"
     )
 
-    case SearchApi.search(query, nil, params) do
+    case SearchApi.search(query, params) do
       {:ok, %{"hits" => %{"hits" => []}}} ->
         {:halt, pit}
 
@@ -99,7 +122,7 @@ defmodule ElasticsearchEx.Stream do
     end
   end
 
-  @spec after_fun(pit()) :: any()
+  @spec after_fun(pit()) :: :ok
   defp after_fun(%{id: pit_id}) do
     case SearchApi.close_pit(pit_id) do
       {:ok, %{"num_freed" => _, "succeeded" => true}} ->

@@ -24,7 +24,99 @@ defmodule ElasticsearchEx.Api.Search do
 
   @ndjson_headers Client.ndjson()
 
+  @default_search %{query: %{match_all: %{}}}
+
   ## Public functions - Core
+
+  @doc """
+  Check `search/3` for more information.
+
+  ### Examples
+
+      iex> ElasticsearchEx.Api.Search.search()
+      {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
+  """
+  @doc since: "1.5.0"
+  @spec search() :: ElasticsearchEx.response()
+  def search() do
+    Client.post("/_search", nil, @default_search, [])
+  end
+
+  @doc """
+  Check `search/3` for more information.
+
+  ### Examples
+
+  With a query:
+
+      iex> ElasticsearchEx.Api.Search.search(%{query: %{term: %{"user.id": "kimchy"}}})
+      {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
+
+  With a index:
+
+      iex> ElasticsearchEx.Api.Search.search("my-index-000001")
+      {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
+
+  With options:
+
+      iex> ElasticsearchEx.Api.Search.search(_source: false)
+      {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001"}]}}}
+  """
+  @doc since: "1.5.0"
+  def search(query_or_index_or_opts)
+
+  @spec search(query()) :: ElasticsearchEx.response()
+  def search(query) when is_map(query) do
+    Client.post("/_search", nil, query)
+  end
+
+  @spec search(index()) :: ElasticsearchEx.response()
+  def search(index) when is_index(index) do
+    Client.post("/#{index}/_search", nil, @default_search)
+  end
+
+  @spec search(opts()) :: ElasticsearchEx.response()
+  def search(opts) when is_list(opts) do
+    Client.post("/_search", nil, @default_search, opts)
+  end
+
+  @doc """
+  Check `search/3` for more information.
+
+  ### Examples
+
+  With a query and index:
+
+      iex> ElasticsearchEx.Api.Search.search(%{query: %{term: %{"user.id": "kimchy"}}}, "my-index-000001")
+      {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
+
+  With a index and options:
+
+      iex> ElasticsearchEx.Api.Search.search("my-index-000001", _source: false)
+      {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001"}]}}}
+
+  With a query and options:
+
+      iex> ElasticsearchEx.Api.Search.search(%{query: %{term: %{"user.id": "kimchy"}}}, _source: false)
+      {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001"}]}}}
+  """
+  @doc since: "1.5.0"
+  def search(query_or_index, index_or_opts)
+
+  @spec search(query(), index()) :: ElasticsearchEx.response()
+  def search(query, index) when is_map(query) and is_index(index) do
+    Client.post("/#{index}/_search", nil, query)
+  end
+
+  @spec search(index(), opts()) :: ElasticsearchEx.response()
+  def search(index, opts) when is_index(index) and is_list(opts) do
+    Client.post("/#{index}/_search", nil, @default_search, opts)
+  end
+
+  @spec search(query(), opts()) :: ElasticsearchEx.response()
+  def search(query, opts) when is_map(query) and is_list(opts) do
+    Client.post("/_search", nil, query, opts)
+  end
 
   @doc """
   Returns search hits that match the query defined in the request.
@@ -43,7 +135,9 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.search(%{query: %{term: %{"user.id": "kimchy"}}},
+      iex> ElasticsearchEx.Api.Search.search(
+      ...>   %{query: %{term: %{"user.id": "kimchy"}}},
+      ...>   "my-index-000001",
       ...>   from: 40,
       ...>   size: 20
       ...> )
@@ -84,10 +178,8 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec search(query(), index(), opts()) :: ElasticsearchEx.response()
-  def search(query, index \\ nil, opts \\ []) when is_map(query) do
-    index
-    |> format_path(:_search)
-    |> Client.post(nil, query, opts)
+  def search(query, index, opts) when is_map(query) and is_index(index) and is_list(opts) do
+    Client.post("/#{index}/_search", nil, query, opts)
   end
 
   @doc """
