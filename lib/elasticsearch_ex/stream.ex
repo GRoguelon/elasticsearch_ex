@@ -5,7 +5,7 @@ defmodule ElasticsearchEx.Stream do
 
   require Logger
 
-  import ElasticsearchEx.Guards, only: [is_index: 1]
+  import ElasticsearchEx.Guards, only: [is_name!: 1]
 
   alias ElasticsearchEx.Api.Search, as: SearchApi
 
@@ -39,7 +39,7 @@ defmodule ElasticsearchEx.Stream do
   def stream(query, index_or_opts)
 
   @spec stream(query(), index()) :: Enumerable.t()
-  def stream(query, index) when is_index(index) do
+  def stream(query, index) when is_name!(index) do
     stream(query, index, [])
   end
 

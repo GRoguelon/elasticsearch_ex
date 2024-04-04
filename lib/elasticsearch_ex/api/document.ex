@@ -3,7 +3,13 @@ defmodule ElasticsearchEx.Api.Document do
   Provides the APIs for the single document operations.
   """
 
-  import ElasticsearchEx.Guards
+  import ElasticsearchEx.Guards,
+    only: [
+      is_identifier: 1,
+      is_name: 1,
+      is_name!: 1
+    ]
+
   import ElasticsearchEx.Utils, only: [format_path: 2]
 
   require Logger
@@ -87,12 +93,12 @@ defmodule ElasticsearchEx.Api.Document do
   def index(source, index, document_id \\ nil, opts \\ [])
 
   def index(source, index, nil, opts)
-      when is_map(source) and is_index(index) do
+      when is_map(source) and is_name!(index) do
     Client.post("/#{index}/_doc", nil, source, opts)
   end
 
   def index(source, index, document_id, opts)
-      when is_map(source) and is_index(index) and is_identifier(document_id) do
+      when is_map(source) and is_name!(index) and is_identifier(document_id) do
     Client.put("/#{index}/_doc/#{document_id}", nil, source, opts)
   end
 
@@ -134,7 +140,7 @@ defmodule ElasticsearchEx.Api.Document do
   @doc since: "1.0.0"
   @spec create(source(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def create(source, index, document_id, opts \\ [])
-      when is_map(source) and is_index(index) and is_identifier(document_id) do
+      when is_map(source) and is_name!(index) and is_identifier(document_id) do
     Client.put("/#{index}/_create/#{document_id}", nil, source, opts)
   end
 
@@ -173,7 +179,7 @@ defmodule ElasticsearchEx.Api.Document do
   @doc since: "1.0.0"
   @spec get(index(), document_id(), opts()) :: ElasticsearchEx.response()
   def get(index, document_id, opts \\ [])
-      when is_index(index) and is_identifier(document_id) do
+      when is_name!(index) and is_identifier(document_id) do
     Client.get("/#{index}/_doc/#{document_id}", nil, nil, opts)
   end
 
@@ -223,7 +229,7 @@ defmodule ElasticsearchEx.Api.Document do
   end
 
   def get_ids(document_ids, index, opts)
-      when is_list(document_ids) and is_index(index) do
+      when is_list(document_ids) and is_name!(index) do
     Enum.each(document_ids, fn document_id ->
       is_identifier(document_id) ||
         raise ArgumentError, "invalid value, expected a binary, got: `#{inspect(document_id)}`"
@@ -276,7 +282,7 @@ defmodule ElasticsearchEx.Api.Document do
   @doc since: "1.0.0"
   @spec get_docs([map()], nil | index(), opts()) :: ElasticsearchEx.response()
   def get_docs(documents, index \\ nil, opts \\ [])
-      when is_list(documents) and (is_nil(index) or is_index(index)) do
+      when is_list(documents) and (is_nil(index) or is_name(index)) do
     Enum.each(documents, fn document ->
       unless is_map(document) do
         raise ArgumentError, "invalid value, expected a map, got: `#{inspect(document)}`"
@@ -400,7 +406,7 @@ defmodule ElasticsearchEx.Api.Document do
   @doc since: "1.0.0"
   @spec exists?(index(), document_id(), opts()) :: boolean()
   def exists?(index, document_id, opts \\ [])
-      when is_index(index) and is_identifier(document_id) do
+      when is_name!(index) and is_identifier(document_id) do
     Client.head("/#{index}/_doc/#{document_id}", nil, opts) == :ok
   end
 
@@ -439,7 +445,7 @@ defmodule ElasticsearchEx.Api.Document do
   @doc since: "1.0.0"
   @spec delete(index(), document_id(), opts()) :: ElasticsearchEx.response()
   def delete(index, document_id, opts \\ [])
-      when is_index(index) and is_identifier(document_id) do
+      when is_name!(index) and is_identifier(document_id) do
     Client.delete("/#{index}/_doc/#{document_id}", nil, nil, opts)
   end
 
@@ -483,7 +489,7 @@ defmodule ElasticsearchEx.Api.Document do
   @doc since: "1.0.0"
   @spec update(source(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def update(source, index, document_id, opts \\ [])
-      when is_map(source) and is_index(index) and is_identifier(document_id) do
+      when is_map(source) and is_name!(index) and is_identifier(document_id) do
     Client.post("/#{index}/_update/#{document_id}", nil, source, opts)
   end
 end

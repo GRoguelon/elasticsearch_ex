@@ -1,7 +1,13 @@
 defmodule ElasticsearchEx.Utils do
   @moduledoc false
 
-  import ElasticsearchEx.Guards
+  import ElasticsearchEx.Guards,
+    only: [
+      is_enum: 1,
+      is_identifier: 1,
+      is_name: 1,
+      is_name!: 1
+    ]
 
   ## Public functions
 
@@ -10,6 +16,7 @@ defmodule ElasticsearchEx.Utils do
     ["" | segments] |> Enum.reject(&is_nil/1) |> Enum.join("/")
   end
 
+  @deprecated "use `generate_path/1` instead"
   @spec format_path(Enumerable.t() | nil | atom() | binary(), atom() | binary()) :: binary()
   def format_path(nil, operation) when is_name!(operation) do
     "/#{operation}"
@@ -23,6 +30,7 @@ defmodule ElasticsearchEx.Utils do
     "/#{prefix}/#{operation}"
   end
 
+  @deprecated "use `generate_path/1` instead"
   @spec format_path(nil | Enumerable.t() | binary(), atom() | binary(), atom() | binary()) ::
           binary()
   def format_path(nil, operation, suffix) when is_name!(operation) and is_identifier(suffix) do

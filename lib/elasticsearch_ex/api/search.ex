@@ -5,7 +5,14 @@ defmodule ElasticsearchEx.Api.Search do
   Most search APIs support [multi-target syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#api-multi-index), with the exception of the [explain API](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-explain.html).
   """
 
-  import ElasticsearchEx.Guards
+  import ElasticsearchEx.Guards,
+    only: [
+      is_enum: 1,
+      is_identifier: 1,
+      is_name: 1,
+      is_name!: 1
+    ]
+
   import ElasticsearchEx.Utils
 
   alias ElasticsearchEx.Client
@@ -39,7 +46,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.5.0"
   @spec search() :: ElasticsearchEx.response()
   def search() do
-    Client.post("/_search", nil, @default_search, [])
+    search(@default_search, nil, [])
   end
 
   @doc """
@@ -67,17 +74,17 @@ defmodule ElasticsearchEx.Api.Search do
 
   @spec search(query()) :: ElasticsearchEx.response()
   def search(query) when is_map(query) do
-    Client.post("/_search", nil, query)
+    search(query, nil, [])
   end
 
   @spec search(index()) :: ElasticsearchEx.response()
-  def search(index) when is_index(index) do
-    Client.post("/#{index}/_search", nil, @default_search)
+  def search(index) when is_name(index) do
+    search(@default_search, index, [])
   end
 
   @spec search(opts()) :: ElasticsearchEx.response()
   def search(opts) when is_list(opts) do
-    Client.post("/_search", nil, @default_search, opts)
+    search(@default_search, nil, opts)
   end
 
   @doc """
@@ -103,19 +110,19 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.5.0"
   def search(query_or_index, index_or_opts)
 
-  @spec search(query(), index()) :: ElasticsearchEx.response()
-  def search(query, index) when is_map(query) and is_index(index) do
-    Client.post("/#{index}/_search", nil, query)
+  @spec search(query(), nil | index()) :: ElasticsearchEx.response()
+  def search(query, index) when is_map(query) and is_name(index) do
+    search(query, index, [])
   end
 
-  @spec search(index(), opts()) :: ElasticsearchEx.response()
-  def search(index, opts) when is_index(index) and is_list(opts) do
-    Client.post("/#{index}/_search", nil, @default_search, opts)
+  @spec search(nil | index(), opts()) :: ElasticsearchEx.response()
+  def search(index, opts) when is_name(index) and is_list(opts) do
+    search(@default_search, index, opts)
   end
 
   @spec search(query(), opts()) :: ElasticsearchEx.response()
   def search(query, opts) when is_map(query) and is_list(opts) do
-    Client.post("/_search", nil, query, opts)
+    search(query, nil, opts)
   end
 
   @doc """
@@ -177,8 +184,12 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec search(query(), index(), opts()) :: ElasticsearchEx.response()
-  def search(query, index, opts) when is_map(query) and is_index(index) and is_list(opts) do
+  @spec search(query(), nil | index(), opts()) :: ElasticsearchEx.response()
+  def search(query, nil, opts) when is_map(query) and is_list(opts) do
+    Client.post("/_search", nil, query, opts)
+  end
+
+  def search(query, index, opts) when is_map(query) and is_name!(index) and is_list(opts) do
     Client.post("/#{index}/_search", nil, query, opts)
   end
 
@@ -433,7 +444,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec create_pit(index(), opts()) :: ElasticsearchEx.response()
-  def create_pit(index, opts \\ []) when is_index(index) do
+  def create_pit(index, opts \\ []) when is_name!(index) do
     index
     |> format_path(:_pit)
     |> Client.post(nil, nil, opts)
@@ -477,7 +488,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec terms_enum(map(), index(), opts()) :: ElasticsearchEx.response()
   def terms_enum(query, index, opts \\ [])
-      when is_map(query) and is_index(index) do
+      when is_map(query) and is_name!(index) do
     index
     |> format_path(:_terms_enum)
     |> Client.post(nil, query, opts)
@@ -553,7 +564,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec explain(query(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def explain(query, index, document_id, opts \\ [])
-      when is_map(query) and is_index(index) and is_identifier(document_id) do
+      when is_map(query) and is_name!(index) and is_identifier(document_id) do
     index
     |> format_path(:_explain, document_id)
     |> Client.post(nil, query, opts)
@@ -618,7 +629,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec rank_evaluation(map(), index(), opts()) :: ElasticsearchEx.response()
   def rank_evaluation(body, index, opts \\ [])
-      when is_map(body) and is_index(index) do
+      when is_map(body) and is_name!(index) do
     index
     |> format_path(:_rank_eval)
     |> Client.post(nil, body, opts)
@@ -634,7 +645,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec search_shards(index(), opts()) :: ElasticsearchEx.response()
-  def search_shards(index, opts \\ []) when is_index(index) do
+  def search_shards(index, opts \\ []) when is_name!(index) do
     index
     |> format_path(:_search_shards)
     |> Client.get(nil, nil, opts)

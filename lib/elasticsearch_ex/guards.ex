@@ -4,13 +4,6 @@ defmodule ElasticsearchEx.Guards do
   ## Public guards
 
   @doc """
-  Checks if the `value` is a valid index name or `nil`.
-  """
-  @deprecated "use `is_name/1` instead"
-  defguard is_index_or_nil(value)
-           when is_atom(value) or (is_binary(value) and byte_size(value) > 0)
-
-  @doc """
   Checks if the `value` is a valid index name.
   """
   @deprecated "use `is_name!/1` instead"

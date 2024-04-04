@@ -3,26 +3,26 @@ defmodule ElasticsearchEx.GuardsTest do
 
   import ElasticsearchEx.Guards
 
-  test "is_index_or_nil/1" do
-    assert is_index_or_nil(nil)
-    assert is_index_or_nil(:index)
-    assert is_index_or_nil("index")
-    refute is_index_or_nil("")
-    refute is_index_or_nil([])
-    refute is_index_or_nil(%{})
-    refute is_index_or_nil({})
-    refute is_index_or_nil(%Stream{})
+  test "is_name/1" do
+    assert is_name(nil)
+    assert is_name(:index)
+    assert is_name("index")
+    refute is_name("")
+    refute is_name([])
+    refute is_name(%{})
+    refute is_name({})
+    refute is_name(%Stream{})
   end
 
-  test "is_index/1" do
-    refute is_index(nil)
-    assert is_index(:index)
-    assert is_index("index")
-    refute is_index("")
-    refute is_index([])
-    refute is_index(%{})
-    refute is_index({})
-    refute is_index(%Stream{})
+  test "is_name!/1" do
+    refute is_name!(nil)
+    assert is_name!(:index)
+    assert is_name!("index")
+    refute is_name!("")
+    refute is_name!([])
+    refute is_name!(%{})
+    refute is_name!({})
+    refute is_name!(%Stream{})
   end
 
   test "is_identifier/1" do

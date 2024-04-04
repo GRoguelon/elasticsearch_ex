@@ -3,7 +3,11 @@ defmodule ElasticsearchEx.Api.Document.Source do
   Provides the APIs for document source operations.
   """
 
-  import ElasticsearchEx.Guards
+  import ElasticsearchEx.Guards,
+    only: [
+      is_identifier: 1,
+      is_name!: 1
+    ]
 
   alias ElasticsearchEx.Client
 
@@ -44,7 +48,7 @@ defmodule ElasticsearchEx.Api.Document.Source do
   @doc since: "1.0.0"
   @spec get(index(), document_id(), keyword()) :: ElasticsearchEx.response()
   def get(index, document_id, opts \\ [])
-      when is_index(index) and is_identifier(document_id) do
+      when is_name!(index) and is_identifier(document_id) do
     Client.get("/#{index}/_source/#{document_id}", nil, nil, opts)
   end
 
@@ -64,7 +68,7 @@ defmodule ElasticsearchEx.Api.Document.Source do
   @doc since: "1.0.0"
   @spec exists?(index(), document_id(), keyword()) :: boolean()
   def exists?(index, document_id, opts \\ [])
-      when is_index(index) and is_identifier(document_id) do
+      when is_name!(index) and is_identifier(document_id) do
     Client.head("/#{index}/_source/#{document_id}", nil, opts) == :ok
   end
 end
