@@ -3,15 +3,26 @@ defmodule ElasticsearchEx.Guards do
 
   ## Public guards
 
-  defguard is_index(index)
-           when (is_binary(index) and byte_size(index) > 0) or
-                  (is_atom(index) and not is_nil(index))
+  @doc """
+  Checks if the `value` is a valid index name or `nil`.
+  """
+  defguard is_index_or_nil(value)
+           when is_atom(value) or (is_binary(value) and byte_size(value) > 0)
 
-  defguard is_document_id(document_id) when is_binary(document_id) and byte_size(document_id) > 0
+  @doc """
+  Checks if the `value` is a valid index name.
+  """
+  defguard is_index(value)
+           when (is_binary(value) and byte_size(value) > 0) or
+                  (is_atom(value) and not is_nil(value))
 
+  @doc """
+  Checks if the `value` is a valid document ID.
+  """
+  defguard is_identifier(value) when is_binary(value) and byte_size(value) > 0
+
+  @doc """
+  Checks if the `value` is an enumerable (`List` or `Stream`).
+  """
   defguard is_enum(value) when is_list(value) or is_struct(value, Stream)
-
-  defguard is_identifier(value)
-           when (is_atom(value) and not is_nil(value)) or
-                  (is_binary(value) and byte_size(value) > 0)
 end

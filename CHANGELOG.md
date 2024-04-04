@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v1.5.0
+
+* **Changes:**
+  * Added variants for `ElasticsearchEx.Api.Search.search/3`
+  * Reworked some guards
+
 ## v1.4.0 (2024-04-04)
 
 * **Breaking Changes:**

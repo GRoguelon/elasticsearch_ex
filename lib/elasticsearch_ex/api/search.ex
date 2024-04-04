@@ -553,7 +553,7 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.0.0"
   @spec explain(query(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def explain(query, index, document_id, opts \\ [])
-      when is_map(query) and is_index(index) and is_document_id(document_id) do
+      when is_map(query) and is_index(index) and is_identifier(document_id) do
     index
     |> format_path(:_explain, document_id)
     |> Client.post(nil, query, opts)
