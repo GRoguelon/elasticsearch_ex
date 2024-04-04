@@ -837,7 +837,7 @@ defmodule ElasticsearchEx.Api.Search do
     Client.post(["/_render/template", template_id], nil, body, [])
   end
 
-  @spec render_search_template(map(), nil | binary(), opts()) :: response()
+  @spec render_search_template(map(), opts()) :: response()
   def render_search_template(body, opts) do
     Client.post("/_render/template", nil, body, opts)
   end
