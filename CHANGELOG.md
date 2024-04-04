@@ -13,6 +13,7 @@
 
 * **Bug fixes:**
   * Fixed a bug on `ElasticsearchEx.Api.Search.create_pid/2` with empty body
+  * Fixed a bug on `ElasticsearchEx.Stream.stream/3` where an extra HTTP call was made at the end of the `Stream`
 
 ## v1.3.0 (2024-04-04)
 

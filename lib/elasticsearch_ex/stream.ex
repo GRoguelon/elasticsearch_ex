@@ -17,7 +17,7 @@ defmodule ElasticsearchEx.Stream do
 
   @typep search_after :: []
 
-  @typep acc :: {pit(), nil | search_after()}
+  @typep acc :: {pit(), nil | :end_of_stream | search_after()}
 
   ## Module attributes
 
@@ -61,32 +61,46 @@ defmodule ElasticsearchEx.Stream do
     end
   end
 
-  @spec next_fun(query(), keyword()) :: (acc() -> {[] | :halt, acc()})
+  @spec next_fun(query(), keyword()) :: (acc() -> {:halt, pit()} | {nonempty_list(), acc()})
   defp next_fun(query, params) do
-    fn {pit, search_after} ->
-      query = query |> generate_pit_query(pit) |> generate_search_after_query(search_after)
+    per_page = Map.fetch!(query, :size)
 
-      Logger.debug(
-        "Searching through the PIT: #{pit.id} and search_after: #{inspect(search_after)}"
-      )
+    &do_next_fun(&1, query, params, per_page)
+  end
 
-      case SearchApi.search(query, nil, params) do
-        {:ok, %{"hits" => %{"hits" => []}}} ->
-          {:halt, {pit, search_after}}
+  @spec do_next_fun(acc(), map(), keyword(), pos_integer()) ::
+          {:halt, pit()} | {nonempty_list(), acc()}
+  defp do_next_fun({pit, :end_of_stream}, _query, _params, _per_page) do
+    {:halt, pit}
+  end
 
-        {:ok, %{"hits" => %{"hits" => hits}}} ->
+  defp do_next_fun({pit, search_after}, query, params, per_page) do
+    query = query |> generate_pit_query(pit) |> generate_search_after_query(search_after)
+
+    Logger.debug(
+      "Searching through the PIT: #{pit.id} and search_after: #{inspect(search_after)}"
+    )
+
+    case SearchApi.search(query, nil, params) do
+      {:ok, %{"hits" => %{"hits" => []}}} ->
+        {:halt, pit}
+
+      {:ok, %{"hits" => %{"hits" => hits}}} ->
+        if length(hits) < per_page do
+          {hits, {pit, :end_of_stream}}
+        else
           search_after = hits |> List.last() |> Map.fetch!("sort")
 
           {hits, {pit, search_after}}
+        end
 
-        any ->
-          raise "unknown result: #{inspect(any)}"
-      end
+      any ->
+        raise "unknown result: #{inspect(any)}"
     end
   end
 
-  @spec after_fun(acc()) :: any()
-  defp after_fun({%{id: pit_id}, _search_after}) do
+  @spec after_fun(pit()) :: any()
+  defp after_fun(%{id: pit_id}) do
     case SearchApi.close_pit(pit_id) do
       {:ok, %{"num_freed" => _, "succeeded" => true}} ->
         Logger.debug("Deleted the PIT: #{pit_id}")
