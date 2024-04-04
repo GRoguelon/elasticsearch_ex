@@ -3,10 +3,7 @@ defmodule ElasticsearchEx.Utils do
 
   import ElasticsearchEx.Guards,
     only: [
-      is_enum: 1,
-      is_identifier: 1,
-      is_name: 1,
-      is_name!: 1
+      is_enum: 1
     ]
 
   ## Public functions
