@@ -8,6 +8,8 @@ defmodule ElasticsearchEx.ClientTest do
   @my_headers %{"x-custom-header" => "Hello World!"}
   @my_body %{query: %{match_all: %{}}}
 
+  @compressed_body @my_body |> Jason.encode!() |> :zlib.gzip()
+
   @resp_success %{
     "_shards" => %{"failed" => 0, "skipped" => 0, "successful" => 1, "total" => 1},
     "hits" => %{
@@ -41,23 +43,21 @@ defmodule ElasticsearchEx.ClientTest do
     "status" => 404
   }
 
-  setup_all :setup_bypass
-
   describe "head/1" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "HEAD", "/my-index", fn conn ->
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "HEAD", request_path: "/my-index"} = conn ->
         Plug.Conn.resp(conn, 200, "")
-      end)
+      end
 
-      assert :ok = Client.head("/my-index")
+      assert :ok = Client.head("/my-index", nil, req_opts: [plug: plug_fun])
     end
 
-    test "returns an error when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "HEAD", "/my-index", fn conn ->
+    test "returns an error when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "HEAD", request_path: "/my-index"} = conn ->
         Plug.Conn.resp(conn, 400, "")
-      end)
+      end
 
-      assert :error = Client.head("/my-index")
+      assert :error = Client.head("/my-index", nil, req_opts: [plug: plug_fun])
     end
   end
 
@@ -68,14 +68,14 @@ defmodule ElasticsearchEx.ClientTest do
       {:ok, response: response, status: status}
     end
 
-    test "returns okay when sucessful", %{bypass: bypass, response: response, status: status} do
-      Bypass.expect_once(bypass, "HEAD", "/my-index", fn conn ->
+    test "returns okay when sucessful", %{response: response, status: status} do
+      plug_fun = fn %Plug.Conn{method: "HEAD", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
 
         Plug.Conn.resp(conn, status, "")
-      end)
+      end
 
-      assert ^response = Client.head("/my-index", @my_headers)
+      assert ^response = Client.head("/my-index", @my_headers, req_opts: [plug: plug_fun])
     end
   end
 
@@ -86,39 +86,33 @@ defmodule ElasticsearchEx.ClientTest do
       {:ok, response: response, status: status}
     end
 
-    @tag :capture_log
-    test "returns okay when sucessful", %{bypass: bypass, response: response, status: status} do
-      Bypass.expect_once(bypass, "HEAD", "/my-index", fn conn ->
-        # Ensure the http_opts are not passed to the URL query params
-        "a=b" = conn.query_string
+    test "returns okay when sucessful", %{response: response, status: status} do
+      plug_fun = fn %Plug.Conn{method: "HEAD", request_path: "/my-index", query_string: "a=b"} =
+                      conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
 
         Plug.Conn.resp(conn, status, "")
-      end)
+      end
 
-      assert ^response =
-               Client.head("/my-index", @my_headers,
-                 a: :b,
-                 http_opts: [c: :d]
-               )
+      assert ^response = Client.head("/my-index", @my_headers, a: :b, req_opts: [plug: plug_fun])
     end
   end
 
   describe "get/1" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "GET", "/my-index", fn conn ->
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "GET", request_path: "/my-index"} = conn ->
         Plug.Conn.resp(conn, 200, "")
-      end)
+      end
 
-      assert {:ok, nil} = Client.get("/my-index")
+      assert {:ok, nil} = Client.get("/my-index", nil, nil, req_opts: [plug: plug_fun])
     end
 
-    test "returns an error when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "GET", "/my-index", fn conn ->
+    test "returns an error when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "GET", request_path: "/my-index"} = conn ->
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -131,33 +125,34 @@ defmodule ElasticsearchEx.ClientTest do
                  type: error["type"],
                  original: error
                }
-             } == Client.get("/my-index")
+             } == Client.get("/my-index", nil, nil, req_opts: [plug: plug_fun])
     end
   end
 
   describe "get/2 with headers" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "GET", "/my-index", fn conn ->
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "GET", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
         {:ok, "", conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
-      assert {:ok, @resp_success} = Client.get("/my-index", @my_headers)
+      assert {:ok, @resp_success} =
+               Client.get("/my-index", @my_headers, nil, req_opts: [plug: plug_fun])
     end
 
-    test "returns okay when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "GET", "/my-index", fn conn ->
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "GET", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
         {:ok, "", conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -168,69 +163,32 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.get("/my-index", @my_headers)
+              }} == Client.get("/my-index", @my_headers, nil, req_opts: [plug: plug_fun])
     end
   end
 
-  # Unsure what to do as :httpc doesn't support providing a body with a GET request
-  # describe "get/3 with body" do
-  #   test "returns okay when sucessful", %{bypass: bypass} do
-  #     Bypass.expect_once(bypass, "GET", "/my-index", fn conn ->
-  #       {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
-
-  #       conn
-  #       |> Plug.Conn.put_resp_header("content-type", "application/json")
-  #       |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-  #     end)
-
-  #     assert {:ok, @resp_success} = Client.get("/my-index", nil, @my_body)
-  #   end
-
-  #   test "returns okay when unsucessful", %{bypass: bypass} do
-  #     Bypass.expect_once(bypass, "GET", "/my-index", fn conn ->
-  #       {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
-
-  #       conn
-  #       |> Plug.Conn.put_resp_header("content-type", "application/json")
-  #       |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-  #     end)
-
-  #     error = @resp_error["error"]
-
-  #     assert {:error,
-  #             %ElasticsearchEx.Error{
-  #               reason: error["reason"],
-  #               root_cause: error["root_cause"],
-  #               status: @resp_error["status"],
-  #               type: error["type"],
-  #               original: error
-  #             }} == Client.get("/my-index", nil, @my_body)
-  #   end
-  # end
-
-  describe "get/4 with options" do
-    @tag :capture_log
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "GET", "/my-index", fn conn ->
-        "a=b" = conn.query_string
+  describe "get/3 with body" do
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "GET", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
-      assert {:ok, @resp_success} = Client.get("/my-index", nil, nil, a: :b, http_opts: [c: :d])
+      assert {:ok, @resp_success} =
+               Client.get("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
 
-    @tag :capture_log
-    test "returns okay when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "GET", "/my-index", fn conn ->
-        "a=b" = conn.query_string
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "GET", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -241,29 +199,65 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.get("/my-index", nil, nil, a: :b, http_opts: [c: :d])
+              }} == Client.get("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
+    end
+  end
+
+  describe "get/4 with options" do
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "GET", request_path: "/my-index"} = conn ->
+        "a=b" = conn.query_string
+
+        conn
+        |> Plug.Conn.put_resp_header("content-type", "application/json")
+        |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
+      end
+
+      assert {:ok, @resp_success} =
+               Client.get("/my-index", nil, nil, a: :b, req_opts: [plug: plug_fun])
+    end
+
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "GET", request_path: "/my-index"} = conn ->
+        "a=b" = conn.query_string
+
+        conn
+        |> Plug.Conn.put_resp_header("content-type", "application/json")
+        |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
+      end
+
+      error = @resp_error["error"]
+
+      assert {:error,
+              %ElasticsearchEx.Error{
+                reason: error["reason"],
+                root_cause: error["root_cause"],
+                status: @resp_error["status"],
+                type: error["type"],
+                original: error
+              }} == Client.get("/my-index", nil, nil, a: :b, req_opts: [plug: plug_fun])
     end
   end
 
   describe "post/1" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "POST", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "POST", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         Plug.Conn.resp(conn, 200, "")
-      end)
+      end
 
-      assert {:ok, nil} = Client.post("/my-index", nil, @my_body)
+      assert {:ok, nil} = Client.post("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns an error when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "POST", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns an error when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "POST", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -276,7 +270,7 @@ defmodule ElasticsearchEx.ClientTest do
                  type: error["type"],
                  original: error
                }
-             } == Client.post("/my-index", nil, @my_body)
+             } == Client.post("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
@@ -285,28 +279,29 @@ defmodule ElasticsearchEx.ClientTest do
       {:ok, my_headers: Map.merge(@my_headers, %{"content-type" => "application/json"})}
     end
 
-    test "returns okay when sucessful", %{bypass: bypass, my_headers: my_headers} do
-      Bypass.expect_once(bypass, "POST", "/my-index", fn conn ->
+    test "returns okay when sucessful", %{my_headers: my_headers} do
+      plug_fun = fn %Plug.Conn{method: "POST", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
-      assert {:ok, @resp_success} = Client.post("/my-index", my_headers, @my_body)
+      assert {:ok, @resp_success} =
+               Client.post("/my-index", my_headers, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns okay when unsucessful", %{bypass: bypass, my_headers: my_headers} do
-      Bypass.expect_once(bypass, "POST", "/my-index", fn conn ->
+    test "returns okay when unsucessful", %{my_headers: my_headers} do
+      plug_fun = fn %Plug.Conn{method: "POST", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -317,31 +312,32 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.post("/my-index", my_headers, @my_body)
+              }} == Client.post("/my-index", my_headers, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
   describe "post/3 with body" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "POST", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "POST", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
-      assert {:ok, @resp_success} = Client.post("/my-index", nil, @my_body)
+      assert {:ok, @resp_success} =
+               Client.post("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns okay when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "POST", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "POST", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -352,36 +348,34 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.post("/my-index", nil, @my_body)
+              }} == Client.post("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
   describe "post/4 with options" do
-    @tag :capture_log
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "POST", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "POST", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
         "a=b" = conn.query_string
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
       assert {:ok, @resp_success} =
-               Client.post("/my-index", nil, @my_body, a: :b, http_opts: [c: :d])
+               Client.post("/my-index", nil, @my_body, a: :b, req_opts: [plug: plug_fun])
     end
 
-    @tag :capture_log
-    test "returns okay when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "POST", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "POST", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
         "a=b" = conn.query_string
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -392,29 +386,29 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.post("/my-index", nil, @my_body, a: :b, http_opts: [c: :d])
+              }} == Client.post("/my-index", nil, @my_body, a: :b, req_opts: [plug: plug_fun])
     end
   end
 
   describe "put/1" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "PUT", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "PUT", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         Plug.Conn.resp(conn, 200, "")
-      end)
+      end
 
-      assert {:ok, nil} = Client.put("/my-index", nil, @my_body)
+      assert {:ok, nil} = Client.put("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns an error when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "PUT", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns an error when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "PUT", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -427,7 +421,7 @@ defmodule ElasticsearchEx.ClientTest do
                  type: error["type"],
                  original: error
                }
-             } == Client.put("/my-index", nil, @my_body)
+             } == Client.put("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
@@ -436,28 +430,29 @@ defmodule ElasticsearchEx.ClientTest do
       {:ok, my_headers: Map.merge(@my_headers, %{"content-type" => "application/json"})}
     end
 
-    test "returns okay when sucessful", %{bypass: bypass, my_headers: my_headers} do
-      Bypass.expect_once(bypass, "PUT", "/my-index", fn conn ->
+    test "returns okay when sucessful", %{my_headers: my_headers} do
+      plug_fun = fn %Plug.Conn{method: "PUT", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
-      assert {:ok, @resp_success} = Client.put("/my-index", my_headers, @my_body)
+      assert {:ok, @resp_success} =
+               Client.put("/my-index", my_headers, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns okay when unsucessful", %{bypass: bypass, my_headers: my_headers} do
-      Bypass.expect_once(bypass, "PUT", "/my-index", fn conn ->
+    test "returns okay when unsucessful", %{my_headers: my_headers} do
+      plug_fun = fn %Plug.Conn{method: "PUT", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -468,31 +463,32 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.put("/my-index", my_headers, @my_body)
+              }} == Client.put("/my-index", my_headers, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
   describe "put/3 with body" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "PUT", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "PUT", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
-      assert {:ok, @resp_success} = Client.put("/my-index", nil, @my_body)
+      assert {:ok, @resp_success} =
+               Client.put("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns okay when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "PUT", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "PUT", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -503,36 +499,34 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.put("/my-index", nil, @my_body)
+              }} == Client.put("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
   describe "put/4 with options" do
-    @tag :capture_log
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "PUT", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "PUT", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
         "a=b" = conn.query_string
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
       assert {:ok, @resp_success} =
-               Client.put("/my-index", nil, @my_body, a: :b, http_opts: [c: :d])
+               Client.put("/my-index", nil, @my_body, a: :b, req_opts: [plug: plug_fun])
     end
 
-    @tag :capture_log
-    test "returns okay when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "PUT", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "PUT", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
         "a=b" = conn.query_string
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -543,29 +537,29 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.put("/my-index", nil, @my_body, a: :b, http_opts: [c: :d])
+              }} == Client.put("/my-index", nil, @my_body, a: :b, req_opts: [plug: plug_fun])
     end
   end
 
   describe "delete/1" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "DELETE", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "DELETE", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         Plug.Conn.resp(conn, 200, "")
-      end)
+      end
 
-      assert {:ok, nil} = Client.delete("/my-index", nil, @my_body)
+      assert {:ok, nil} = Client.delete("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns an error when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "DELETE", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns an error when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "DELETE", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -578,7 +572,7 @@ defmodule ElasticsearchEx.ClientTest do
                  type: error["type"],
                  original: error
                }
-             } == Client.delete("/my-index", nil, @my_body)
+             } == Client.delete("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
@@ -587,28 +581,29 @@ defmodule ElasticsearchEx.ClientTest do
       {:ok, my_headers: Map.merge(@my_headers, %{"content-type" => "application/json"})}
     end
 
-    test "returns okay when sucessful", %{bypass: bypass, my_headers: my_headers} do
-      Bypass.expect_once(bypass, "DELETE", "/my-index", fn conn ->
+    test "returns okay when sucessful", %{my_headers: my_headers} do
+      plug_fun = fn %Plug.Conn{method: "DELETE", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
-      assert {:ok, @resp_success} = Client.delete("/my-index", my_headers, @my_body)
+      assert {:ok, @resp_success} =
+               Client.delete("/my-index", my_headers, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns okay when unsucessful", %{bypass: bypass, my_headers: my_headers} do
-      Bypass.expect_once(bypass, "DELETE", "/my-index", fn conn ->
+    test "returns okay when unsucessful", %{my_headers: my_headers} do
+      plug_fun = fn %Plug.Conn{method: "DELETE", request_path: "/my-index"} = conn ->
         ["Hello World!"] = Plug.Conn.get_req_header(conn, "x-custom-header")
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -619,31 +614,32 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.delete("/my-index", my_headers, @my_body)
+              }} == Client.delete("/my-index", my_headers, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
   describe "delete/3 with body" do
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "DELETE", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "DELETE", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
-      assert {:ok, @resp_success} = Client.delete("/my-index", nil, @my_body)
+      assert {:ok, @resp_success} =
+               Client.delete("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
 
-    test "returns okay when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "DELETE", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "DELETE", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -654,36 +650,34 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.delete("/my-index", nil, @my_body)
+              }} == Client.delete("/my-index", nil, @my_body, req_opts: [plug: plug_fun])
     end
   end
 
   describe "delete/4 with options" do
-    @tag :capture_log
-    test "returns okay when sucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "DELETE", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when sucessful" do
+      plug_fun = fn %Plug.Conn{method: "DELETE", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
         "a=b" = conn.query_string
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(200, Jason.encode!(@resp_success))
-      end)
+      end
 
       assert {:ok, @resp_success} =
-               Client.delete("/my-index", nil, @my_body, a: :b, http_opts: [c: :d])
+               Client.delete("/my-index", nil, @my_body, a: :b, req_opts: [plug: plug_fun])
     end
 
-    @tag :capture_log
-    test "returns okay when unsucessful", %{bypass: bypass} do
-      Bypass.expect_once(bypass, "DELETE", "/my-index", fn conn ->
-        {:ok, ~s<{"query":{"match_all":{}}}>, conn} = Plug.Conn.read_body(conn)
+    test "returns okay when unsucessful" do
+      plug_fun = fn %Plug.Conn{method: "DELETE", request_path: "/my-index"} = conn ->
+        {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
         "a=b" = conn.query_string
 
         conn
         |> Plug.Conn.put_resp_header("content-type", "application/json")
         |> Plug.Conn.resp(@resp_error["status"], Jason.encode!(@resp_error))
-      end)
+      end
 
       error = @resp_error["error"]
 
@@ -694,7 +688,7 @@ defmodule ElasticsearchEx.ClientTest do
                 status: @resp_error["status"],
                 type: error["type"],
                 original: error
-              }} == Client.delete("/my-index", nil, @my_body, a: :b, http_opts: [c: :d])
+              }} == Client.delete("/my-index", nil, @my_body, a: :b, req_opts: [plug: plug_fun])
     end
   end
 end

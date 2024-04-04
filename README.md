@@ -19,16 +19,13 @@ Documentation can be found at https://hexdocs.pm/elasticsearch_ex.
 ### Configure your cluster
 
 ```elixir
-# Define the `any_http` client adapter
-config :any_http, client_adapter: AnyHttp.Adapters.Httpc
-
 # Configure ElasticsearchEx
 config :elasticsearch_ex,
   clusters: %{
     default: %{
       endpoint: "https://elastic:elastic@localhost:9200",
       # For development only, if not specified, SSL is configured for you.
-      http_opts: [ssl: [verify: :verify_none]]
+      req_opts: [ssl: [verify: :verify_none]]
     }
   }
 ```

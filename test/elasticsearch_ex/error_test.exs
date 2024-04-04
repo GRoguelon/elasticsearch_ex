@@ -10,7 +10,7 @@ defmodule ElasticsearchEx.ErrorTest do
   @error %{"reason" => @reason, "type" => @error_type, "root_cause" => @root_cause}
 
   setup_all do
-    response = %AnyHttp.Response{status: 400, body: %{"error" => @error}}
+    response = %Req.Response{status: 400, body: %{"error" => @error}}
 
     {:ok, response: response}
   end
@@ -22,7 +22,7 @@ defmodule ElasticsearchEx.ErrorTest do
   end
 
   describe "callback exception/1" do
-    test "accepts a AnyHttp.Response argument and returns an error", %{response: response} do
+    test "accepts a Req.Response argument and returns an error", %{response: response} do
       assert %Error{
                status: 400,
                reason: @reason,
@@ -34,7 +34,7 @@ defmodule ElasticsearchEx.ErrorTest do
   end
 
   describe "callback message/1" do
-    test "accepts a AnyHttp.Response argument and returns an error", %{response: response} do
+    test "accepts a Req.Response argument and returns an error", %{response: response} do
       error = Error.exception(response)
 
       assert @reason = Error.message(error)

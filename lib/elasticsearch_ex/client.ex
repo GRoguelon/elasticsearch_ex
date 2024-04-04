@@ -5,6 +5,8 @@ defmodule ElasticsearchEx.Client do
 
   ## Module attributes
 
+  @redact_auth Mix.env() == :prod
+
   @content_type_key "content-type"
 
   @application_json "application/json"
@@ -17,18 +19,19 @@ defmodule ElasticsearchEx.Client do
 
   def request(method, path, headers, body, opts \\ []) when is_list(opts) do
     {cluster, opts} = get_cluster_configuration(opts)
-    {http_opts, query} = prepare_options(cluster, opts)
-    uri = prepare_uri(cluster, path, query)
-    {headers, uri} = prepare_headers(cluster, uri, headers || @default_headers)
-    body = prepare_body!(headers, body)
 
-    # URI.to_string(uri) |> IO.inspect(label: "URL")
-
-    AnyHttp.request(method, uri, headers, body, http_opts)
-    |> maybe_decode_json_body!()
+    Req.new(method: method, redact_auth: @redact_auth, compressed: true)
+    |> set_uri_and_userinfo(cluster, path)
+    |> set_headers(cluster, headers)
+    |> set_body(body)
+    |> set_query_params(cluster, opts)
+    |> Req.Request.append_response_steps(nilify_empty_body: &nilify_empty_body/1)
+    # |> Req.Request.append_request_steps(inspect: &IO.inspect/1)
+    |> Req.request()
     |> parse_result()
   end
 
+  @spec head(binary(), nil | map(), keyword()) :: :ok | :error
   def head(path, headers \\ nil, opts \\ []) do
     case request(:head, path, headers, nil, opts) do
       {:ok, nil} ->
@@ -43,7 +46,7 @@ defmodule ElasticsearchEx.Client do
     request(:get, path, headers, body, opts)
   end
 
-  def post(path, headers \\ nil, body \\ "", opts \\ []) do
+  def post(path, headers \\ nil, body \\ nil, opts \\ []) do
     request(:post, path, headers, body, opts)
   end
 
@@ -63,29 +66,17 @@ defmodule ElasticsearchEx.Client do
 
   ## Private functions
 
-  defp parse_result({:ok, %{status: status, body: body}}) when status in 200..299 do
+  defp parse_result({:ok, %Req.Response{status: status, body: body}}) when status in 200..299 do
     {:ok, body}
   end
 
-  defp parse_result({:ok, %{status: status} = response}) when status in 300..599 do
+  defp parse_result({:ok, %Req.Response{status: status} = response}) when status in 300..599 do
     {:error, ElasticsearchEx.Error.exception(response)}
   end
 
   defp parse_result({:error, error}) do
     raise "Unknown error: #{inspect(error)}"
   end
-
-  defp maybe_decode_json_body!({:ok, %{headers: headers, body: body} = response} = result) do
-    content_type = Map.get(headers, @content_type_key)
-
-    if content_type == [@application_json] and is_binary(body) and body != "" do
-      {:ok, %{response | body: Jason.decode!(body)}}
-    else
-      result
-    end
-  end
-
-  defp maybe_decode_json_body!(any), do: any
 
   defp get_cluster_configuration(opts) do
     {cluster, opts} = Keyword.pop(opts, :cluster, :default)
@@ -100,50 +91,48 @@ defmodule ElasticsearchEx.Client do
     end
   end
 
-  defp prepare_uri(cluster, path, []) do
-    cluster |> Map.fetch!(:endpoint) |> URI.new!() |> URI.merge(path)
+  defp set_uri_and_userinfo(%Req.Request{} = req, cluster, path) do
+    uri = cluster |> Map.fetch!(:endpoint) |> URI.new!() |> URI.merge(path)
+    auth = uri.userinfo && {:basic, uri.userinfo}
+    uri = %{uri | userinfo: nil}
+
+    Req.merge(req, url: uri, auth: auth)
   end
 
-  defp prepare_uri(cluster, path, query) do
-    uri_query = URI.encode_query(query)
-    uri = prepare_uri(cluster, path, [])
+  defp set_query_params(%Req.Request{} = req, cluster, opts) do
+    global_req_opts = Map.get(cluster, :req_opts, [])
+    {req_opts, query} = Keyword.pop(opts, :req_opts, [])
+    req_opts = Keyword.merge(global_req_opts, req_opts)
 
-    %{uri | query: uri_query}
+    req |> Req.merge(params: query) |> Req.merge(req_opts)
   end
 
-  defp prepare_options(cluster, opts) do
-    global_http_opts = Map.get(cluster, :http_opts, [])
-    {http_opts, query} = Keyword.pop(opts, :http_opts, [])
-    http_opts = Keyword.merge(global_http_opts, http_opts)
-
-    {http_opts, query}
-  end
-
-  defp prepare_headers(cluster, uri, headers) when is_map(headers) do
+  defp set_headers(%Req.Request{} = req, cluster, headers) do
     headers =
       (Map.get(cluster, :headers) || %{})
-      |> Map.merge(headers)
+      |> Map.merge(headers || @default_headers)
       |> Map.reject(fn {_key, value} -> is_nil(value) end)
 
-    if is_binary(uri.userinfo) do
-      headers = Map.put(headers, "authorization", "Basic #{Base.encode64(uri.userinfo)}")
-      uri = %{uri | userinfo: nil}
-
-      {headers, uri}
-    else
-      {headers, uri}
-    end
+    Req.merge(req, headers: headers)
   end
 
-  defp prepare_body!(%{@content_type_key => @application_json}, body)
-       when not is_nil(body) and body != "" do
-    Jason.encode!(body)
+  defp set_body(%Req.Request{} = req, nil), do: Req.merge(req, body: "")
+
+  defp set_body(%Req.Request{headers: %{@content_type_key => [@application_ndjson]}} = req, body) do
+    Req.merge(req, body: ElasticsearchEx.Ndjson.encode!(body), compress_body: true)
   end
 
-  defp prepare_body!(%{@content_type_key => @application_ndjson}, body)
-       when not is_nil(body) and body != "" do
-    ElasticsearchEx.Ndjson.encode!(body)
+  defp set_body(%Req.Request{headers: %{@content_type_key => [@application_json]}} = req, body) do
+    Req.merge(req, json: body, compress_body: true)
   end
 
-  defp prepare_body!(_headers, body), do: body
+  defp set_body(%Req.Request{} = req, body), do: Req.merge(req, body: body, compress_body: true)
+
+  defp nilify_empty_body({request, %Req.Response{body: ""} = response}) do
+    {request, %{response | body: nil}}
+  end
+
+  defp nilify_empty_body({request, response}) do
+    {request, response}
+  end
 end

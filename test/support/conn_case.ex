@@ -13,18 +13,6 @@ defmodule ElasticsearchEx.ConnCase do
 
   ## Private functions
 
-  def setup_bypass(_tags) do
-    bypass = Bypass.open()
-    original = Application.get_env(:elasticsearch_ex, :clusters)
-    on_exit(fn -> Application.put_env(:elasticsearch_ex, :clusters, original) end)
-
-    Application.put_env(:elasticsearch_ex, :clusters, %{
-      default: %{endpoint: "http://@localhost:#{bypass.port}"}
-    })
-
-    {:ok, bypass: bypass}
-  end
-
   def create_index(index_name, properties) do
     ElasticsearchEx.Client.delete("/#{index_name}", nil, nil)
 

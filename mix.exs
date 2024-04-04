@@ -2,7 +2,7 @@ defmodule ElasticsearchEx.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/GRoguelon/elasticsearch_ex"
-  @version "1.3.0"
+  @version "1.4.0"
 
   def project do
     [
@@ -77,7 +77,7 @@ defmodule ElasticsearchEx.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:any_http, "~> 0.6"},
+      {:req, "~> 0.4"},
       {:jason, "~> 1.4"},
 
       ## Dev dependencies
@@ -85,7 +85,7 @@ defmodule ElasticsearchEx.MixProject do
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
 
       ## Test dependencies
-      {:bypass, "~> 2.1", only: :test},
+      {:plug, "~> 1.15", only: :test},
 
       ## Dev & Test dependencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

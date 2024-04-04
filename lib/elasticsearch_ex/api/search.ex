@@ -344,7 +344,7 @@ defmodule ElasticsearchEx.Api.Search do
   def create_pit(index, opts \\ []) when is_index(index) do
     index
     |> format_path(:_pit)
-    |> Client.post(nil, "", opts)
+    |> Client.post(nil, nil, opts)
   end
 
   @doc """
