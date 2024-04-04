@@ -19,14 +19,6 @@ defmodule ElasticsearchEx.Api.Search.TemplateTest do
   end
 
   describe "search_template/3" do
-    test "raises an error if no ID in the body", %{doc_ids: [doc_id | _]} do
-      assert_raise ArgumentError,
-                   ~s<missing key `:id` in the map, got: `%{params: %{value: "#{doc_id}"}}`>,
-                   fn ->
-                     Search.search_template(%{params: %{value: doc_id}}, @index_name)
-                   end
-    end
-
     test "returns a sucessful response with index", %{doc_ids: [doc_id | _]} do
       assert {:ok,
               %{

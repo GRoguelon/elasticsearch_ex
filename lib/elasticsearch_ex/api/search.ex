@@ -13,8 +13,6 @@ defmodule ElasticsearchEx.Api.Search do
       is_name!: 1
     ]
 
-  import ElasticsearchEx.Utils
-
   alias ElasticsearchEx.Client
 
   ## Typespecs

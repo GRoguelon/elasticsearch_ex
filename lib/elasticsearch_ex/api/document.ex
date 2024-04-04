@@ -10,8 +10,6 @@ defmodule ElasticsearchEx.Api.Document do
       is_name!: 1
     ]
 
-  import ElasticsearchEx.Utils, only: [format_path: 2]
-
   require Logger
 
   alias ElasticsearchEx.Client
@@ -297,9 +295,7 @@ defmodule ElasticsearchEx.Api.Document do
       end
     end)
 
-    index
-    |> format_path(:_mget)
-    |> Client.post(nil, %{docs: documents}, opts)
+    Client.post([index, "/_mget"], nil, %{docs: documents}, opts)
   end
 
   @doc """

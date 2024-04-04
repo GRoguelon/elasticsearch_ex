@@ -45,36 +45,6 @@ defmodule ElasticsearchEx.Utils do
     ["" | segments] |> Enum.reject(&is_nil/1) |> Enum.join("/")
   end
 
-  @deprecated "use `generate_path/1` instead"
-  @spec format_path(Enumerable.t() | nil | atom() | binary(), atom() | binary()) :: binary()
-  def format_path(nil, operation) when is_name!(operation) do
-    "/#{operation}"
-  end
-
-  def format_path(prefix, operation) when is_enum(prefix) do
-    prefix |> Enum.join(",") |> format_path(operation)
-  end
-
-  def format_path(prefix, operation) when is_name(prefix) and is_name!(operation) do
-    "/#{prefix}/#{operation}"
-  end
-
-  @deprecated "use `generate_path/1` instead"
-  @spec format_path(nil | Enumerable.t() | binary(), atom() | binary(), atom() | binary()) ::
-          binary()
-  def format_path(nil, operation, suffix) when is_name!(operation) and is_identifier(suffix) do
-    "/#{operation}/#{suffix}"
-  end
-
-  def format_path(prefix, operation, suffix) when is_enum(prefix) do
-    prefix |> Enum.join(",") |> format_path(operation, suffix)
-  end
-
-  def format_path(prefix, operation, suffix)
-      when is_name(prefix) and is_name!(operation) and is_identifier(suffix) do
-    "/#{prefix}/#{operation}/#{suffix}"
-  end
-
   ## Private functions
 
   if System.version() |> Version.parse!() |> Version.match?("~> 1.15") do
