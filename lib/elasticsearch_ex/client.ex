@@ -3,6 +3,8 @@ defmodule ElasticsearchEx.Client do
   Provides the functions to make HTTP calls.
   """
 
+  import ElasticsearchEx.Utils, only: [append_path_to_uri: 2]
+
   ## Module attributes
 
   @redact_auth Mix.env() == :prod
@@ -92,7 +94,7 @@ defmodule ElasticsearchEx.Client do
   end
 
   defp set_uri_and_userinfo(%Req.Request{} = req, cluster, path) do
-    uri = cluster |> Map.fetch!(:endpoint) |> URI.new!() |> URI.merge(path)
+    uri = cluster |> Map.fetch!(:endpoint) |> URI.new!() |> append_path_to_uri(path)
     auth = uri.userinfo && {:basic, uri.userinfo}
     uri = %{uri | userinfo: nil}
 

@@ -19,6 +19,8 @@ defmodule ElasticsearchEx.Api.Search do
 
   ## Typespecs
 
+  @type response :: ElasticsearchEx.response()
+
   @type query :: ElasticsearchEx.query()
 
   @type index :: ElasticsearchEx.index()
@@ -44,9 +46,9 @@ defmodule ElasticsearchEx.Api.Search do
       {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
   """
   @doc since: "1.5.0"
-  @spec search() :: ElasticsearchEx.response()
-  def search() do
-    search(@default_search, nil, [])
+  @spec search() :: response()
+  def search do
+    Client.post("/_search", nil, @default_search, [])
   end
 
   @doc """
@@ -72,19 +74,19 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.5.0"
   def search(query_or_index_or_opts)
 
-  @spec search(query()) :: ElasticsearchEx.response()
+  @spec search(query()) :: response()
   def search(query) when is_map(query) do
-    search(query, nil, [])
+    Client.post("/_search", nil, query, [])
   end
 
-  @spec search(index()) :: ElasticsearchEx.response()
+  @spec search(index()) :: response()
   def search(index) when is_name(index) do
-    search(@default_search, index, [])
+    Client.post([index, "_search"], nil, @default_search, [])
   end
 
-  @spec search(opts()) :: ElasticsearchEx.response()
+  @spec search(opts()) :: response()
   def search(opts) when is_list(opts) do
-    search(@default_search, nil, opts)
+    Client.post("/_search", nil, @default_search, opts)
   end
 
   @doc """
@@ -110,19 +112,19 @@ defmodule ElasticsearchEx.Api.Search do
   @doc since: "1.5.0"
   def search(query_or_index, index_or_opts)
 
-  @spec search(query(), nil | index()) :: ElasticsearchEx.response()
+  @spec search(query(), nil | index()) :: response()
   def search(query, index) when is_map(query) and is_name(index) do
-    search(query, index, [])
+    Client.post([index, "_search"], nil, query, [])
   end
 
-  @spec search(nil | index(), opts()) :: ElasticsearchEx.response()
+  @spec search(nil | index(), opts()) :: response()
   def search(index, opts) when is_name(index) and is_list(opts) do
-    search(@default_search, index, opts)
+    Client.post([index, "_search"], nil, @default_search, opts)
   end
 
-  @spec search(query(), opts()) :: ElasticsearchEx.response()
+  @spec search(query(), opts()) :: response()
   def search(query, opts) when is_map(query) and is_list(opts) do
-    search(query, nil, opts)
+    Client.post("/_search", nil, query, opts)
   end
 
   @doc """
@@ -184,13 +186,30 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec search(query(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def search(query, nil, opts) when is_map(query) and is_list(opts) do
-    Client.post("/_search", nil, query, opts)
+  @spec search(query(), nil | index(), opts()) :: response()
+  def search(query, index, opts) do
+    Client.post([index, "_search"], nil, query, opts)
   end
 
-  def search(query, index, opts) when is_map(query) and is_name!(index) and is_list(opts) do
-    Client.post("/#{index}/_search", nil, query, opts)
+  @doc "Check `multi_search/3` for more information."
+  @doc since: "1.5.0"
+  @spec multi_search(Enumerable.t()) :: response()
+  def multi_search(queries) when is_enum(queries) do
+    Client.post("/_msearch", @ndjson_headers, queries, [])
+  end
+
+  @doc "Check `multi_search/3` for more information."
+  @doc since: "1.5.0"
+  def multi_search(queries, index_or_opts)
+
+  @spec multi_search(Enumerable.t(), nil | index()) :: response()
+  def multi_search(queries, index) when is_enum(queries) and is_name(index) do
+    Client.post([index, "_msearch"], @ndjson_headers, queries, [])
+  end
+
+  @spec multi_search(Enumerable.t(), opts()) :: response()
+  def multi_search(queries, opts) when is_enum(queries) and is_list(opts) do
+    Client.post("/_msearch", @ndjson_headers, queries, opts)
   end
 
   @doc """
@@ -275,11 +294,31 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec multi_search([query()], nil | index(), opts()) :: ElasticsearchEx.response()
-  def multi_search(queries, index \\ nil, opts \\ []) when is_list(queries) do
-    index
-    |> format_path(:_msearch)
-    |> Client.post(@ndjson_headers, queries, opts)
+  @spec multi_search(Enumerable.t(), nil | index(), opts()) :: response()
+  def multi_search(queries, index, opts) do
+    Client.post([index, "_msearch"], @ndjson_headers, queries, opts)
+  end
+
+  @doc "Check `async_search/3` for more information."
+  @doc since: "1.5.0"
+  @spec async_search(query()) :: response()
+  def async_search(query) when is_map(query) do
+    async_search(query, nil, [])
+    Client.post("_async_search", nil, query, [])
+  end
+
+  @doc "Check `async_search/3` for more information."
+  @doc since: "1.5.0"
+  def async_search(query, index_or_opts)
+
+  @spec async_search(query(), nil | index()) :: response()
+  def async_search(query, index) when is_map(query) and is_name(index) do
+    Client.post([index, "_async_search"], nil, query, [])
+  end
+
+  @spec async_search(query(), opts()) :: response()
+  def async_search(query, opts) when is_map(query) and is_list(opts) do
+    Client.post("_async_search", nil, query, opts)
   end
 
   @doc """
@@ -331,12 +370,9 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec async_search(query(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def async_search(query, index \\ nil, opts \\ [])
-      when is_map(query) do
-    index
-    |> format_path(:_async_search)
-    |> Client.post(nil, query, opts)
+  @spec async_search(query(), nil | index(), opts()) :: response()
+  def async_search(query, index, opts) do
+    Client.post([index, "_async_search"], nil, query, opts)
   end
 
   @doc """
@@ -374,9 +410,8 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec get_async_search(binary(), opts()) :: ElasticsearchEx.response()
-  def get_async_search(async_search_id, opts \\ [])
-      when is_binary(async_search_id) do
+  @spec get_async_search(binary(), opts()) :: response()
+  def get_async_search(async_search_id, opts \\ []) when is_identifier(async_search_id) do
     Client.get("/_async_search/#{async_search_id}", nil, nil, opts)
   end
 
@@ -403,9 +438,8 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec get_async_search_status(binary(), opts()) :: ElasticsearchEx.response()
-  def get_async_search_status(async_search_id, opts \\ [])
-      when is_binary(async_search_id) do
+  @spec get_async_search_status(binary(), opts()) :: response()
+  def get_async_search_status(async_search_id, opts \\ []) when is_identifier(async_search_id) do
     Client.get("/_async_search/status/#{async_search_id}", nil, nil, opts)
   end
 
@@ -420,10 +454,30 @@ defmodule ElasticsearchEx.Api.Search do
       nil
   """
   @doc since: "1.0.0"
-  @spec delete_async_search(binary(), opts()) :: ElasticsearchEx.response()
-  def delete_async_search(async_search_id, opts \\ [])
-      when is_binary(async_search_id) do
+  @spec delete_async_search(binary(), opts()) :: response()
+  def delete_async_search(async_search_id, opts \\ []) when is_identifier(async_search_id) do
     Client.delete("/_async_search/#{async_search_id}", nil, nil, opts)
+  end
+
+  @doc "Check `create_pit/2` for more information."
+  @doc since: "1.5.0"
+  @spec create_pit() :: response()
+  def create_pit do
+    Client.post("/_all/_pit", nil, nil, [])
+  end
+
+  @doc "Check `create_pit/2` for more information."
+  @doc since: "1.5.0"
+  def create_pit(index_or_opts)
+
+  @spec create_pit(nil | index()) :: response()
+  def create_pit(index) when is_name(index) do
+    Client.post([index || "_all", "_pit"], nil, nil, [])
+  end
+
+  @spec create_pit(opts()) :: response()
+  def create_pit(opts) do
+    Client.post("/_all/_pit", nil, nil, opts)
   end
 
   @doc """
@@ -443,11 +497,9 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec create_pit(index(), opts()) :: ElasticsearchEx.response()
-  def create_pit(index, opts \\ []) when is_name!(index) do
-    index
-    |> format_path(:_pit)
-    |> Client.post(nil, nil, opts)
+  @spec create_pit(nil | index(), opts()) :: response()
+  def create_pit(index, opts) do
+    Client.post([index || "_all", "_pit"], nil, nil, opts)
   end
 
   @doc """
@@ -461,8 +513,8 @@ defmodule ElasticsearchEx.Api.Search do
       {:ok, %{"num_freed" => 1, "succeeded" => true}}
   """
   @doc since: "1.0.0"
-  @spec close_pit(binary(), opts()) :: ElasticsearchEx.response()
-  def close_pit(pit_id, opts \\ []) when is_binary(pit_id) do
+  @spec close_pit(binary(), opts()) :: response()
+  def close_pit(pit_id, opts \\ []) when is_identifier(pit_id) do
     Client.delete("/_pit", nil, %{id: pit_id}, opts)
   end
 
@@ -472,6 +524,11 @@ defmodule ElasticsearchEx.Api.Search do
   Supported field types are `keyword`, `constant_keyword`, `flattened`, `version` and `ip`.
 
   This is used for auto-complete.
+
+  ### Request body
+
+  Refer to the official [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-terms-enum.html#search-terms-enum-api-request-body)
+  for a detailed list of the body values.
 
   ### Examples
 
@@ -486,18 +543,13 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec terms_enum(map(), index(), opts()) :: ElasticsearchEx.response()
-  def terms_enum(query, index, opts \\ [])
-      when is_map(query) and is_name!(index) do
-    index
-    |> format_path(:_terms_enum)
-    |> Client.post(nil, query, opts)
+  @spec terms_enum(map(), index()) :: response()
+  def terms_enum(query, index, opts \\ []) when is_map(query) and is_name!(index) do
+    Client.post([index, "_terms_enum"], nil, query, opts)
   end
 
   @doc """
-  Point-in-time is automatically closed when its `keep_alive` has been elapsed. However keeping
-  point-in-times has a cost. Point-in-times should be closed as soon as they are no longer used in
-  search requests.
+  Retrieves the next batch of results for a scrolling search.
 
   ### Examples
 
@@ -524,7 +576,7 @@ defmodule ElasticsearchEx.Api.Search do
        }}
   """
   @doc since: "1.0.0"
-  @spec get_scroll(binary(), opts()) :: ElasticsearchEx.response()
+  @spec get_scroll(binary(), opts()) :: response()
   def get_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) do
     Client.post("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
   end
@@ -540,7 +592,7 @@ defmodule ElasticsearchEx.Api.Search do
       {:ok, %{"num_freed" => 1, "succeeded" => true}}
   """
   @doc since: "1.0.0"
-  @spec clear_scroll(binary(), opts()) :: ElasticsearchEx.response()
+  @spec clear_scroll(binary(), opts()) :: response()
   def clear_scroll(scroll_id, opts \\ []) when is_binary(scroll_id) do
     Client.delete("/_search/scroll", nil, %{scroll_id: scroll_id}, opts)
   end
@@ -562,12 +614,36 @@ defmodule ElasticsearchEx.Api.Search do
 
   """
   @doc since: "1.0.0"
-  @spec explain(query(), index(), document_id(), opts()) :: ElasticsearchEx.response()
-  def explain(query, index, document_id, opts \\ [])
-      when is_map(query) and is_name!(index) and is_identifier(document_id) do
-    index
-    |> format_path(:_explain, document_id)
-    |> Client.post(nil, query, opts)
+  @spec explain(query(), index(), document_id(), opts()) :: response()
+  def explain(query, index, document_id, opts \\ []) do
+    Client.post([index, :_explain, document_id], nil, query, opts)
+  end
+
+  @doc "Check `field_capabilities/3` for more information."
+  @doc since: "1.5.0"
+  @spec field_capabilities(binary() | [binary()]) :: response()
+  def field_capabilities(fields) do
+    fields_str = prepare_fields(fields)
+
+    Client.get("/_field_caps", nil, nil, fields: fields_str)
+  end
+
+  @doc "Check `field_capabilities/3` for more information."
+  @doc since: "1.5.0"
+  def field_capabilities(fields, index_or_opts)
+
+  @spec field_capabilities(fields, nil | index()) :: response() when fields: binary() | [binary()]
+  def field_capabilities(fields, index) when is_name(index) do
+    fields_str = prepare_fields(fields)
+
+    Client.get([index, :_field_caps], nil, nil, fields: fields_str)
+  end
+
+  @spec field_capabilities(fields, opts()) :: response() when fields: binary() | [binary()]
+  def field_capabilities(fields, opts) do
+    fields_str = prepare_fields(fields)
+
+    Client.get("/_field_caps", nil, nil, [{:fields, fields_str} | opts])
   end
 
   @doc """
@@ -581,41 +657,46 @@ defmodule ElasticsearchEx.Api.Search do
   for a detailed list of the parameters.
   """
   @doc since: "1.0.0"
-  @spec field_capabilities(binary() | [binary()], nil | index(), opts()) ::
-          ElasticsearchEx.response()
-  def field_capabilities(fields, index \\ nil, opts \\ []) do
-    fields_str =
-      cond do
-        is_binary(fields) ->
-          fields
+  @spec field_capabilities(fields, nil | index(), opts()) :: response()
+        when fields: binary() | [binary()]
+  def field_capabilities(fields, index, opts) do
+    fields_str = prepare_fields(fields)
 
-        is_enum(fields) ->
-          Enum.join(fields, ",")
+    Client.get([index, :_field_caps], nil, nil, [{:fields, fields_str} | opts])
+  end
 
-        true ->
-          raise ArgumentError, "the argument `fields` must be a binary or a list of binaries"
-      end
+  @doc "Check `profile/3` for more information."
+  @doc since: "1.5.0"
+  @spec profile(query()) :: response()
+  def profile(query) do
+    query |> Map.put(:profile, true) |> search(nil, [])
+  end
 
-    if fields_str == "" do
-      raise ArgumentError, "the argument `fields` cannot be an empty"
-    end
+  @doc "Check `profile/3` for more information."
+  @doc since: "1.5.0"
+  def profile(query, index_or_opts)
 
-    index
-    |> format_path(:_field_caps)
-    |> Client.get(nil, nil, [{:fields, fields_str} | opts])
+  @spec profile(query(), nil | index()) :: response()
+  def profile(query, index) when is_name(index) do
+    query |> Map.put(:profile, true) |> search(index, [])
+  end
+
+  @spec profile(query(), opts()) :: response()
+  def profile(query, opts) do
+    query |> Map.put(:profile, true) |> search(nil, opts)
   end
 
   @doc """
   Provides detailed timing information about the execution of individual components in a search request.
 
-  **Warning:** The Profile API is a debugging tool and adds significant overhead to search execution.
+  > #### Warning {: .warning}
+  >
+  > The Profile API is a debugging tool and adds significant overhead to search execution.
   """
   @doc since: "1.0.0"
-  @spec profile(query(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def profile(query, index \\ nil, opts \\ []) when is_map(query) do
-    query
-    |> Map.put(:profile, true)
-    |> search(index, opts)
+  @spec profile(query(), nil | index(), opts()) :: response()
+  def profile(query, index, opts) do
+    query |> Map.put(:profile, true) |> search(index, opts)
   end
 
   @doc """
@@ -627,12 +708,9 @@ defmodule ElasticsearchEx.Api.Search do
   for a detailed list of the parameters.
   """
   @doc since: "1.0.0"
-  @spec rank_evaluation(map(), index(), opts()) :: ElasticsearchEx.response()
-  def rank_evaluation(body, index, opts \\ [])
-      when is_map(body) and is_name!(index) do
-    index
-    |> format_path(:_rank_eval)
-    |> Client.post(nil, body, opts)
+  @spec rank_evaluation(map(), index(), opts()) :: response()
+  def rank_evaluation(body, index, opts \\ []) when is_name!(index) do
+    Client.post([index, "_rank_eval"], nil, body, opts)
   end
 
   @doc """
@@ -644,11 +722,9 @@ defmodule ElasticsearchEx.Api.Search do
   for a detailed list of the parameters.
   """
   @doc since: "1.0.0"
-  @spec search_shards(index(), opts()) :: ElasticsearchEx.response()
+  @spec search_shards(index(), opts()) :: response()
   def search_shards(index, opts \\ []) when is_name!(index) do
-    index
-    |> format_path(:_search_shards)
-    |> Client.get(nil, nil, opts)
+    Client.get([index, "_search_shards"], nil, nil, opts)
   end
 
   @doc """
@@ -660,14 +736,33 @@ defmodule ElasticsearchEx.Api.Search do
   for a detailed list of the parameters.
   """
   @doc since: "1.0.0"
-  @spec validate(query(), nil | index(), opts()) :: ElasticsearchEx.response()
+  @spec validate(query(), nil | index(), opts()) :: response()
   def validate(query, index \\ nil, opts \\ []) when is_map(query) do
-    index
-    |> format_path(:"_validate/query")
-    |> Client.post(nil, query, opts)
+    Client.post([index, "_validate/query"], nil, query, opts)
   end
 
   ## Public functions - Templates
+
+  @doc "Check `search_template/3` for more information."
+  @doc since: "1.5.0"
+  @spec search_template(map()) :: response()
+  def search_template(body) do
+    Client.post("_search/template", nil, body, [])
+  end
+
+  @doc "Check `search_template/3` for more information."
+  @doc since: "1.5.0"
+  def search_template(body, index_or_opts)
+
+  @spec search_template(map(), nil | index()) :: response()
+  def search_template(body, index) when is_name(index) do
+    Client.post([index, "_search/template"], nil, body, [])
+  end
+
+  @spec search_template(map(), opts()) :: response()
+  def search_template(body, opts) do
+    Client.post("_search/template", nil, body, opts)
+  end
 
   @doc """
   Runs a search with a [search template](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-template.html).
@@ -678,15 +773,36 @@ defmodule ElasticsearchEx.Api.Search do
   for a detailed list of the parameters.
   """
   @doc since: "1.0.0"
-  @spec search_template(map(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def search_template(body, index \\ nil, opts \\ []) when is_map(body) do
-    unless is_map_key(body, :id) do
-      raise ArgumentError, "missing key `:id` in the map, got: `#{inspect(body)}`"
-    end
+  @spec search_template(map(), nil | index(), opts()) :: response()
+  def search_template(body, index, opts) do
+    Client.post([index, "_search/template"], nil, body, opts)
+  end
 
-    index
-    |> format_path(:"_search/template")
-    |> Client.post(nil, body, opts)
+  @doc "Check `multi_search_template/3` for more information."
+  @doc since: "1.5.0"
+  @spec multi_search_template(Enumerable.t()) :: response()
+  def multi_search_template(body) do
+    queries = prepare_multi_search_template(body)
+
+    Client.post("/_msearch/template", @ndjson_headers, queries, [])
+  end
+
+  @doc "Check `multi_search_template/3` for more information."
+  @doc since: "1.5.0"
+  def multi_search_template(body, index_or_opts)
+
+  @spec multi_search_template(Enumerable.t(), nil | index()) :: response()
+  def multi_search_template(body, index) when is_name(body) do
+    queries = prepare_multi_search_template(body)
+
+    Client.post([index, "/_msearch/template"], @ndjson_headers, queries, [])
+  end
+
+  @spec multi_search_template(Enumerable.t(), opts()) :: response()
+  def multi_search_template(body, opts) do
+    queries = prepare_multi_search_template(body)
+
+    Client.post("/_msearch/template", @ndjson_headers, queries, opts)
   end
 
   @doc """
@@ -698,20 +814,32 @@ defmodule ElasticsearchEx.Api.Search do
   for a detailed list of the parameters.
   """
   @doc since: "1.0.0"
-  @spec multi_search_template(Enumerable.t(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def multi_search_template(body, index \\ nil, opts \\ []) when is_enum(body) do
-    queries =
-      Enum.flat_map(body, fn
-        {header, body} when is_map(header) and is_map(body) ->
-          [header, body]
+  @spec multi_search_template(Enumerable.t(), nil | index(), opts()) :: response()
+  def multi_search_template(body, index, opts) do
+    queries = prepare_multi_search_template(body)
 
-        body when is_map(body) ->
-          [%{}, body]
-      end)
+    Client.post([index, "/_msearch/template"], @ndjson_headers, queries, opts)
+  end
 
-    index
-    |> format_path(:"_msearch/template")
-    |> Client.post(@ndjson_headers, queries, opts)
+  @doc "Check `render_search_template/3` for more information."
+  @doc since: "1.5.0"
+  @spec render_search_template(map()) :: response()
+  def render_search_template(body) do
+    Client.post("/_render/template", nil, body, [])
+  end
+
+  @doc "Check `render_search_template/3` for more information."
+  @doc since: "1.5.0"
+  def render_search_template(body, template_id_or_opts)
+
+  @spec render_search_template(map(), nil | binary()) :: response()
+  def render_search_template(body, template_id) when is_name(template_id) do
+    Client.post(["/_render/template", template_id], nil, body, [])
+  end
+
+  @spec render_search_template(map(), nil | binary(), opts()) :: response()
+  def render_search_template(body, opts) do
+    Client.post("/_render/template", nil, body, opts)
   end
 
   @doc """
@@ -723,12 +851,9 @@ defmodule ElasticsearchEx.Api.Search do
   for a detailed list of the request body.
   """
   @doc since: "1.0.0"
-  @spec render_search_template(map(), nil | binary(), opts()) :: ElasticsearchEx.response()
-  def render_search_template(body, template_id \\ nil, opts \\ [])
-      when is_map(body) do
-    path = [:"_render/template", template_id] |> Enum.reject(&is_nil/1) |> Enum.join("/")
-
-    Client.post(path, nil, body, opts)
+  @spec render_search_template(map(), nil | binary(), opts()) :: response()
+  def render_search_template(body, template_id, opts) do
+    Client.post(["/_render/template", template_id], nil, body, opts)
   end
 
   ## Public functions - Geospatial
@@ -743,10 +868,44 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec search_vector_tile(index(), atom() | binary(), integer(), integer(), integer(), opts()) ::
-          ElasticsearchEx.response()
+          response()
   def search_vector_tile(index, field, zoom, x, y, opts \\ [])
       when is_name!(index) and is_name!(field) and is_integer(zoom) and zoom in 0..29 and
              is_integer(x) and is_integer(y) do
     Client.get("#{index}/_mvt/#{field}/#{zoom}/#{x}/#{y}", nil, nil, opts)
+  end
+
+  ## Private functions
+
+  @spec prepare_fields(binary() | [binary()]) :: binary()
+  defp prepare_fields(fields) do
+    fields_str =
+      cond do
+        is_enum(fields) ->
+          Enum.map_join(fields, ",", &to_string/1)
+
+        is_binary(fields) ->
+          fields
+
+        true ->
+          raise ArgumentError, "the argument `fields` must be a binary or a list of binaries"
+      end
+
+    if fields_str == "" do
+      raise ArgumentError, "the argument `fields` cannot be an empty"
+    end
+
+    fields_str
+  end
+
+  @spec prepare_multi_search_template(Enumerable.t()) :: [map()]
+  defp prepare_multi_search_template(body) do
+    Enum.flat_map(body, fn
+      {header, body} when is_map(header) and is_map(body) ->
+        [header, body]
+
+      body when is_map(body) ->
+        [%{}, body]
+    end)
   end
 end
