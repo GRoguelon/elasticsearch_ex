@@ -6,7 +6,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
 
   import ElasticsearchEx.Guards
-  import ElasticsearchEx.Utils, only: [format_path: 2, format_path: 3]
+  import ElasticsearchEx.Utils
 
   alias ElasticsearchEx.Client
 
@@ -688,8 +688,7 @@ defmodule ElasticsearchEx.Api.Search do
   """
   @doc since: "1.0.0"
   @spec multi_search_template(Enumerable.t(), nil | index(), opts()) :: ElasticsearchEx.response()
-  def multi_search_template(body, index \\ nil, opts \\ [])
-      when is_enum(body) do
+  def multi_search_template(body, index \\ nil, opts \\ []) when is_enum(body) do
     queries =
       Enum.flat_map(body, fn
         {header, body} when is_map(header) and is_map(body) ->
@@ -735,7 +734,7 @@ defmodule ElasticsearchEx.Api.Search do
   @spec search_vector_tile(index(), atom() | binary(), integer(), integer(), integer(), opts()) ::
           ElasticsearchEx.response()
   def search_vector_tile(index, field, zoom, x, y, opts \\ [])
-      when is_index(index) and is_identifier(field) and is_integer(zoom) and zoom in 0..29 and
+      when is_name!(index) and is_name!(field) and is_integer(zoom) and zoom in 0..29 and
              is_integer(x) and is_integer(y) do
     Client.get("#{index}/_mvt/#{field}/#{zoom}/#{x}/#{y}", nil, nil, opts)
   end
