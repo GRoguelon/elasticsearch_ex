@@ -790,7 +790,7 @@ defmodule ElasticsearchEx.Api.Search do
   def multi_search_template(body, index_or_opts)
 
   @spec multi_search_template(Enumerable.t(), nil | index()) :: response()
-  def multi_search_template(body, index) when is_name(body) do
+  def multi_search_template(body, index) when is_name(index) do
     queries = prepare_multi_search_template(body)
 
     Client.post([index, "/_msearch/template"], @ndjson_headers, queries, [])
