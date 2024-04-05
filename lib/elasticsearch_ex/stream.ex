@@ -54,79 +54,91 @@ defmodule ElasticsearchEx.Stream do
   ## Examples
 
       iex> ElasticsearchEx.Stream.stream(
-      ...>   %{query: %{match_all: %{}}, sort: [%{message: :desc}]},
+      ...>   %{query: %{match_all: %{}}, sort: [%{message: :desc}], size: 500},
       ...>   :my_index,
-      ...>   keep_alive: "30s",
-      ...>   per_page: 500
+      ...>   keep_alive: "30s"
       ...> )
       #Function<52.124013645/2 in Stream.resource/3>
   """
   @doc since: "1.3.0"
   @spec stream(query(), nil | index(), opts()) :: Enumerable.t()
   def stream(query, index, opts) do
-    {keep_alive, opts} = Keyword.pop(opts, :keep_alive, "10s")
-    {per_page, opts} = Keyword.pop(opts, :per_page, 100)
-    prepared_query = prepare_query(query, per_page)
+    unless Map.has_key?(query, :size) do
+      Logger.warning(
+        "The `size` option is not set, it is recommended to set it to take advantage of Stream."
+      )
+    end
 
-    Stream.resource(start_fun(index, keep_alive), next_fun(prepared_query, opts), &after_fun/1)
+    prepared_query = prepare_query(query)
+    {pit_id, opts} = Keyword.pop(opts, :pit_id)
+    {keep_alive, opts} = Keyword.pop(opts, :keep_alive, "10s")
+    pit_id = if(is_binary(pit_id) and pit_alive?(pit_id), do: pit_id)
+
+    do_stream(prepared_query, index, pit_id, keep_alive, opts)
   end
 
   ## Private functions
 
-  @spec start_fun(index(), binary()) :: (() -> acc())
-  defp start_fun(index, keep_alive) do
+  defp pit_alive?(pit_id) do
+    {status, _} = SearchApi.search(%{query: %{match_none: %{}}, pit: %{id: pit_id}})
+
+    status == :ok
+  end
+
+  defp do_stream(query, index, nil, keep_alive, opts) do
+    Stream.resource(create_pit(index, keep_alive), next_fun(query, opts), &close_pit/1)
+  end
+
+  defp do_stream(query, _index, pit_id, keep_alive, opts) do
+    Stream.resource(return_acc(pit_id, keep_alive), next_fun(query, opts), &Function.identity/1)
+  end
+
+  @spec return_acc(binary(), binary()) :: (() -> acc())
+  defp return_acc(pit_id, keep_alive) do
+    fn -> do_return_acc(pit_id, keep_alive) end
+  end
+
+  @spec create_pit(index(), binary()) :: (() -> acc())
+  defp create_pit(index, keep_alive) do
     fn ->
-      {:ok, %{"id" => pit_id}} = SearchApi.create_pit(index, keep_alive: keep_alive)
+      case SearchApi.create_pit(index, keep_alive: keep_alive) do
+        {:ok, %{"id" => pit_id}} ->
+          Logger.debug("Created the PIT: #{pit_id}")
 
-      Logger.debug("Created the PIT: #{pit_id}")
+          do_return_acc(pit_id, keep_alive)
 
-      {%{id: pit_id, keep_alive: keep_alive}, nil}
+        {:error, error} ->
+          Logger.error("Unable to create the PIT: #{inspect(error)}")
+
+          raise error
+      end
     end
   end
 
   @spec next_fun(query(), keyword()) :: (acc() -> {:halt, pit()} | {nonempty_list(), acc()})
   defp next_fun(query, params) do
-    per_page = Map.fetch!(query, :size)
+    per_page = Map.get(query, :size, 10)
 
-    &do_next_fun(&1, query, params, per_page)
-  end
-
-  @spec do_next_fun(acc(), map(), keyword(), pos_integer()) ::
-          {:halt, pit()} | {nonempty_list(), acc()}
-  defp do_next_fun({pit, :end_of_stream}, _query, _params, _per_page) do
-    {:halt, pit}
-  end
-
-  defp do_next_fun({pit, search_after}, query, params, per_page) do
-    query = query |> generate_pit_query(pit) |> generate_search_after_query(search_after)
-
-    Logger.debug(
-      "Searching through the PIT: #{pit.id} and search_after: #{inspect(search_after)}"
-    )
-
-    case SearchApi.search(query, params) do
-      {:ok, %{"hits" => %{"hits" => []}}} ->
+    fn
+      {pit, :end_of_stream} ->
         {:halt, pit}
 
-      {:ok, %{"hits" => %{"hits" => hits}}} ->
-        if length(hits) < per_page do
-          {hits, {pit, :end_of_stream}}
-        else
-          search_after = hits |> List.last() |> Map.fetch!("sort")
+      {pit, search_after} ->
+        Logger.debug("Searching with search_after: #{inspect(search_after)}")
 
-          {hits, {pit, search_after}}
-        end
-
-      any ->
-        raise "unknown result: #{inspect(any)}"
+        query
+        |> Map.put(:pit, pit)
+        |> generate_search_after_query(search_after)
+        |> SearchApi.search(params)
+        |> parse_response(pit, per_page)
     end
   end
 
-  @spec after_fun(acc()) :: :ok
-  defp after_fun({pit, _search_after}), do: after_fun(pit)
+  @spec close_pit(acc()) :: :ok
+  defp close_pit({pit, _search_after}), do: close_pit(pit)
 
-  @spec after_fun(pit()) :: :ok
-  defp after_fun(%{id: pit_id}) do
+  @spec close_pit(pit()) :: :ok
+  defp close_pit(%{id: pit_id}) do
     case SearchApi.close_pit(pit_id) do
       {:ok, %{"num_freed" => _, "succeeded" => true}} ->
         Logger.debug("Deleted the PIT: #{pit_id}")
@@ -136,17 +148,11 @@ defmodule ElasticsearchEx.Stream do
     end
   end
 
-  @spec prepare_query(query(), pos_integer()) :: query()
-  defp prepare_query(query, per_page) do
+  @spec prepare_query(query()) :: query()
+  defp prepare_query(query) do
     query
-    |> Map.put(:size, per_page)
     |> Map.put(:track_total_hits, false)
     |> Map.update(:sort, @sort_shard_doc, &(&1 ++ @sort_shard_doc))
-  end
-
-  @spec generate_pit_query(query(), pit()) :: query()
-  defp generate_pit_query(query, pit) when is_map(pit) do
-    Map.put(query, :pit, pit)
   end
 
   @spec generate_search_after_query(query(), nil | list()) :: query()
@@ -155,4 +161,45 @@ defmodule ElasticsearchEx.Stream do
   end
 
   defp generate_search_after_query(query, _search_after), do: query
+
+  @spec do_return_acc(binary(), binary()) :: acc()
+  defp do_return_acc(pit_id, keep_alive) do
+    {%{id: pit_id, keep_alive: keep_alive}, nil}
+  end
+
+  @spec parse_response({:ok | :error, term()}, pit(), pos_integer()) ::
+          {:halt, pit()} | {nonempty_list(), acc()}
+  defp parse_response({:ok, %{"hits" => %{"hits" => []}}}, pit, _per_page) do
+    {:halt, pit}
+  end
+
+  defp parse_response({:ok, %{hits: %{hits: []}}}, pit, _per_page) do
+    {:halt, pit}
+  end
+
+  defp parse_response({:ok, %{"hits" => %{"hits" => hits}}}, pit, per_page) do
+    search_after =
+      if length(hits) < per_page do
+        :end_of_stream
+      else
+        hits |> List.last() |> Map.fetch!("sort")
+      end
+
+    {hits, {pit, search_after}}
+  end
+
+  defp parse_response({:ok, %{hits: %{hits: hits}}}, pit, per_page) do
+    search_after =
+      if length(hits) < per_page do
+        :end_of_stream
+      else
+        hits |> List.last() |> Map.fetch!(:sort)
+      end
+
+    {hits, {pit, search_after}}
+  end
+
+  defp parse_response(any, _pit, _per_page) do
+    raise "unknown result: #{inspect(any)}"
+  end
 end
