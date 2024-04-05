@@ -33,7 +33,6 @@ defmodule ElasticsearchEx.Client do
     |> parse_result()
   end
 
-  @spec head(binary(), nil | map(), keyword()) :: :ok | :error
   def head(path, headers \\ nil, opts \\ []) do
     case request(:head, path, headers, nil, opts) do
       {:ok, nil} ->
