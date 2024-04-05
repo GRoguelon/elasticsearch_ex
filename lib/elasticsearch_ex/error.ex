@@ -38,7 +38,7 @@ defmodule ElasticsearchEx.Error do
   @impl true
   def exception(%Req.Response{
         status: 404,
-        body: %{"_id" => doc_id, "result" => "not_found"} = body
+        body: %{"_id" => doc_id} = body
       }) do
     %__MODULE__{
       status: 404,
