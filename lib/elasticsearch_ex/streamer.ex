@@ -27,15 +27,6 @@ defmodule ElasticsearchEx.Streamer do
 
   @sort_shard_doc [%{_shard_doc: :asc}]
 
-  @shard_script_source """
-  String documentId = doc["_id"].value;
-  double modulo = Math.abs(documentId.hashCode() % params.nbr_shards);
-
-  return modulo == params.shard;
-  """
-
-  @shard_script %{lang: :painless, source: String.replace(@shard_script_source, "\n", " ")}
-
   ## Public functions
 
   @doc since: "1.5.0"
@@ -86,53 +77,7 @@ defmodule ElasticsearchEx.Streamer do
     do_stream(prepared_query, index, pit_id, keep_alive, opts)
   end
 
-  def shard(query, index, opts) do
-    {nbr_shards, opts} = Keyword.pop!(opts, :nbr_shards)
-    {shard, opts} = Keyword.pop!(opts, :shard)
-
-    query |> merge_script_query(nbr_shards, shard) |> IO.inspect() |> stream(index, opts)
-  end
-
   ## Private functions
-
-  defp merge_script_query(query, nbr_shards, shard) do
-    script = generate_shard_script(nbr_shards, shard)
-
-    do_merge_script_query(query, %{script: script})
-  end
-
-  defp do_merge_script_query(%{query: %{bool: %{filter: filters} = bool} = query} = q, script) do
-    bool = Map.replace!(bool, :filter, [%{script: script} | List.wrap(filters)])
-    query = Map.replace!(query, :bool, bool)
-
-    Map.replace(q, :query, query)
-  end
-
-  defp do_merge_script_query(%{query: %{bool: %{must: filters} = bool} = query} = q, script) do
-    bool = Map.replace!(bool, :must, [%{script: script} | List.wrap(filters)])
-    query = Map.replace!(query, :bool, bool)
-
-    Map.replace(q, :query, query)
-  end
-
-  defp do_merge_script_query(%{query: %{bool: bool} = query} = q, script) do
-    bool = Map.put(bool, :filter, script)
-    query = Map.replace!(query, :bool, bool)
-
-    Map.replace(q, :query, query)
-  end
-
-  defp do_merge_script_query(%{query: %{match_all: %{}}} = q, script) do
-    Map.replace(q, :query, script)
-  end
-
-  defp do_merge_script_query(%{query: query} = q, script) do
-    Map.replace(q, :query, %{bool: %{filter: [script, query]}})
-  end
-
-  defp generate_shard_script(nbr_shards, shard) do
-    %{script: Map.put(@shard_script, :params, %{nbr_shards: nbr_shards, shard: shard})}
-  end
 
   defp pit_alive?(pit_id) do
     {status, _} = SearchApi.search(%{query: %{match_none: %{}}, pit: %{id: pit_id}})

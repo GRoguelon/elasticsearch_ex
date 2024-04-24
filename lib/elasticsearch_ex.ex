@@ -60,5 +60,5 @@ defmodule ElasticsearchEx do
   """
   @doc since: "1.3.0"
   @spec stream(query(), nil | index(), keyword()) :: Enumerable.t()
-  defdelegate stream(query, index \\ nil, opts \\ []), to: ElasticsearchEx.Stream
+  defdelegate stream(query, index \\ nil, opts \\ []), to: ElasticsearchEx.Streamer
 end
