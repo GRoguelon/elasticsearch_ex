@@ -1,7 +1,7 @@
-defmodule ElasticsearchEx.StreamTest do
+defmodule ElasticsearchEx.StreamerTest do
   use ElasticsearchEx.ConnCase
 
-  alias ElasticsearchEx.Stream
+  alias ElasticsearchEx.Streamer
 
   ## Module attributes
 
@@ -14,7 +14,7 @@ defmodule ElasticsearchEx.StreamTest do
   setup_all do
     on_exit(fn -> delete_index(@index_name) end)
     create_index(@index_name, %{message: %{type: :keyword}})
-    stream = Stream.stream(@query, @index_name, per_page: 1, keep_alive: "5s")
+    stream = @query |> Map.put(:size, 1) |> Streamer.stream(@index_name, keep_alive: "5s")
 
     {:ok, doc_ids: index_documents(@index_name, 3), stream: stream}
   end
@@ -55,8 +55,9 @@ defmodule ElasticsearchEx.StreamTest do
     test "runs the Stream with desc order", %{doc_ids: [doc_id1 | [doc_id2 | [doc_id3]]]} do
       stream =
         @query
+        |> Map.put(:size, 1)
         |> Map.put(:sort, [%{message: :desc}])
-        |> Stream.stream(@index_name, per_page: 1, keep_alive: "5s")
+        |> Streamer.stream(@index_name, keep_alive: "5s")
 
       assert [
                %{
