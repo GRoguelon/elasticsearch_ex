@@ -6,6 +6,18 @@
 * **Changes:**
   * Added variants for `ElasticsearchEx.Api.Search.search/3`
   * Reworked some guards
+  * Added variants for `ElasticsearchEx.search/3`
+  * Added `ElasticsearchEx.Api.Features` module
+  * Added variants for `ElasticsearchEx.Api.Search.multi_search/3`
+  * Added variants for `ElasticsearchEx.Api.Search.async_search/3`
+  * Added variants for `ElasticsearchEx.Api.Search.create_pit/3`
+  * Added variants for `ElasticsearchEx.Api.Search.field_capabilities/3`
+  * Added variants for `ElasticsearchEx.Api.Search.search_template/3`
+  * Added variants for `ElasticsearchEx.Api.Search.multi_search_template/3`
+  * Added variants for `ElasticsearchEx.Api.Search.render_search_template/3`
+  * Added `ElasticsearchEx.Sharder` experimental module
+  * Added `ElasticsearchEx.Streamer` experimental module
+  * Updated some development dependencies
 
 ## v1.4.0 (2024-04-04)
 

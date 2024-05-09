@@ -10,6 +10,7 @@ defmodule ElasticsearchEx.Api.FeaturesTest do
       assert {:ok, response} = Features.get()
       assert is_map(response)
       assert is_map_key(response, "features")
+
       Enum.map(response["features"], fn feature ->
         assert is_map_key(feature, "description")
         assert is_map_key(feature, "name")
@@ -22,6 +23,7 @@ defmodule ElasticsearchEx.Api.FeaturesTest do
       assert {:ok, response} = Features.reset()
       assert is_map(response)
       assert is_map_key(response, "features")
+
       Enum.map(response["features"], fn feature ->
         assert is_map_key(feature, "feature_name")
         assert is_map_key(feature, "status")
