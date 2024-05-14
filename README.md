@@ -1,5 +1,8 @@
 # Elasticsearch
 
+> [!WARNING]
+> The library is still unstable and the API might be broken with the next releases.
+
 `elasticsearch_ex` allows to interact with [Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html) cluster.
 
 ## Installation
