@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v1.6.0 (2024-05-15)
+
+* **New features:**
+  * Added a module `ElasticsearchEx.Serializer` to serialize document sources
+  * Added a module `ElasticsearchEx.Deserializer` to deserialize document sources
+
 ## v1.5.0 (2024-05-09)
 
 * **Changes:**
