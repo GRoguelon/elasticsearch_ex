@@ -1,6 +1,4 @@
 defmodule ElasticsearchEx.Deserializer do
-  @integer_range_types ~w[integer_range long_range]
-
   ## Public functions
 
   def deserialize_documents(stream, mapping) when is_struct(stream, Stream) do
@@ -52,7 +50,7 @@ defmodule ElasticsearchEx.Deserializer do
 
   # https://www.elastic.co/guide/en/elasticsearch/reference/current/range.html
   def deserialize_value(%{"gte" => gte, "lte" => lte}, %{"type" => type})
-      when type in @integer_range_types and is_integer(gte) and is_integer(lte) do
+      when type in ~w[integer_range long_range] and is_integer(gte) and is_integer(lte) do
     Range.new(gte, lte)
   end
 
@@ -93,7 +91,15 @@ defmodule ElasticsearchEx.Deserializer do
     end
   end
 
-  def deserialize_value(value, _mapping) do
-    value
+  @default_function Application.compile_env(:elasticsearch_ex, :deserializer)
+
+  if @default_function do
+    def deserialize_value(value, mapping) do
+      @default_function.(value, mapping)
+    end
+  else
+    def deserialize_value(value, _mapping) do
+      value
+    end
   end
 end
