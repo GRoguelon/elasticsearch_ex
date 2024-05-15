@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.7.0
+
+* **New features:**
+  * Added a module `ElasticsearchEx.Document` to host a document from Elasticsearch
+
 ## v1.6.0 (2024-05-15)
 
 * **New features:**
