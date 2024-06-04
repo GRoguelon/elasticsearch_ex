@@ -7,8 +7,6 @@ defmodule ElasticsearchEx.Client do
 
   ## Module attributes
 
-  @redact_auth Mix.env() == :prod
-
   @content_type_key "content-type"
 
   @application_json "application/json"
@@ -22,7 +20,7 @@ defmodule ElasticsearchEx.Client do
   def request(method, path, headers, body, opts \\ []) when is_list(opts) do
     {cluster, opts} = get_cluster_configuration(opts)
 
-    Req.new(method: method, redact_auth: @redact_auth, compressed: true)
+    Req.new(method: method, compressed: true)
     |> set_uri_and_userinfo(cluster, path)
     |> set_headers(cluster, headers)
     |> set_body(body)
