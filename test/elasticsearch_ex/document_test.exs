@@ -10,7 +10,7 @@ defmodule ElasticsearchEx.DocumentTest do
         _index: "residents-v20240223013056",
         _primary_term: 1,
         _score: 1.0,
-        _seq_no: 26776,
+        _seq_no: 26_776,
         _source: %{"hello" => "world"},
         _version: 1
       }
@@ -20,7 +20,7 @@ defmodule ElasticsearchEx.DocumentTest do
                _index: "residents-v20240223013056",
                _primary_term: 1,
                _score: 1.0,
-               _seq_no: 26776,
+               _seq_no: 26_776,
                _source: %{"hello" => "world"},
                _version: 1
              } = Document.new(attrs)
@@ -32,7 +32,7 @@ defmodule ElasticsearchEx.DocumentTest do
         "_index" => "residents-v20240223013056",
         "_primary_term" => 1,
         "_score" => 1.0,
-        "_seq_no" => 26776,
+        "_seq_no" => 26_776,
         "_source" => %{"hello" => "world"},
         "_version" => 1
       }
@@ -42,7 +42,7 @@ defmodule ElasticsearchEx.DocumentTest do
                _index: "residents-v20240223013056",
                _primary_term: 1,
                _score: 1.0,
-               _seq_no: 26776,
+               _seq_no: 26_776,
                _source: %{"hello" => "world"},
                _version: 1
              } = Document.new(attrs)
@@ -54,7 +54,7 @@ defmodule ElasticsearchEx.DocumentTest do
         "_index" => "residents-v20240223013056",
         "_primary_term" => 1,
         "_score" => 1.0,
-        _seq_no: 26776,
+        _seq_no: 26_776,
         _source: %{"hello" => "world"},
         _version: 1
       }
@@ -64,7 +64,7 @@ defmodule ElasticsearchEx.DocumentTest do
                _index: "residents-v20240223013056",
                _primary_term: 1,
                _score: 1.0,
-               _seq_no: 26776,
+               _seq_no: 26_776,
                _source: %{"hello" => "world"},
                _version: 1
              } = Document.new(attrs)
