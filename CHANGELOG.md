@@ -4,7 +4,12 @@
 ## v1.7.0
 
 * **New features:**
+  * Added support for Elixir 1.17.0 and Erlang 27.0
   * Added a module `ElasticsearchEx.Document` to host a document from Elasticsearch
+
+* **Changes:**
+  * Updated dependencies
+  * Fixed `Req` deprecations
 
 ## v1.6.0 (2024-05-15)
 
