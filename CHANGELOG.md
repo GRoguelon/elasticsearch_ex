@@ -1,7 +1,12 @@
 # Changelog
 
 
-## v1.7.0
+## v1.7.1 (2024-06-30)
+
+* **Bug fixes:**
+  * Fixed a bug on `ElasticsearchEx.Sharder` where 0 was excluded from valid number
+
+## v1.7.0 (2024-06-13)
 
 * **New features:**
   * Added support for Elixir 1.17.0 and Erlang 27.0
