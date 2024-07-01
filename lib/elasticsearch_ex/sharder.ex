@@ -49,9 +49,9 @@ defmodule ElasticsearchEx.Sharder do
 
   defp maybe_filter_field(query, nbr_shards, shard_number, field_name)
        when is_integer(shard_number) do
-    unless shard_number > 0 and shard_number < nbr_shards do
+    unless shard_number >= 0 and shard_number < nbr_shards do
       raise ArgumentError,
-            "invalid shard number: #{shard_number}, expected to be in 1..#{nbr_shards - 1}"
+            "invalid shard number: #{shard_number}, expected to be in 0..#{nbr_shards - 1}"
     end
 
     default = %{term: %{field_name => shard_number}}
