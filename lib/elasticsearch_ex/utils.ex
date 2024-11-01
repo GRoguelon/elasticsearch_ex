@@ -42,20 +42,18 @@ defmodule ElasticsearchEx.Utils do
     ["" | segments] |> Enum.reject(&is_nil/1) |> Enum.join("/")
   end
 
-  ## Private functions
-
   if System.version() |> Version.parse!() |> Version.match?("~> 1.15") do
     @spec uri_append_path(URI.t(), binary()) :: URI.t()
-    defp uri_append_path(%URI{} = uri, path) do
+    def uri_append_path(%URI{} = uri, path) do
       URI.append_path(uri, path)
     end
   else
     @spec uri_append_path(URI.t(), binary()) :: URI.t()
-    defp uri_append_path(%URI{}, "//" <> _ = path) do
+    def uri_append_path(%URI{}, "//" <> _ = path) do
       raise ArgumentError, ~s|path cannot start with "//", got: #{inspect(path)}|
     end
 
-    defp uri_append_path(%URI{path: path} = uri, "/" <> rest = all) do
+    def uri_append_path(%URI{path: path} = uri, "/" <> rest = all) do
       cond do
         path == nil ->
           %{uri | path: all}
@@ -68,7 +66,7 @@ defmodule ElasticsearchEx.Utils do
       end
     end
 
-    defp uri_append_path(%URI{}, path) when is_binary(path) do
+    def uri_append_path(%URI{}, path) when is_binary(path) do
       raise ArgumentError, ~s|path must start with "/", got: #{inspect(path)}|
     end
   end

@@ -3,9 +3,27 @@ defmodule ElasticsearchEx.Client do
   Provides the functions to make HTTP calls.
   """
 
-  import ElasticsearchEx.Utils, only: [append_path_to_uri: 2]
+  ## Typespecs
+
+  @type method :: :head | :get | :post | :put | :delete
+
+  @type path :: iodata()
+
+  @type headers :: %{binary() => binary()}
+
+  @type body :: any()
+
+  @type opts :: keyword()
+
+  @type cluster_config :: %{
+          required(:endpoint) => binary(),
+          optional(:headers) => headers(),
+          optional(:req_opts) => keyword()
+        }
 
   ## Module attributes
+
+  @configured_clusters Application.compile_env!(:elasticsearch_ex, :clusters)
 
   @content_type_key "content-type"
 
@@ -13,55 +31,32 @@ defmodule ElasticsearchEx.Client do
 
   @application_ndjson "application/x-ndjson"
 
-  @default_headers %{@content_type_key => @application_json}
-
   ## Public functions
 
-  def request(method, path, headers, body, opts \\ []) when is_list(opts) do
-    {cluster, opts} = get_cluster_configuration(opts)
+  @spec request(method(), path(), body(), opts()) :: any()
+  def request(method, path, body \\ nil, opts \\ []) do
+    {cluster_config, opts} = get_cluster_configuration(opts)
+    {url, auth} = generate_request_url_and_auth(cluster_config, path)
+    {headers, opts} = generate_request_headers(cluster_config, opts)
+    {body_key, body_value} = generate_request_body(body, headers)
+    {req_opts, query_params} = generate_request_options(cluster_config, opts)
 
-    Req.new(method: method, compressed: true)
-    |> set_uri_and_userinfo(cluster, path)
-    |> set_headers(cluster, headers)
-    |> set_body(body)
-    |> set_query_params(cluster, opts)
-    |> Req.Request.append_response_steps(nilify_empty_body: &nilify_empty_body/1)
+    [
+      {:method, method},
+      {:url, url},
+      {:auth, auth},
+      {:headers, headers},
+      {body_key, body_value},
+      {:compress_body, body_value != ""},
+      {:compressed, true},
+      {:params, query_params}
+    ]
+    |> Req.new()
+    |> Req.merge(req_opts)
     # |> Req.Request.append_request_steps(inspect: &IO.inspect/1)
     |> Req.request()
     |> parse_result()
   end
-
-  def head(path, headers \\ nil, opts \\ []) do
-    case request(:head, path, headers, nil, opts) do
-      {:ok, nil} ->
-        :ok
-
-      {:error, %ElasticsearchEx.Error{}} ->
-        :error
-    end
-  end
-
-  def get(path, headers \\ nil, body \\ nil, opts \\ []) do
-    request(:get, path, headers, body, opts)
-  end
-
-  def post(path, headers \\ nil, body \\ nil, opts \\ []) do
-    request(:post, path, headers, body, opts)
-  end
-
-  def put(path, headers \\ nil, body \\ nil, opts \\ []) do
-    request(:put, path, headers, body, opts)
-  end
-
-  def delete(path, headers \\ nil, body \\ nil, opts \\ []) do
-    request(:delete, path, headers, body, opts)
-  end
-
-  @doc false
-  def json, do: %{@content_type_key => @application_json}
-
-  @doc false
-  def ndjson, do: %{@content_type_key => @application_ndjson}
 
   ## Private functions
 
@@ -73,65 +68,92 @@ defmodule ElasticsearchEx.Client do
     {:error, ElasticsearchEx.Error.exception(response)}
   end
 
+  defp parse_result({:error, error}) when is_exception(error) do
+    {:error, error}
+  end
+
   defp parse_result({:error, error}) do
     raise "Unknown error: #{inspect(error)}"
   end
 
+  # Extract the Elasticsearch configuration from the library configuration.
+  @spec get_cluster_configuration(opts()) :: {cluster_config(), opts()}
   defp get_cluster_configuration(opts) do
-    {cluster, opts} = Keyword.pop(opts, :cluster, :default)
+    case Keyword.pop(opts, :cluster, :default) do
+      {cluster_configuration, opts} when is_map(cluster_configuration) ->
+        {cluster_configuration, opts}
 
-    if is_map(cluster) do
-      {cluster, opts}
-    else
-      clusters_configuration = Application.fetch_env!(:elasticsearch_ex, :clusters)
-      cluster_configuration = Map.fetch!(clusters_configuration, cluster)
+      {cluster_name, opts}
+      when is_atom(cluster_name) and is_map_key(@configured_clusters, cluster_name) ->
+        cluster_configuration = Map.fetch!(@configured_clusters, cluster_name)
 
-      {cluster_configuration, opts}
+        {cluster_configuration, opts}
+
+      _ ->
+        raise "unable to find the cluster configuration"
     end
   end
 
-  defp set_uri_and_userinfo(%Req.Request{} = req, cluster, path) do
-    uri = cluster |> Map.fetch!(:endpoint) |> URI.new!() |> append_path_to_uri(path)
+  @spec generate_request_url_and_auth(cluster_config(), path()) ::
+          {URI.t(), nil | {:basic, binary()}}
+  defp generate_request_url_and_auth(%{endpoint: endpoint}, path) do
+    path_as_str = to_string(path)
+    uri = endpoint |> URI.new!() |> uri_append_path(path_as_str)
     auth = uri.userinfo && {:basic, uri.userinfo}
-    uri = %{uri | userinfo: nil}
 
-    Req.merge(req, url: uri, auth: auth)
+    {%{uri | userinfo: nil}, auth}
   end
 
-  defp set_query_params(%Req.Request{} = req, cluster, opts) do
-    global_req_opts = Map.get(cluster, :req_opts, [])
-    {req_opts, query} = Keyword.pop(opts, :req_opts, [])
-    req_opts = Keyword.merge(global_req_opts, req_opts)
+  @spec generate_request_headers(cluster_config(), opts()) :: {headers(), opts()}
+  defp generate_request_headers(cluster_config, opts) do
+    global_headers = Map.get(cluster_config, :headers, %{})
+    {request_headers, opts} = Keyword.pop(opts, :headers, %{})
+    {is_ndjson, opts} = Keyword.pop(opts, :ndjson, false)
+    content_type_value = if(is_ndjson, do: @application_ndjson, else: @application_json)
 
-    req |> Req.merge(params: query) |> Req.merge(req_opts)
-  end
-
-  defp set_headers(%Req.Request{} = req, cluster, headers) do
     headers =
-      (Map.get(cluster, :headers) || %{})
-      |> Map.merge(headers || @default_headers)
+      %{@content_type_key => content_type_value}
+      |> Map.merge(global_headers)
+      |> Map.merge(request_headers)
       |> Map.reject(fn {_key, value} -> is_nil(value) end)
 
-    Req.merge(req, headers: headers)
+    {headers, opts}
   end
 
-  defp set_body(%Req.Request{} = req, nil), do: Req.merge(req, body: "")
+  @spec generate_request_body(body(), headers()) :: {:json | :body, any()}
+  defp generate_request_body(body, headers) do
+    cond do
+      is_nil(body) ->
+        {:body, ""}
 
-  defp set_body(%Req.Request{headers: %{@content_type_key => [@application_ndjson]}} = req, body) do
-    Req.merge(req, body: ElasticsearchEx.Ndjson.encode!(body), compress_body: true)
+      Map.fetch!(headers, @content_type_key) == @application_ndjson ->
+        body = ElasticsearchEx.Ndjson.encode!(body)
+
+        {:body, body}
+
+      Map.fetch!(headers, @content_type_key) == @application_json ->
+        {:json, body}
+
+      true ->
+        {:body, body}
+    end
   end
 
-  defp set_body(%Req.Request{headers: %{@content_type_key => [@application_json]}} = req, body) do
-    Req.merge(req, json: body, compress_body: true)
+  @spec generate_request_options(cluster_config(), opts()) :: {keyword(), keyword()}
+  defp generate_request_options(cluster_config, opts) do
+    global_req_opts = Map.get(cluster_config, :req_opts, [])
+    {request_req_opts, query_params} = Keyword.pop(opts, :req_opts, [])
+    req_opts = Keyword.merge(global_req_opts, request_req_opts)
+
+    {req_opts, query_params}
   end
 
-  defp set_body(%Req.Request{} = req, body), do: Req.merge(req, body: body, compress_body: true)
-
-  defp nilify_empty_body({request, %Req.Response{body: ""} = response}) do
-    {request, %{response | body: nil}}
+  @spec uri_append_path(URI.t(), binary()) :: URI.t()
+  defp uri_append_path(%URI{} = uri, <<"/", _::binary>> = path) do
+    ElasticsearchEx.Utils.uri_append_path(uri, path)
   end
 
-  defp nilify_empty_body({request, response}) do
-    {request, response}
+  defp uri_append_path(%URI{} = uri, path) when is_binary(path) do
+    ElasticsearchEx.Utils.uri_append_path(uri, "/" <> path)
   end
 end

@@ -3,7 +3,7 @@ defmodule ElasticsearchEx.API.Info do
   Provides general information about the installed X-Pack features.
   """
 
-  alias ElasticsearchEx.Client
+  import ElasticsearchEx.Client, only: [request: 4]
 
   ## Typespecs
 
@@ -63,6 +63,6 @@ defmodule ElasticsearchEx.API.Info do
   @doc since: "1.2.0"
   @spec xpack(opts()) :: ElasticsearchEx.response()
   def xpack(opts \\ []) do
-    Client.get("/_xpack", nil, nil, opts)
+    request(:get, "/_xpack", nil, opts)
   end
 end

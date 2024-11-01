@@ -4,7 +4,7 @@ defmodule ElasticsearchEx.API.Features do
   Elasticsearch plugins.
   """
 
-  alias ElasticsearchEx.Client
+  import ElasticsearchEx.Client, only: [request: 4]
 
   ## Typespecs
 
@@ -32,7 +32,7 @@ defmodule ElasticsearchEx.API.Features do
   @doc since: "1.5.0"
   @spec get(opts()) :: ElasticsearchEx.response()
   def get(opts \\ []) do
-    Client.get("_features", nil, nil, opts)
+    request(:get, "_features", nil, opts)
   end
 
   @doc """
@@ -63,6 +63,6 @@ defmodule ElasticsearchEx.API.Features do
   @doc since: "1.5.0"
   @spec reset(opts()) :: ElasticsearchEx.response()
   def reset(opts \\ []) do
-    Client.post("_features/_reset", nil, nil, opts)
+    request(:post, "_features/_reset", nil, opts)
   end
 end

@@ -3,7 +3,7 @@ defmodule ElasticsearchEx.API.Usage do
   Provides usage information about the installed X-Pack features.
   """
 
-  alias ElasticsearchEx.Client
+  import ElasticsearchEx.Client, only: [request: 4]
 
   ## Typespecs
 
@@ -314,6 +314,6 @@ defmodule ElasticsearchEx.API.Usage do
   @doc since: "1.2.0"
   @spec xpack(opts()) :: ElasticsearchEx.response()
   def xpack(opts \\ []) do
-    Client.get("/_xpack/usage", nil, nil, opts)
+    request(:get, "/_xpack/usage", nil, opts)
   end
 end

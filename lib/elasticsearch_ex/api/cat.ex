@@ -9,9 +9,9 @@ defmodule ElasticsearchEx.API.Cat do
   > segments API.
   """
 
-  import ElasticsearchEx.Utils, only: [generate_path: 1]
+  import ElasticsearchEx.Client, only: [request: 4]
 
-  alias ElasticsearchEx.Client
+  import ElasticsearchEx.Utils, only: [generate_path: 1]
 
   ## Typespecs
 
@@ -50,7 +50,7 @@ defmodule ElasticsearchEx.API.Cat do
   def aliases(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/aliases", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -85,7 +85,7 @@ defmodule ElasticsearchEx.API.Cat do
   def allocation(node_id \\ nil, opts \\ []) do
     path = generate_path([:"_cat/allocation", node_id])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -132,7 +132,7 @@ defmodule ElasticsearchEx.API.Cat do
   def anomaly_detectors(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/ml/anomaly_detectors", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -172,7 +172,7 @@ defmodule ElasticsearchEx.API.Cat do
   def component_templates(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/component_templates", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -193,7 +193,7 @@ defmodule ElasticsearchEx.API.Cat do
   def count(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/count", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -246,7 +246,7 @@ defmodule ElasticsearchEx.API.Cat do
   def data_frame_analytics(data_frame_analytics_id \\ nil, opts \\ []) do
     path = generate_path([:"_cat/ml/data_frame/analytics", data_frame_analytics_id])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -293,7 +293,7 @@ defmodule ElasticsearchEx.API.Cat do
   def datafeeds(feed_id \\ nil, opts \\ []) do
     path = generate_path([:"_cat/ml/datafeeds", feed_id])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -340,7 +340,7 @@ defmodule ElasticsearchEx.API.Cat do
   def fielddata(field \\ nil, opts \\ []) do
     path = generate_path([:"_cat/fielddata", field])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -379,7 +379,7 @@ defmodule ElasticsearchEx.API.Cat do
   def health(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/health", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -419,7 +419,7 @@ defmodule ElasticsearchEx.API.Cat do
   def indices(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/indices", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -446,7 +446,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec master(opts()) :: ElasticsearchEx.response()
   def master(opts \\ []) do
-    Client.get("/_cat/master", nil, nil, opts)
+    request(:get, "/_cat/master", nil, opts)
   end
 
   @doc """
@@ -474,7 +474,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec nodeattrs(opts()) :: ElasticsearchEx.response()
   def nodeattrs(opts \\ []) do
-    Client.get("/_cat/nodeattrs", nil, nil, opts)
+    request(:get, "/_cat/nodeattrs", nil, opts)
   end
 
   @doc """
@@ -505,7 +505,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec nodes(opts()) :: ElasticsearchEx.response()
   def nodes(opts \\ []) do
-    Client.get("/_cat/nodes", nil, nil, opts)
+    request(:get, "/_cat/nodes", nil, opts)
   end
 
   @doc """
@@ -568,7 +568,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec pending_tasks(opts()) :: ElasticsearchEx.response()
   def pending_tasks(opts \\ []) do
-    Client.get("/_cat/pending_tasks", nil, nil, opts)
+    request(:get, "/_cat/pending_tasks", nil, opts)
   end
 
   @doc """
@@ -673,7 +673,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec plugins(opts()) :: ElasticsearchEx.response()
   def plugins(opts \\ []) do
-    Client.get("/_cat/plugins", nil, nil, opts)
+    request(:get, "/_cat/plugins", nil, opts)
   end
 
   @doc """
@@ -722,7 +722,7 @@ defmodule ElasticsearchEx.API.Cat do
   def recovery(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/recovery", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -741,7 +741,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec repositories(opts()) :: ElasticsearchEx.response()
   def repositories(opts \\ []) do
-    Client.get("/_cat/repositories", nil, nil, opts)
+    request(:get, "/_cat/repositories", nil, opts)
   end
 
   @doc """
@@ -798,7 +798,7 @@ defmodule ElasticsearchEx.API.Cat do
   def segments(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/segments", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -836,7 +836,7 @@ defmodule ElasticsearchEx.API.Cat do
   def shards(index \\ nil, opts \\ []) do
     path = generate_path([:"_cat/shards", index])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -888,7 +888,7 @@ defmodule ElasticsearchEx.API.Cat do
   def snapshots(repository \\ nil, opts \\ []) do
     path = generate_path([:"_cat/snapshots", repository])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -932,7 +932,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec tasks(opts()) :: ElasticsearchEx.response()
   def tasks(opts \\ []) do
-    Client.get("/_cat/tasks", nil, nil, opts)
+    request(:get, "/_cat/tasks", nil, opts)
   end
 
   @doc """
@@ -975,7 +975,7 @@ defmodule ElasticsearchEx.API.Cat do
   def templates(template_name \\ nil, opts \\ []) do
     path = generate_path([:"_cat/templates", template_name])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -1006,7 +1006,7 @@ defmodule ElasticsearchEx.API.Cat do
   def thread_pool(thread_pool \\ nil, opts \\ []) do
     path = generate_path([:"_cat/thread_pool", thread_pool])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -1051,7 +1051,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec trained_models(opts()) :: ElasticsearchEx.response()
   def trained_models(opts \\ []) do
-    Client.get("/_cat/ml/trained_models", nil, nil, opts)
+    request(:get, "/_cat/ml/trained_models", nil, opts)
   end
 
   @doc """
@@ -1082,6 +1082,6 @@ defmodule ElasticsearchEx.API.Cat do
   def transforms(transform_id \\ nil, opts \\ []) do
     path = generate_path([:"_cat/transforms", transform_id])
 
-    Client.get(path, nil, nil, opts)
+    request(:get, path, nil, opts)
   end
 end
