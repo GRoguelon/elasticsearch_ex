@@ -40,7 +40,10 @@ defmodule ElasticsearchEx.MixProject do
       files: ["lib", "mix.exs"],
       maintainers: ["Geoffrey Roguelon"],
       licenses: ["MIT"],
-      links: %{"Github" => @source_url}
+      links: %{
+        "GitHub" => @source_url,
+        "Changelog" => "https://hexdocs.pm/elasticsearch_ex/changelog.html"
+      }
     ]
   end
 
