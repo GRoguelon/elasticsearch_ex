@@ -54,6 +54,7 @@ defmodule ElasticsearchEx.MixProject do
       extras: ["README.md", "CHANGELOG.md"],
       source_ref: "v#{@version}",
       source_url: @source_url,
+      skip_undefined_reference_warnings_on: ["CHANGELOG.md"],
       groups_for_modules: [
         API: [
           ElasticsearchEx.API.Cat,
