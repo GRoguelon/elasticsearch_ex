@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.7.2 (2024-10-31)
+
+* **Changes:**
+  * Updated dependencies
+
 ## v1.7.1 (2024-06-30)
 
 * **Bug fixes:**
