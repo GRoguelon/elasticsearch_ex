@@ -5,8 +5,7 @@ defmodule ElasticsearchEx.API.Document do
 
   import ElasticsearchEx.Client, only: [request: 4]
 
-  import ElasticsearchEx.Utils,
-    only: [compose_indexed_path_suffix: 2, compose_indexed_path_suffix: 3]
+  import ElasticsearchEx.Utils, only: [generate_path_with_suffix: 2]
 
   import ElasticsearchEx.Guards, only: [is_identifier: 1, is_name!: 1]
 
@@ -89,14 +88,14 @@ defmodule ElasticsearchEx.API.Document do
   def index(source, index, document_id \\ nil, opts \\ [])
 
   def index(source, index, nil, opts) when is_map(source) and is_name!(index) do
-    path = compose_indexed_path_suffix(index, "_doc")
+    path = generate_path_with_suffix(index, "/_doc")
 
     request(:post, path, source, opts)
   end
 
   def index(source, index, document_id, opts)
       when is_map(source) and is_name!(index) and is_identifier(document_id) do
-    path = compose_indexed_path_suffix(index, "_doc", document_id)
+    path = generate_path_with_suffix(index, "/_doc/" <> document_id)
 
     request(:put, path, source, opts)
   end
@@ -140,7 +139,7 @@ defmodule ElasticsearchEx.API.Document do
   @spec create(source(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def create(source, index, document_id, opts \\ [])
       when is_map(source) and is_name!(index) and is_identifier(document_id) do
-    path = compose_indexed_path_suffix(index, "_create", document_id)
+    path = generate_path_with_suffix(index, "/_create/" <> document_id)
 
     request(:put, path, source, opts)
   end
@@ -180,7 +179,7 @@ defmodule ElasticsearchEx.API.Document do
   @doc since: "1.0.0"
   @spec get(index(), document_id(), opts()) :: ElasticsearchEx.response()
   def get(index, document_id, opts \\ []) when is_name!(index) and is_identifier(document_id) do
-    path = compose_indexed_path_suffix(index, "_doc", document_id)
+    path = generate_path_with_suffix(index, "/_doc/" <> document_id)
 
     request(:get, path, nil, opts)
   end
@@ -236,7 +235,7 @@ defmodule ElasticsearchEx.API.Document do
         raise ArgumentError, "invalid value, expected a binary, got: `#{inspect(document_id)}`"
     end)
 
-    path = compose_indexed_path_suffix(index, "_mget")
+    path = generate_path_with_suffix(index, "/_mget")
 
     request(:post, path, %{ids: document_ids}, opts)
   end
@@ -285,7 +284,7 @@ defmodule ElasticsearchEx.API.Document do
   @doc since: "1.0.0"
   @spec get_docs([map()], nil | index(), opts()) :: ElasticsearchEx.response()
   def get_docs(documents, index \\ nil, opts \\ []) do
-    path = compose_indexed_path_suffix(index, "_mget")
+    path = generate_path_with_suffix(index, "/_mget")
 
     request(:post, path, %{docs: documents}, opts)
   end
@@ -395,7 +394,7 @@ defmodule ElasticsearchEx.API.Document do
   @spec exists?(index(), document_id(), opts()) :: boolean()
   def exists?(index, document_id, opts \\ [])
       when is_name!(index) and is_identifier(document_id) do
-    path = compose_indexed_path_suffix(index, "_doc", document_id)
+    path = generate_path_with_suffix(index, "/_doc/" <> document_id)
 
     request(:head, path, nil, opts) == {:ok, ""}
   end
@@ -436,7 +435,7 @@ defmodule ElasticsearchEx.API.Document do
   @spec delete(index(), document_id(), opts()) :: ElasticsearchEx.response()
   def delete(index, document_id, opts \\ [])
       when is_name!(index) and is_identifier(document_id) do
-    path = compose_indexed_path_suffix(index, "_doc", document_id)
+    path = generate_path_with_suffix(index, "/_doc/" <> document_id)
 
     request(:delete, path, nil, opts)
   end
@@ -482,7 +481,7 @@ defmodule ElasticsearchEx.API.Document do
   @spec update(source(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def update(source, index, document_id, opts \\ [])
       when is_map(source) and is_name!(index) and is_identifier(document_id) do
-    path = compose_indexed_path_suffix(index, "_update", document_id)
+    path = generate_path_with_suffix(index, "/_update/" <> document_id)
 
     request(:post, path, source, opts)
   end

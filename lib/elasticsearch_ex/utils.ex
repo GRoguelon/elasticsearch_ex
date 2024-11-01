@@ -8,9 +8,64 @@ defmodule ElasticsearchEx.Utils do
 
   ## Typespecs
 
+  @type single_target :: atom() | binary()
+
+  @type multi_target :: single_target() | [single_target()]
+
   @type path_indices :: nil | atom() | binary() | [atom() | binary()]
 
   ## Public functions
+
+  @spec generate_path_with_prefix(nil | multi_target(), binary()) :: binary()
+  def generate_path_with_prefix(target, prefix) do
+    leading_slash_prefix = maybe_leading_slash(prefix)
+
+    if target_as_str = target_to_string(target) do
+      maybe_leading_slash(target_as_str) <> leading_slash_prefix
+    else
+      leading_slash_prefix
+    end
+  end
+
+  @spec generate_path_with_suffix(nil | multi_target(), binary()) :: binary()
+  def generate_path_with_suffix(target, suffix) do
+    leading_slash_suffix = maybe_leading_slash(suffix)
+
+    if target_as_str = target_to_string(target) do
+      leading_slash_suffix <> maybe_leading_slash(target_as_str)
+    else
+      leading_slash_suffix
+    end
+  end
+
+  @spec generate_path_with_wrapper(nil | multi_target(), binary(), binary()) :: binary()
+  def generate_path_with_wrapper(target, prefix, suffix) do
+    leading_slash_prefix = maybe_leading_slash(prefix)
+    leading_slash_suffix = maybe_leading_slash(suffix)
+
+    if target_as_str = target_to_string(target) do
+      leading_slash_prefix <> maybe_leading_slash(target_as_str) <> leading_slash_suffix
+    else
+      leading_slash_prefix <> leading_slash_suffix
+    end
+  end
+
+  @spec target_to_string(nil | multi_target()) :: nil | binary()
+  defp target_to_string(targets) when is_list(targets) do
+    Enum.map_join(targets, ",", &target_to_string/1)
+  end
+
+  defp target_to_string(target) when is_nil(target) do
+    nil
+  end
+
+  defp target_to_string(target) when is_atom(target) do
+    Atom.to_string(target)
+  end
+
+  defp target_to_string(target) when is_binary(target) do
+    target
+  end
 
   @spec generate_index_values_for_path(path_indices()) :: nil | binary()
   defp generate_index_values_for_path(value) do
@@ -29,86 +84,14 @@ defmodule ElasticsearchEx.Utils do
     end
   end
 
-  @spec compose_indexed_path_prefix(binary(), path_indices()) :: binary()
-  def compose_indexed_path_prefix(prefix, value) do
-    indices = generate_index_values_for_path(value)
+  @spec maybe_leading_slash(binary()) :: binary()
+  def maybe_leading_slash(<<"/", _::binary>> = path), do: path
 
-    path =
-      if is_binary(indices) do
-        prefix <> "/" <> indices
-      else
-        prefix
-      end
-
-    maybe_leading_slash(path)
-  end
-
-  @spec compose_indexed_path_suffix(path_indices(), binary()) :: binary()
-  def compose_indexed_path_suffix(value, suffix) do
-    indices = generate_index_values_for_path(value)
-
-    path =
-      if is_binary(indices) do
-        indices <> "/" <> suffix
-      else
-        suffix
-      end
-
-    maybe_leading_slash(path)
-  end
-
-  @spec compose_indexed_path_suffix(path_indices(), binary(), binary()) :: binary()
-  def compose_indexed_path_suffix(path_indices, suffix, identifier) do
-    compose_indexed_path_suffix(path_indices, suffix) <> "/" <> identifier
-  end
-
-  defp maybe_leading_slash(<<"/", _::binary>> = path) do
-    path
-  end
-
-  defp maybe_leading_slash(path) do
-    "/" <> path
-  end
-
-  @spec append_path_to_uri(URI.t(), nil | atom() | binary() | list()) :: URI.t()
-  def append_path_to_uri(uri, [indices | parts]) when is_list(indices) do
-    formatted_indices = Enum.map_join(indices, ",", &to_string/1)
-
-    append_path_to_uri(uri, [formatted_indices | parts])
-  end
-
-  def append_path_to_uri(uri, path) when is_list(path) do
-    Enum.reduce(path, uri, fn part, acc -> append_path_to_uri(acc, part) end)
-  end
-
-  def append_path_to_uri(uri, nil) do
-    uri
-  end
-
-  def append_path_to_uri(uri, path) when is_atom(path) do
-    path = Atom.to_string(path)
-
-    append_path_to_uri(uri, path)
-  end
-
-  def append_path_to_uri(uri, "/" <> _ = path) do
-    uri_append_path(uri, path)
-  end
-
-  def append_path_to_uri(uri, path) when is_binary(path) do
-    uri_append_path(uri, "/" <> path)
-  end
-
-  @spec generate_path(Enumerable.t()) :: binary()
-  def generate_path(segments) when is_enum(segments) and segments != [] do
-    ["" | segments] |> Enum.reject(&is_nil/1) |> Enum.join("/")
-  end
+  def maybe_leading_slash(path), do: "/" <> path
 
   if System.version() |> Version.parse!() |> Version.match?("~> 1.15") do
     @spec uri_append_path(URI.t(), binary()) :: URI.t()
-    def uri_append_path(%URI{} = uri, path) do
-      URI.append_path(uri, path)
-    end
+    defdelegate append_path(uri_or_url, path), to: URI
   else
     @spec uri_append_path(URI.t(), binary()) :: URI.t()
     def uri_append_path(%URI{}, "//" <> _ = path) do

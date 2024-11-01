@@ -97,8 +97,8 @@ defmodule ElasticsearchEx.Client do
   @spec generate_request_url_and_auth(cluster_config(), path()) ::
           {URI.t(), nil | {:basic, binary()}}
   defp generate_request_url_and_auth(%{endpoint: endpoint}, path) do
-    path_as_str = to_string(path)
-    uri = endpoint |> URI.new!() |> uri_append_path(path_as_str)
+    path_as_str = path |> to_string() |> ElasticsearchEx.Utils.maybe_leading_slash()
+    uri = endpoint |> URI.new!() |> ElasticsearchEx.Utils.uri_append_path(path_as_str)
     auth = uri.userinfo && {:basic, uri.userinfo}
 
     {%{uri | userinfo: nil}, auth}
@@ -146,14 +146,5 @@ defmodule ElasticsearchEx.Client do
     req_opts = Keyword.merge(global_req_opts, request_req_opts)
 
     {req_opts, query_params}
-  end
-
-  @spec uri_append_path(URI.t(), binary()) :: URI.t()
-  defp uri_append_path(%URI{} = uri, <<"/", _::binary>> = path) do
-    ElasticsearchEx.Utils.uri_append_path(uri, path)
-  end
-
-  defp uri_append_path(%URI{} = uri, path) when is_binary(path) do
-    ElasticsearchEx.Utils.uri_append_path(uri, "/" <> path)
   end
 end

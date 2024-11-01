@@ -7,12 +7,7 @@ defmodule ElasticsearchEx.API.Search do
 
   import ElasticsearchEx.Client, only: [request: 4]
 
-  import ElasticsearchEx.Utils,
-    only: [
-      compose_indexed_path_prefix: 2,
-      compose_indexed_path_suffix: 2,
-      compose_indexed_path_suffix: 3
-    ]
+  import ElasticsearchEx.Utils, only: [generate_path_with_prefix: 2, generate_path_with_suffix: 2]
 
   import ElasticsearchEx.Guards,
     only: [
@@ -191,7 +186,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec search(query(), nil | index(), opts()) :: response()
   def search(query, index, opts) do
-    path = compose_indexed_path_suffix(index, "_search")
+    path = generate_path_with_suffix(index, "_search")
 
     request(:post, path, query, opts)
   end
@@ -301,7 +296,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec multi_search(Enumerable.t(), nil | index(), opts()) :: response()
   def multi_search(queries, index, opts) do
-    path = compose_indexed_path_suffix(index, "_msearch")
+    path = generate_path_with_suffix(index, "_msearch")
 
     request(:post, path, queries, [{:ndjson, true} | opts])
   end
@@ -378,7 +373,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec async_search(query(), nil | index(), opts()) :: response()
   def async_search(query, index, opts) do
-    path = compose_indexed_path_suffix(index, "_async_search")
+    path = generate_path_with_suffix(index, "_async_search")
 
     request(:post, path, query, opts)
   end
@@ -420,7 +415,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec get_async_search(binary(), opts()) :: response()
   def get_async_search(async_search_id, opts \\ []) when is_identifier(async_search_id) do
-    path = compose_indexed_path_prefix("_async_search", async_search_id)
+    path = generate_path_with_prefix(async_search_id, "/_async_search")
 
     request(:get, path, nil, opts)
   end
@@ -450,7 +445,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec get_async_search_status(binary(), opts()) :: response()
   def get_async_search_status(async_search_id, opts \\ []) when is_identifier(async_search_id) do
-    path = compose_indexed_path_prefix("_async_search/status", async_search_id)
+    path = generate_path_with_prefix(async_search_id, "/_async_search/status")
 
     request(:get, path, nil, opts)
   end
@@ -468,7 +463,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec delete_async_search(binary(), opts()) :: response()
   def delete_async_search(async_search_id, opts \\ []) when is_identifier(async_search_id) do
-    path = compose_indexed_path_prefix("_async_search", async_search_id)
+    path = generate_path_with_prefix(async_search_id, "/_async_search")
 
     request(:delete, path, nil, opts)
   end
@@ -513,7 +508,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec create_pit(nil | index(), opts()) :: response()
   def create_pit(index, opts) do
-    path = compose_indexed_path_suffix(index || "_all", "_pit")
+    path = generate_path_with_suffix(index || "_all", "_pit")
 
     request(:post, path, nil, opts)
   end
@@ -561,7 +556,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec terms_enum(map(), index()) :: response()
   def terms_enum(query, index, opts \\ []) when is_map(query) and is_name!(index) do
-    path = compose_indexed_path_suffix(index, "_terms_enum")
+    path = generate_path_with_suffix(index, "_terms_enum")
 
     request(:post, path, query, opts)
   end
@@ -634,7 +629,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec explain(query(), index(), document_id(), opts()) :: response()
   def explain(query, index, document_id, opts \\ []) do
-    path = compose_indexed_path_suffix(index, "_explain", document_id)
+    path = generate_path_with_suffix(index, "/_explain/" <> document_id)
 
     request(:post, path, query, opts)
   end
@@ -655,7 +650,7 @@ defmodule ElasticsearchEx.API.Search do
   @spec field_capabilities(fields, nil | index()) :: response() when fields: binary() | [binary()]
   def field_capabilities(fields, index) when is_name(index) do
     fields_str = prepare_fields(fields)
-    path = compose_indexed_path_suffix(index, "_field_caps")
+    path = generate_path_with_suffix(index, "_field_caps")
 
     request(:get, path, nil, fields: fields_str)
   end
@@ -682,7 +677,7 @@ defmodule ElasticsearchEx.API.Search do
         when fields: binary() | [binary()]
   def field_capabilities(fields, index, opts) do
     fields_str = prepare_fields(fields)
-    path = compose_indexed_path_suffix(index, "_field_caps")
+    path = generate_path_with_suffix(index, "_field_caps")
 
     request(:get, path, nil, [{:fields, fields_str} | opts])
   end
@@ -732,7 +727,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec rank_evaluation(map(), index(), opts()) :: response()
   def rank_evaluation(body, index, opts \\ []) when is_name!(index) do
-    path = compose_indexed_path_suffix(index, "_rank_eval")
+    path = generate_path_with_suffix(index, "_rank_eval")
 
     request(:post, path, body, opts)
   end
@@ -748,7 +743,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec search_shards(index(), opts()) :: response()
   def search_shards(index, opts \\ []) when is_name!(index) do
-    path = compose_indexed_path_suffix(index, "_search_shards")
+    path = generate_path_with_suffix(index, "_search_shards")
 
     request(:get, path, nil, opts)
   end
@@ -764,7 +759,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec validate(query(), nil | index(), opts()) :: response()
   def validate(query, index \\ nil, opts \\ []) when is_map(query) do
-    path = compose_indexed_path_suffix(index, "_validate/query")
+    path = generate_path_with_suffix(index, "_validate/query")
 
     request(:post, path, query, opts)
   end
@@ -803,7 +798,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec search_template(map(), nil | index(), opts()) :: response()
   def search_template(body, index, opts) do
-    path = compose_indexed_path_suffix(index, "_search/template")
+    path = generate_path_with_suffix(index, "_search/template")
 
     request(:post, path, body, opts)
   end
@@ -841,7 +836,7 @@ defmodule ElasticsearchEx.API.Search do
   @spec multi_search_template(Enumerable.t(), nil | index(), opts()) :: response()
   def multi_search_template(body, index, opts) do
     queries = prepare_multi_search_template(body)
-    path = compose_indexed_path_suffix(index, "_msearch/template")
+    path = generate_path_with_suffix(index, "_msearch/template")
 
     request(:post, path, queries, [{:ndjson, true} | opts])
   end
@@ -878,7 +873,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec render_search_template(map(), nil | binary(), opts()) :: response()
   def render_search_template(body, template_id, opts) do
-    path = compose_indexed_path_prefix("_render/template", template_id)
+    path = generate_path_with_prefix(template_id, "/_render/template")
 
     request(:post, path, body, opts)
   end
