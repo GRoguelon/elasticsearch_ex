@@ -93,12 +93,12 @@ defmodule ElasticsearchEx.Streamer do
     Stream.resource(return_acc(pit_id, keep_alive), next_fun(query, opts), &Function.identity/1)
   end
 
-  @spec return_acc(binary(), binary()) :: (-> acc())
+  @spec return_acc(binary(), binary()) :: (() -> acc())
   defp return_acc(pit_id, keep_alive) do
     fn -> do_return_acc(pit_id, keep_alive) end
   end
 
-  @spec create_pit(index(), binary()) :: (-> acc())
+  @spec create_pit(index(), binary()) :: (() -> acc())
   defp create_pit(index, keep_alive) do
     fn ->
       case SearchApi.create_pit(index, keep_alive: keep_alive) do
