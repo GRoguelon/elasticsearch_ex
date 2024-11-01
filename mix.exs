@@ -82,8 +82,9 @@ defmodule ElasticsearchEx.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:req, "~> 0.4"},
+      {:castore, "~> 1.0", optional: true},
       {:jason, "~> 1.4"},
+      {:req, "~> 0.4"},
 
       ## Dev dependencies
       {:benchee, "~> 1.0", only: :dev},
