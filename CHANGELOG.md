@@ -5,6 +5,7 @@
 
 * **Changes:**
   * Renamed the modules from `ElasticsearchEx.Api` to `ElasticsearchEx.API`
+  * Added JSON as default format for the CAT operations
 
 ## v1.7.2 (2024-10-31)
 

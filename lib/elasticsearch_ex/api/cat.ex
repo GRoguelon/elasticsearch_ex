@@ -32,7 +32,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.aliases(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.aliases(nil, v: true)
       {:ok,
        [
          %{
@@ -48,6 +48,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec aliases(nil | index(), opts()) :: ElasticsearchEx.response()
   def aliases(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/aliases")
 
     request(:get, path, nil, opts)
@@ -63,7 +64,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.allocation(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.allocation(nil, v: true)
       {:ok,
        [
          %{
@@ -83,6 +84,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec allocation(nil | binary(), opts()) :: ElasticsearchEx.response()
   def allocation(node_id \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(node_id, "/_cat/allocation")
 
     request(:get, path, nil, opts)
@@ -98,7 +100,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.anomaly_detectors(nil, format: :json, h: "id,s,dpr,mb", v: true)
+      iex> ElasticsearchEx.API.Cat.anomaly_detectors(nil, h: "id,s,dpr,mb", v: true)
       {:ok,
        [
          %{
@@ -130,6 +132,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec anomaly_detectors(nil | index(), opts()) :: ElasticsearchEx.response()
   def anomaly_detectors(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/ml/anomaly_detectors")
 
     request(:get, path, nil, opts)
@@ -146,7 +149,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.component_templates(nil, format: :json, s: "name", v: true)
+      iex> ElasticsearchEx.API.Cat.component_templates(nil, s: "name", v: true)
       {:ok,
        [
          %{
@@ -170,6 +173,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec component_templates(nil | index(), opts()) :: ElasticsearchEx.response()
   def component_templates(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/component_templates")
 
     request(:get, path, nil, opts)
@@ -185,12 +189,13 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.count(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.count(nil, v: true)
       {:ok, [%{"count" => "4", "epoch" => "1712153041", "timestamp" => "14:04:01"}]}
   """
   @doc since: "1.1.0"
   @spec count(nil | index(), opts()) :: ElasticsearchEx.response()
   def count(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/count")
 
     request(:get, path, nil, opts)
@@ -206,7 +211,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.data_frame_analytics(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.data_frame_analytics(nil, v: true)
       {:ok,
        [
          %{
@@ -244,6 +249,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec data_frame_analytics(nil | binary(), opts()) :: ElasticsearchEx.response()
   def data_frame_analytics(data_frame_analytics_id \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(data_frame_analytics_id, "/_cat/ml/data_frame/analytics")
 
     request(:get, path, nil, opts)
@@ -259,7 +265,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.datafeeds(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.datafeeds(nil, v: true)
       {:ok,
        [
          %{
@@ -291,6 +297,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec datafeeds(nil | binary(), opts()) :: ElasticsearchEx.response()
   def datafeeds(feed_id \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(feed_id, "/_cat/ml/datafeeds")
 
     request(:get, path, nil, opts)
@@ -306,7 +313,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.fielddata(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.fielddata(nil, v: true)
       {:ok,
        [
          %{
@@ -338,6 +345,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec fielddata(nil | binary(), opts()) :: ElasticsearchEx.response()
   def fielddata(field \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(field, "/_cat/fielddata")
 
     request(:get, path, nil, opts)
@@ -353,7 +361,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.health(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.health(nil, v: true)
       {:ok,
        [
          %{
@@ -377,6 +385,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec health(nil | index(), opts()) :: ElasticsearchEx.response()
   def health(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/health")
 
     request(:get, path, nil, opts)
@@ -417,6 +426,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec indices(nil | index(), opts()) :: ElasticsearchEx.response()
   def indices(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/indices")
 
     request(:get, path, nil, opts)
@@ -720,6 +730,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec recovery(nil | index(), opts()) :: ElasticsearchEx.response()
   def recovery(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/recovery")
 
     request(:get, path, nil, opts)
@@ -756,7 +767,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.segments(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.segments(nil, v: true)
       {:ok,
        [
          %{
@@ -796,6 +807,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec segments(nil | index(), opts()) :: ElasticsearchEx.response()
   def segments(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/segments")
 
     request(:get, path, nil, opts)
@@ -815,7 +827,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.shards(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.shards(nil, v: true)
       {:ok,
        [
          %{
@@ -834,6 +846,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec shards(nil | index(), opts()) :: ElasticsearchEx.response()
   def shards(index \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(index, "/_cat/shards")
 
     request(:get, path, nil, opts)
@@ -850,7 +863,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.snapshots(nil, format: :json, v: true, s: "id")
+      iex> ElasticsearchEx.API.Cat.snapshots(nil, v: true, s: "id")
       {:ok,
        [
          %{
@@ -886,6 +899,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec snapshots(nil | binary(), opts()) :: ElasticsearchEx.response()
   def snapshots(repository \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(repository, "/_cat/snapshots")
 
     request(:get, path, nil, opts)
@@ -946,7 +960,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.templates("my-template-*", format: :json, v: true, s: "name")
+      iex> ElasticsearchEx.API.Cat.templates("my-template-*", v: true, s: "name")
       {:ok,
        [
          %{
@@ -973,6 +987,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec templates(nil | binary(), opts()) :: ElasticsearchEx.response()
   def templates(template_name \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(template_name, "/_cat/templates")
 
     request(:get, path, nil, opts)
@@ -989,7 +1004,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.thread_pool(nil, format: :json, v: true, h: "id,name,active,rejected,completed")
+      iex> ElasticsearchEx.API.Cat.thread_pool(nil, v: true, h: "id,name,active,rejected,completed")
       {:ok,
        [
          %{
@@ -1004,6 +1019,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec thread_pool(nil | binary(), opts()) :: ElasticsearchEx.response()
   def thread_pool(thread_pool \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(thread_pool, "/_cat/thread_pool")
 
     request(:get, path, nil, opts)
@@ -1064,7 +1080,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.transforms(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.transforms(nil, v: true)
       {:ok,
        [
          {
@@ -1080,6 +1096,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec transforms(nil | binary(), opts()) :: ElasticsearchEx.response()
   def transforms(transform_id \\ nil, opts \\ []) do
+    opts = Keyword.put_new(opts, :format, :json)
     path = generate_path_with_prefix(transform_id, "/_cat/transforms")
 
     request(:get, path, nil, opts)
