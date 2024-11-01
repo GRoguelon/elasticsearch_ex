@@ -6,7 +6,69 @@ defmodule ElasticsearchEx.Utils do
       is_enum: 1
     ]
 
+  ## Typespecs
+
+  @type path_indices :: nil | atom() | binary() | [atom() | binary()]
+
   ## Public functions
+
+  @spec generate_index_values_for_path(path_indices()) :: nil | binary()
+  defp generate_index_values_for_path(value) do
+    cond do
+      is_nil(value) ->
+        nil
+
+      is_list(value) ->
+        Enum.map_join(value, ",", &to_string/1)
+
+      is_atom(value) ->
+        Atom.to_string(value)
+
+      is_binary(value) ->
+        value
+    end
+  end
+
+  @spec compose_indexed_path_prefix(binary(), path_indices()) :: binary()
+  def compose_indexed_path_prefix(prefix, value) do
+    indices = generate_index_values_for_path(value)
+
+    path =
+      if is_binary(indices) do
+        prefix <> "/" <> indices
+      else
+        prefix
+      end
+
+    maybe_leading_slash(path)
+  end
+
+  @spec compose_indexed_path_suffix(path_indices(), binary()) :: binary()
+  def compose_indexed_path_suffix(value, suffix) do
+    indices = generate_index_values_for_path(value)
+
+    path =
+      if is_binary(indices) do
+        indices <> "/" <> suffix
+      else
+        suffix
+      end
+
+    maybe_leading_slash(path)
+  end
+
+  @spec compose_indexed_path_suffix(path_indices(), binary(), binary()) :: binary()
+  def compose_indexed_path_suffix(path_indices, suffix, identifier) do
+    compose_indexed_path_suffix(path_indices, suffix) <> "/" <> identifier
+  end
+
+  defp maybe_leading_slash(<<"/", _::binary>> = path) do
+    path
+  end
+
+  defp maybe_leading_slash(path) do
+    "/" <> path
+  end
 
   @spec append_path_to_uri(URI.t(), nil | atom() | binary() | list()) :: URI.t()
   def append_path_to_uri(uri, [indices | parts]) when is_list(indices) do

@@ -7,6 +7,13 @@ defmodule ElasticsearchEx.API.Search do
 
   import ElasticsearchEx.Client, only: [request: 4]
 
+  import ElasticsearchEx.Utils,
+    only: [
+      compose_indexed_path_prefix: 2,
+      compose_indexed_path_suffix: 2,
+      compose_indexed_path_suffix: 3
+    ]
+
   import ElasticsearchEx.Guards,
     only: [
       is_enum: 1,
@@ -72,17 +79,17 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec search(query()) :: response()
   def search(query) when is_map(query) do
-    request(:post, "/_search", query, [])
+    search(query, nil, [])
   end
 
   @spec search(index()) :: response()
   def search(index) when is_name(index) do
-    request(:post, [index, "_search"], @default_search, [])
+    search(@default_search, index, [])
   end
 
   @spec search(opts()) :: response()
   def search(opts) when is_list(opts) do
-    request(:post, "/_search", @default_search, opts)
+    search(@default_search, nil, opts)
   end
 
   @doc """
@@ -110,17 +117,17 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec search(query(), nil | index()) :: response()
   def search(query, index) when is_map(query) and is_name(index) do
-    request(:post, [index, "_search"], query, [])
+    search(query, index, [])
   end
 
   @spec search(nil | index(), opts()) :: response()
   def search(index, opts) when is_name(index) and is_list(opts) do
-    request(:post, [index, "_search"], @default_search, opts)
+    search(@default_search, index, opts)
   end
 
   @spec search(query(), opts()) :: response()
   def search(query, opts) when is_map(query) and is_list(opts) do
-    request(:post, "/_search", query, opts)
+    search(query, nil, opts)
   end
 
   @doc """
@@ -184,14 +191,16 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec search(query(), nil | index(), opts()) :: response()
   def search(query, index, opts) do
-    request(:post, [index, "_search"], query, opts)
+    path = compose_indexed_path_suffix(index, "_search")
+
+    request(:post, path, query, opts)
   end
 
   @doc "Check `multi_search/3` for more information."
   @doc since: "1.5.0"
   @spec multi_search(Enumerable.t()) :: response()
   def multi_search(queries) when is_enum(queries) do
-    request(:post, "/_msearch", queries, ndjson: true)
+    multi_search(queries, nil, [])
   end
 
   @doc "Check `multi_search/3` for more information."
@@ -200,12 +209,12 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec multi_search(Enumerable.t(), nil | index()) :: response()
   def multi_search(queries, index) when is_enum(queries) and is_name(index) do
-    request(:post, [index, "_msearch"], queries, ndjson: true)
+    multi_search(queries, index, [])
   end
 
   @spec multi_search(Enumerable.t(), opts()) :: response()
   def multi_search(queries, opts) when is_enum(queries) and is_list(opts) do
-    request(:post, "/_msearch", queries, [{:ndjson, true} | opts])
+    multi_search(queries, nil, opts)
   end
 
   @doc """
@@ -292,14 +301,16 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec multi_search(Enumerable.t(), nil | index(), opts()) :: response()
   def multi_search(queries, index, opts) do
-    request(:post, [index, "_msearch"], queries, [{:ndjson, true} | opts])
+    path = compose_indexed_path_suffix(index, "_msearch")
+
+    request(:post, path, queries, [{:ndjson, true} | opts])
   end
 
   @doc "Check `async_search/3` for more information."
   @doc since: "1.5.0"
   @spec async_search(query()) :: response()
   def async_search(query) when is_map(query) do
-    request(:post, "_async_search", query, [])
+    async_search(query, nil, [])
   end
 
   @doc "Check `async_search/3` for more information."
@@ -308,12 +319,12 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec async_search(query(), nil | index()) :: response()
   def async_search(query, index) when is_map(query) and is_name(index) do
-    request(:post, [index, "_async_search"], query, [])
+    async_search(query, index, [])
   end
 
   @spec async_search(query(), opts()) :: response()
   def async_search(query, opts) when is_map(query) and is_list(opts) do
-    request(:post, "_async_search", query, opts)
+    async_search(query, nil, opts)
   end
 
   @doc """
@@ -367,7 +378,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec async_search(query(), nil | index(), opts()) :: response()
   def async_search(query, index, opts) do
-    request(:post, [index, "_async_search"], query, opts)
+    path = compose_indexed_path_suffix(index, "_async_search")
+
+    request(:post, path, query, opts)
   end
 
   @doc """
@@ -407,7 +420,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec get_async_search(binary(), opts()) :: response()
   def get_async_search(async_search_id, opts \\ []) when is_identifier(async_search_id) do
-    request(:get, "/_async_search/#{async_search_id}", nil, opts)
+    path = compose_indexed_path_prefix("_async_search", async_search_id)
+
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -435,7 +450,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec get_async_search_status(binary(), opts()) :: response()
   def get_async_search_status(async_search_id, opts \\ []) when is_identifier(async_search_id) do
-    request(:get, "/_async_search/status/#{async_search_id}", nil, opts)
+    path = compose_indexed_path_prefix("_async_search/status", async_search_id)
+
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -451,14 +468,16 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec delete_async_search(binary(), opts()) :: response()
   def delete_async_search(async_search_id, opts \\ []) when is_identifier(async_search_id) do
-    request(:delete, "/_async_search/#{async_search_id}", nil, opts)
+    path = compose_indexed_path_prefix("_async_search", async_search_id)
+
+    request(:delete, path, nil, opts)
   end
 
   @doc "Check `create_pit/2` for more information."
   @doc since: "1.5.0"
   @spec create_pit() :: response()
   def create_pit do
-    request(:post, "/_all/_pit", nil, [])
+    create_pit(nil, [])
   end
 
   @doc "Check `create_pit/2` for more information."
@@ -467,12 +486,12 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec create_pit(nil | index()) :: response()
   def create_pit(index) when is_name(index) do
-    request(:post, [index || "_all", "_pit"], nil, [])
+    create_pit(index, [])
   end
 
   @spec create_pit(opts()) :: response()
   def create_pit(opts) do
-    request(:post, "/_all/_pit", nil, opts)
+    create_pit(nil, opts)
   end
 
   @doc """
@@ -494,7 +513,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec create_pit(nil | index(), opts()) :: response()
   def create_pit(index, opts) do
-    request(:post, [index || "_all", "_pit"], nil, opts)
+    path = compose_indexed_path_suffix(index || "_all", "_pit")
+
+    request(:post, path, nil, opts)
   end
 
   @doc """
@@ -540,7 +561,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec terms_enum(map(), index()) :: response()
   def terms_enum(query, index, opts \\ []) when is_map(query) and is_name!(index) do
-    request(:post, [index, "_terms_enum"], query, opts)
+    path = compose_indexed_path_suffix(index, "_terms_enum")
+
+    request(:post, path, query, opts)
   end
 
   @doc """
@@ -611,7 +634,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec explain(query(), index(), document_id(), opts()) :: response()
   def explain(query, index, document_id, opts \\ []) do
-    request(:post, [index, :_explain, document_id], query, opts)
+    path = compose_indexed_path_suffix(index, "_explain", document_id)
+
+    request(:post, path, query, opts)
   end
 
   @doc "Check `field_capabilities/3` for more information."
@@ -630,8 +655,9 @@ defmodule ElasticsearchEx.API.Search do
   @spec field_capabilities(fields, nil | index()) :: response() when fields: binary() | [binary()]
   def field_capabilities(fields, index) when is_name(index) do
     fields_str = prepare_fields(fields)
+    path = compose_indexed_path_suffix(index, "_field_caps")
 
-    request(:get, [index, :_field_caps], nil, fields: fields_str)
+    request(:get, path, nil, fields: fields_str)
   end
 
   @spec field_capabilities(fields, opts()) :: response() when fields: binary() | [binary()]
@@ -656,15 +682,16 @@ defmodule ElasticsearchEx.API.Search do
         when fields: binary() | [binary()]
   def field_capabilities(fields, index, opts) do
     fields_str = prepare_fields(fields)
+    path = compose_indexed_path_suffix(index, "_field_caps")
 
-    request(:get, [index, :_field_caps], nil, [{:fields, fields_str} | opts])
+    request(:get, path, nil, [{:fields, fields_str} | opts])
   end
 
   @doc "Check `profile/3` for more information."
   @doc since: "1.5.0"
   @spec profile(query()) :: response()
   def profile(query) do
-    query |> Map.put(:profile, true) |> search(nil, [])
+    profile(query, nil, [])
   end
 
   @doc "Check `profile/3` for more information."
@@ -673,12 +700,12 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec profile(query(), nil | index()) :: response()
   def profile(query, index) when is_name(index) do
-    query |> Map.put(:profile, true) |> search(index, [])
+    profile(query, index, [])
   end
 
   @spec profile(query(), opts()) :: response()
   def profile(query, opts) do
-    query |> Map.put(:profile, true) |> search(nil, opts)
+    profile(query, nil, opts)
   end
 
   @doc """
@@ -705,7 +732,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec rank_evaluation(map(), index(), opts()) :: response()
   def rank_evaluation(body, index, opts \\ []) when is_name!(index) do
-    request(:post, [index, "_rank_eval"], body, opts)
+    path = compose_indexed_path_suffix(index, "_rank_eval")
+
+    request(:post, path, body, opts)
   end
 
   @doc """
@@ -719,7 +748,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec search_shards(index(), opts()) :: response()
   def search_shards(index, opts \\ []) when is_name!(index) do
-    request(:get, [index, "_search_shards"], nil, opts)
+    path = compose_indexed_path_suffix(index, "_search_shards")
+
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -733,7 +764,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec validate(query(), nil | index(), opts()) :: response()
   def validate(query, index \\ nil, opts \\ []) when is_map(query) do
-    request(:post, [index, "_validate/query"], query, opts)
+    path = compose_indexed_path_suffix(index, "_validate/query")
+
+    request(:post, path, query, opts)
   end
 
   ## Public functions - Templates
@@ -742,7 +775,7 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.5.0"
   @spec search_template(map()) :: response()
   def search_template(body) do
-    request(:post, "_search/template", body, [])
+    search_template(body, nil, [])
   end
 
   @doc "Check `search_template/3` for more information."
@@ -751,12 +784,12 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec search_template(map(), nil | index()) :: response()
   def search_template(body, index) when is_name(index) do
-    request(:post, [index, "_search/template"], body, [])
+    search_template(body, index, [])
   end
 
   @spec search_template(map(), opts()) :: response()
   def search_template(body, opts) do
-    request(:post, "_search/template", body, opts)
+    search_template(body, nil, opts)
   end
 
   @doc """
@@ -770,16 +803,16 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec search_template(map(), nil | index(), opts()) :: response()
   def search_template(body, index, opts) do
-    request(:post, [index, "_search/template"], body, opts)
+    path = compose_indexed_path_suffix(index, "_search/template")
+
+    request(:post, path, body, opts)
   end
 
   @doc "Check `multi_search_template/3` for more information."
   @doc since: "1.5.0"
   @spec multi_search_template(Enumerable.t()) :: response()
   def multi_search_template(body) do
-    queries = prepare_multi_search_template(body)
-
-    request(:post, "/_msearch/template", queries, ndjson: true)
+    multi_search_template(body, nil, [])
   end
 
   @doc "Check `multi_search_template/3` for more information."
@@ -788,16 +821,12 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec multi_search_template(Enumerable.t(), nil | index()) :: response()
   def multi_search_template(body, index) when is_name(index) do
-    queries = prepare_multi_search_template(body)
-
-    request(:post, [index, "/_msearch/template"], queries, ndjson: true)
+    multi_search_template(body, index, [])
   end
 
   @spec multi_search_template(Enumerable.t(), opts()) :: response()
   def multi_search_template(body, opts) do
-    queries = prepare_multi_search_template(body)
-
-    request(:post, "/_msearch/template", queries, [{:ndjson, true} | opts])
+    multi_search_template(body, nil, opts)
   end
 
   @doc """
@@ -812,15 +841,16 @@ defmodule ElasticsearchEx.API.Search do
   @spec multi_search_template(Enumerable.t(), nil | index(), opts()) :: response()
   def multi_search_template(body, index, opts) do
     queries = prepare_multi_search_template(body)
+    path = compose_indexed_path_suffix(index, "_msearch/template")
 
-    request(:post, [index, "/_msearch/template"], queries, [{:ndjson, true} | opts])
+    request(:post, path, queries, [{:ndjson, true} | opts])
   end
 
   @doc "Check `render_search_template/3` for more information."
   @doc since: "1.5.0"
   @spec render_search_template(map()) :: response()
   def render_search_template(body) do
-    request(:post, "/_render/template", body, [])
+    render_search_template(body, nil, [])
   end
 
   @doc "Check `render_search_template/3` for more information."
@@ -829,12 +859,12 @@ defmodule ElasticsearchEx.API.Search do
 
   @spec render_search_template(map(), nil | binary()) :: response()
   def render_search_template(body, template_id) when is_name(template_id) do
-    request(:post, ["/_render/template", template_id], body, [])
+    render_search_template(body, template_id, [])
   end
 
   @spec render_search_template(map(), opts()) :: response()
   def render_search_template(body, opts) do
-    request(:post, "/_render/template", body, opts)
+    render_search_template(body, nil, opts)
   end
 
   @doc """
@@ -848,7 +878,9 @@ defmodule ElasticsearchEx.API.Search do
   @doc since: "1.0.0"
   @spec render_search_template(map(), nil | binary(), opts()) :: response()
   def render_search_template(body, template_id, opts) do
-    request(:post, ["/_render/template", template_id], body, opts)
+    path = compose_indexed_path_prefix("_render/template", template_id)
+
+    request(:post, path, body, opts)
   end
 
   ## Public functions - Geospatial
@@ -867,7 +899,7 @@ defmodule ElasticsearchEx.API.Search do
   def search_vector_tile(index, field, zoom, x, y, opts \\ [])
       when is_name!(index) and is_name!(field) and is_integer(zoom) and zoom in 0..29 and
              is_integer(x) and is_integer(y) do
-    request(:get, "#{index}/_mvt/#{field}/#{zoom}/#{x}/#{y}", nil, opts)
+    request(:get, "/#{index}/_mvt/#{field}/#{zoom}/#{x}/#{y}", nil, opts)
   end
 
   ## Private functions

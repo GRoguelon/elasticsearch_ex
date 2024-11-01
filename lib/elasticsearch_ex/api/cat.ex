@@ -11,7 +11,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   import ElasticsearchEx.Client, only: [request: 4]
 
-  import ElasticsearchEx.Utils, only: [generate_path: 1]
+  import ElasticsearchEx.Utils, only: [compose_indexed_path_prefix: 2]
 
   ## Typespecs
 
@@ -48,7 +48,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec aliases(nil | index(), opts()) :: ElasticsearchEx.response()
   def aliases(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/aliases", index])
+    path = compose_indexed_path_prefix("_cat/aliases", index)
 
     request(:get, path, nil, opts)
   end
@@ -83,7 +83,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec allocation(nil | binary(), opts()) :: ElasticsearchEx.response()
   def allocation(node_id \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/allocation", node_id])
+    path = compose_indexed_path_prefix("_cat/allocation", node_id)
 
     request(:get, path, nil, opts)
   end
@@ -130,7 +130,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec anomaly_detectors(nil | index(), opts()) :: ElasticsearchEx.response()
   def anomaly_detectors(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/ml/anomaly_detectors", index])
+    path = compose_indexed_path_prefix("_cat/ml/anomaly_detectors", index)
 
     request(:get, path, nil, opts)
   end
@@ -170,7 +170,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec component_templates(nil | index(), opts()) :: ElasticsearchEx.response()
   def component_templates(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/component_templates", index])
+    path = compose_indexed_path_prefix("_cat/component_templates", index)
 
     request(:get, path, nil, opts)
   end
@@ -191,7 +191,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec count(nil | index(), opts()) :: ElasticsearchEx.response()
   def count(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/count", index])
+    path = compose_indexed_path_prefix("_cat/count", index)
 
     request(:get, path, nil, opts)
   end
@@ -244,7 +244,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec data_frame_analytics(nil | binary(), opts()) :: ElasticsearchEx.response()
   def data_frame_analytics(data_frame_analytics_id \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/ml/data_frame/analytics", data_frame_analytics_id])
+    path = compose_indexed_path_prefix("_cat/ml/data_frame/analytics", data_frame_analytics_id)
 
     request(:get, path, nil, opts)
   end
@@ -291,7 +291,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec datafeeds(nil | binary(), opts()) :: ElasticsearchEx.response()
   def datafeeds(feed_id \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/ml/datafeeds", feed_id])
+    path = compose_indexed_path_prefix("_cat/ml/datafeeds", feed_id)
 
     request(:get, path, nil, opts)
   end
@@ -338,7 +338,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec fielddata(nil | binary(), opts()) :: ElasticsearchEx.response()
   def fielddata(field \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/fielddata", field])
+    path = compose_indexed_path_prefix("_cat/fielddata", field)
 
     request(:get, path, nil, opts)
   end
@@ -377,7 +377,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec health(nil | index(), opts()) :: ElasticsearchEx.response()
   def health(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/health", index])
+    path = compose_indexed_path_prefix("_cat/health", index)
 
     request(:get, path, nil, opts)
   end
@@ -417,7 +417,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec indices(nil | index(), opts()) :: ElasticsearchEx.response()
   def indices(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/indices", index])
+    path = compose_indexed_path_prefix("_cat/indices", index)
 
     request(:get, path, nil, opts)
   end
@@ -720,7 +720,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec recovery(nil | index(), opts()) :: ElasticsearchEx.response()
   def recovery(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/recovery", index])
+    path = compose_indexed_path_prefix("_cat/recovery", index)
 
     request(:get, path, nil, opts)
   end
@@ -796,7 +796,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec segments(nil | index(), opts()) :: ElasticsearchEx.response()
   def segments(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/segments", index])
+    path = compose_indexed_path_prefix("_cat/segments", index)
 
     request(:get, path, nil, opts)
   end
@@ -834,7 +834,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec shards(nil | index(), opts()) :: ElasticsearchEx.response()
   def shards(index \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/shards", index])
+    path = compose_indexed_path_prefix("_cat/shards", index)
 
     request(:get, path, nil, opts)
   end
@@ -886,7 +886,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec snapshots(nil | binary(), opts()) :: ElasticsearchEx.response()
   def snapshots(repository \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/snapshots", repository])
+    path = compose_indexed_path_prefix("_cat/snapshots", repository)
 
     request(:get, path, nil, opts)
   end
@@ -973,7 +973,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec templates(nil | binary(), opts()) :: ElasticsearchEx.response()
   def templates(template_name \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/templates", template_name])
+    path = compose_indexed_path_prefix("_cat/templates", template_name)
 
     request(:get, path, nil, opts)
   end
@@ -1004,7 +1004,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec thread_pool(nil | binary(), opts()) :: ElasticsearchEx.response()
   def thread_pool(thread_pool \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/thread_pool", thread_pool])
+    path = compose_indexed_path_prefix("_cat/thread_pool", thread_pool)
 
     request(:get, path, nil, opts)
   end
@@ -1080,7 +1080,7 @@ defmodule ElasticsearchEx.API.Cat do
   @doc since: "1.1.0"
   @spec transforms(nil | binary(), opts()) :: ElasticsearchEx.response()
   def transforms(transform_id \\ nil, opts \\ []) do
-    path = generate_path([:"_cat/transforms", transform_id])
+    path = compose_indexed_path_prefix("_cat/transforms", transform_id)
 
     request(:get, path, nil, opts)
   end

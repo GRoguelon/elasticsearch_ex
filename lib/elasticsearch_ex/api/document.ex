@@ -5,12 +5,10 @@ defmodule ElasticsearchEx.API.Document do
 
   import ElasticsearchEx.Client, only: [request: 4]
 
-  import ElasticsearchEx.Guards,
-    only: [
-      is_identifier: 1,
-      is_name: 1,
-      is_name!: 1
-    ]
+  import ElasticsearchEx.Utils,
+    only: [compose_indexed_path_suffix: 2, compose_indexed_path_suffix: 3]
+
+  import ElasticsearchEx.Guards, only: [is_identifier: 1, is_name!: 1]
 
   require Logger
 
@@ -91,12 +89,16 @@ defmodule ElasticsearchEx.API.Document do
   def index(source, index, document_id \\ nil, opts \\ [])
 
   def index(source, index, nil, opts) when is_map(source) and is_name!(index) do
-    request(:post, "/#{index}/_doc", source, opts)
+    path = compose_indexed_path_suffix(index, "_doc")
+
+    request(:post, path, source, opts)
   end
 
   def index(source, index, document_id, opts)
       when is_map(source) and is_name!(index) and is_identifier(document_id) do
-    request(:put, "/#{index}/_doc/#{document_id}", source, opts)
+    path = compose_indexed_path_suffix(index, "_doc", document_id)
+
+    request(:put, path, source, opts)
   end
 
   @doc """
@@ -138,7 +140,9 @@ defmodule ElasticsearchEx.API.Document do
   @spec create(source(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def create(source, index, document_id, opts \\ [])
       when is_map(source) and is_name!(index) and is_identifier(document_id) do
-    request(:put, "/#{index}/_create/#{document_id}", source, opts)
+    path = compose_indexed_path_suffix(index, "_create", document_id)
+
+    request(:put, path, source, opts)
   end
 
   @doc """
@@ -175,9 +179,10 @@ defmodule ElasticsearchEx.API.Document do
   """
   @doc since: "1.0.0"
   @spec get(index(), document_id(), opts()) :: ElasticsearchEx.response()
-  def get(index, document_id, opts \\ [])
-      when is_name!(index) and is_identifier(document_id) do
-    request(:get, "/#{index}/_doc/#{document_id}", nil, opts)
+  def get(index, document_id, opts \\ []) when is_name!(index) and is_identifier(document_id) do
+    path = compose_indexed_path_suffix(index, "_doc", document_id)
+
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -225,14 +230,15 @@ defmodule ElasticsearchEx.API.Document do
     raise ArgumentError, "the argument `index` cannot be `nil`"
   end
 
-  def get_ids(document_ids, index, opts)
-      when is_list(document_ids) and is_name!(index) do
+  def get_ids(document_ids, index, opts) when is_list(document_ids) and is_name!(index) do
     Enum.each(document_ids, fn document_id ->
       is_identifier(document_id) ||
         raise ArgumentError, "invalid value, expected a binary, got: `#{inspect(document_id)}`"
     end)
 
-    request(:post, "/#{index}/_mget", %{ids: document_ids}, opts)
+    path = compose_indexed_path_suffix(index, "_mget")
+
+    request(:post, path, %{ids: document_ids}, opts)
   end
 
   @doc """
@@ -278,23 +284,10 @@ defmodule ElasticsearchEx.API.Document do
   """
   @doc since: "1.0.0"
   @spec get_docs([map()], nil | index(), opts()) :: ElasticsearchEx.response()
-  def get_docs(documents, index \\ nil, opts \\ [])
-      when is_list(documents) and (is_nil(index) or is_name(index)) do
-    Enum.each(documents, fn document ->
-      unless is_map(document) do
-        raise ArgumentError, "invalid value, expected a map, got: `#{inspect(document)}`"
-      end
+  def get_docs(documents, index \\ nil, opts \\ []) do
+    path = compose_indexed_path_suffix(index, "_mget")
 
-      unless is_map_key(document, :_id) do
-        raise ArgumentError, "missing key `:_id` in the map, got: `#{inspect(document)}`"
-      end
-
-      unless not is_nil(index) or is_map_key(document, :_index) do
-        raise ArgumentError, "missing key `:_index` in the map, got: `#{inspect(document)}`"
-      end
-    end)
-
-    request(:post, [index, "/_mget"], %{docs: documents}, opts)
+    request(:post, path, %{docs: documents}, opts)
   end
 
   @doc """
@@ -402,7 +395,9 @@ defmodule ElasticsearchEx.API.Document do
   @spec exists?(index(), document_id(), opts()) :: boolean()
   def exists?(index, document_id, opts \\ [])
       when is_name!(index) and is_identifier(document_id) do
-    request(:head, "/#{index}/_doc/#{document_id}", nil, opts) == :ok
+    path = compose_indexed_path_suffix(index, "_doc", document_id)
+
+    request(:head, path, nil, opts) == {:ok, ""}
   end
 
   @doc """
@@ -441,7 +436,9 @@ defmodule ElasticsearchEx.API.Document do
   @spec delete(index(), document_id(), opts()) :: ElasticsearchEx.response()
   def delete(index, document_id, opts \\ [])
       when is_name!(index) and is_identifier(document_id) do
-    request(:delete, "/#{index}/_doc/#{document_id}", nil, opts)
+    path = compose_indexed_path_suffix(index, "_doc", document_id)
+
+    request(:delete, path, nil, opts)
   end
 
   @doc """
@@ -485,6 +482,8 @@ defmodule ElasticsearchEx.API.Document do
   @spec update(source(), index(), document_id(), opts()) :: ElasticsearchEx.response()
   def update(source, index, document_id, opts \\ [])
       when is_map(source) and is_name!(index) and is_identifier(document_id) do
-    request(:post, "/#{index}/_update/#{document_id}", source, opts)
+    path = compose_indexed_path_suffix(index, "_update", document_id)
+
+    request(:post, path, source, opts)
   end
 end

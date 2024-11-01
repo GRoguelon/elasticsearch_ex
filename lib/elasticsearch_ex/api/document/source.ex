@@ -68,6 +68,6 @@ defmodule ElasticsearchEx.API.Document.Source do
   @spec exists?(index(), document_id(), keyword()) :: boolean()
   def exists?(index, document_id, opts \\ [])
       when is_name!(index) and is_identifier(document_id) do
-    request(:head, [index, "_source", document_id], nil, opts) == :ok
+    request(:head, [index, "_source", document_id], nil, opts) == {:ok, ""}
   end
 end
