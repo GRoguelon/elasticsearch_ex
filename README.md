@@ -28,7 +28,7 @@ config :elasticsearch_ex,
     default: %{
       endpoint: "https://elastic:elastic@localhost:9200",
       # For development only, if not specified, SSL is configured for you.
-      req_opts: [ssl: [verify: :verify_none]]
+      req_opts: [connect_options: [transport_opts: [verify: :verify_none]]]
     }
   }
 ```
