@@ -1,4 +1,4 @@
-defmodule ElasticsearchEx.Api.Features do
+defmodule ElasticsearchEx.API.Features do
   @moduledoc """
   You can use the following APIs to introspect and manage Features provided by Elasticsearch and
   Elasticsearch plugins.
@@ -17,7 +17,7 @@ defmodule ElasticsearchEx.Api.Features do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Features.get()
+      iex> ElasticsearchEx.API.Features.get()
       {:ok,
        %{
          "features" => [
@@ -45,7 +45,7 @@ defmodule ElasticsearchEx.Api.Features do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Features.reset()
+      iex> ElasticsearchEx.API.Features.reset()
       {:ok,
        %{
          "features" => [

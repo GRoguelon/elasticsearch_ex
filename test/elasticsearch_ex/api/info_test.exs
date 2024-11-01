@@ -1,7 +1,7 @@
-defmodule ElasticsearchEx.Api.InfoTest do
+defmodule ElasticsearchEx.API.InfoTest do
   use ElasticsearchEx.ConnCase
 
-  alias ElasticsearchEx.Api.Info
+  alias ElasticsearchEx.API.Info
 
   ## Tests
 

@@ -41,7 +41,7 @@ defmodule ElasticsearchEx.ConnCase do
     doc_ids =
       Enum.map(1..times, fn i ->
         {:ok, %{"_id" => doc_id}} =
-          ElasticsearchEx.Api.Document.index(%{message: "Hello World #{i}!"}, index_name)
+          ElasticsearchEx.API.Document.index(%{message: "Hello World #{i}!"}, index_name)
 
         doc_id
       end)

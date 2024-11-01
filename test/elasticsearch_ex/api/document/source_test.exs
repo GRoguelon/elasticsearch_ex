@@ -1,7 +1,7 @@
-defmodule ElasticsearchEx.Api.Document.SourceTest do
+defmodule ElasticsearchEx.API.Document.SourceTest do
   use ElasticsearchEx.ConnCase
 
-  alias ElasticsearchEx.Api.Document.Source
+  alias ElasticsearchEx.API.Document.Source
 
   ## Module attributes
 

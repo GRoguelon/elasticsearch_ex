@@ -1,7 +1,7 @@
-defmodule ElasticsearchEx.Api.FeaturesTest do
+defmodule ElasticsearchEx.API.FeaturesTest do
   use ElasticsearchEx.ConnCase
 
-  alias ElasticsearchEx.Api.Features
+  alias ElasticsearchEx.API.Features
 
   ## Tests
 

@@ -20,43 +20,43 @@ defmodule ElasticsearchEx do
   ## Public functions
 
   @doc """
-  Refer to `ElasticsearchEx.Api.Search.search/0` documentation.
+  Refer to `ElasticsearchEx.API.Search.search/0` documentation.
   """
   @doc since: "1.5.0"
   @spec search() :: response()
-  defdelegate search(), to: ElasticsearchEx.Api.Search
+  defdelegate search(), to: ElasticsearchEx.API.Search
 
   @doc """
-  Refer to `ElasticsearchEx.Api.Search.search/1` documentation.
+  Refer to `ElasticsearchEx.API.Search.search/1` documentation.
   """
   @doc since: "1.5.0"
   @spec search(query() | index() | opts()) :: response()
-  defdelegate search(query_or_index_or_opts), to: ElasticsearchEx.Api.Search
+  defdelegate search(query_or_index_or_opts), to: ElasticsearchEx.API.Search
 
   @doc """
-  Refer to `ElasticsearchEx.Api.Search.search/2` documentation.
+  Refer to `ElasticsearchEx.API.Search.search/2` documentation.
   """
   @doc since: "1.5.0"
   @spec search(query() | index(), index() | opts()) :: response()
-  defdelegate search(query_or_index, index_or_opts), to: ElasticsearchEx.Api.Search
+  defdelegate search(query_or_index, index_or_opts), to: ElasticsearchEx.API.Search
 
   @doc """
-  Refer to `ElasticsearchEx.Api.Search.search/3` documentation.
+  Refer to `ElasticsearchEx.API.Search.search/3` documentation.
   """
   @doc since: "1.0.0"
   @spec search(query(), index(), keyword()) :: response()
-  defdelegate search(query, index, opts), to: ElasticsearchEx.Api.Search
+  defdelegate search(query, index, opts), to: ElasticsearchEx.API.Search
 
   @doc """
-  Refer to `ElasticsearchEx.Api.Document.index/4` documentation.
+  Refer to `ElasticsearchEx.API.Document.index/4` documentation.
   """
   @doc since: "1.0.0"
   @spec index(source(), index(), nil | document_id(), keyword()) :: response()
   defdelegate index(source, index, document_id \\ nil, opts \\ []),
-    to: ElasticsearchEx.Api.Document
+    to: ElasticsearchEx.API.Document
 
   @doc """
-  Refer to `ElasticsearchEx.Api.Search.search/2` documentation.
+  Refer to `ElasticsearchEx.API.Search.search/2` documentation.
   """
   @doc since: "1.3.0"
   @spec stream(query(), nil | index(), keyword()) :: Enumerable.t()

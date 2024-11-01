@@ -1,4 +1,4 @@
-defmodule ElasticsearchEx.Api.Document.Source do
+defmodule ElasticsearchEx.API.Document.Source do
   @moduledoc """
   Provides the APIs for document source operations.
   """
@@ -31,7 +31,7 @@ defmodule ElasticsearchEx.Api.Document.Source do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Source.get("0", "my-index-000001")
+      iex> ElasticsearchEx.API.Document.Source.get("0", "my-index-000001")
       {:ok,
        %{
          "@timestamp" => "2099-11-15T14:12:12",
@@ -61,7 +61,7 @@ defmodule ElasticsearchEx.Api.Document.Source do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.Source.exists?("0", "my-index-000001")
+      iex> ElasticsearchEx.API.Document.Source.exists?("0", "my-index-000001")
       true
   """
   @doc since: "1.0.0"

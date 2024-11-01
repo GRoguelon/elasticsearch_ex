@@ -1,4 +1,4 @@
-defmodule ElasticsearchEx.Api.Document do
+defmodule ElasticsearchEx.API.Document do
   @moduledoc """
   Provides the APIs for the single document operations.
   """
@@ -45,7 +45,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   Without a specific document ID:
 
-      iex> ElasticsearchEx.Api.Document.index(
+      iex> ElasticsearchEx.API.Document.index(
       ...>   %{
       ...>     "@timestamp": "2099-11-15T13:12:00",
       ...>     message: "GET /search HTTP/1.1 200 1070000",
@@ -66,7 +66,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   With a specific document ID:
 
-      iex> ElasticsearchEx.Api.Document.index(
+      iex> ElasticsearchEx.API.Document.index(
       ...>   %{
       ...>     "@timestamp": "2099-11-15T13:12:00",
       ...>     message: "GET /search HTTP/1.1 200 1070000",
@@ -115,7 +115,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.create(
+      iex> ElasticsearchEx.API.Document.create(
       ...>   %{
       ...>     "@timestamp": "2099-11-15T13:12:00",
       ...>     message: "GET /search HTTP/1.1 200 1070000",
@@ -152,7 +152,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.get(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.API.Document.get(index: "my-index-000001", id: "0")
       {:ok,
        %{
          "_id" => "0",
@@ -195,10 +195,10 @@ defmodule ElasticsearchEx.Api.Document do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.get_ids(["ArSqnI4BpDBWjw9UsTk-", "BrS8nI4BpDBWjw9UUTk5"], nil)
+      iex> ElasticsearchEx.API.Document.get_ids(["ArSqnI4BpDBWjw9UsTk-", "BrS8nI4BpDBWjw9UUTk5"], nil)
       ** (ArgumentError) the argument `index` cannot be `nil`
 
-      iex> ElasticsearchEx.Api.Document.get_ids(["ArSqnI4BpDBWjw9UsTk-", "BrS8nI4BpDBWjw9UUTk5"], "my-index-000001")
+      iex> ElasticsearchEx.API.Document.get_ids(["ArSqnI4BpDBWjw9UsTk-", "BrS8nI4BpDBWjw9UUTk5"], "my-index-000001")
       {:ok,
        %{
          "docs" => [
@@ -254,7 +254,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   Query with only IDs (the option `index` is required):
 
-      iex> ElasticsearchEx.Api.Document.get_docs([
+      iex> ElasticsearchEx.API.Document.get_docs([
       ...>   %{_index: "my-index-000001", _id: "ArSqnI4BpDBWjw9UsTk-", _source: false},
       ...>   %{_index: "my-index-000001", _id: "BrS8nI4BpDBWjw9UUTk5"}
       ...> ])
@@ -312,7 +312,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   Uses `get_docs/3`:
 
-      iex> ElasticsearchEx.Api.Document.multi_get(
+      iex> ElasticsearchEx.API.Document.multi_get(
       ...>   [
       ...>     %{_index: "my-index-000001", _id: "ArSqnI4BpDBWjw9UsTk-", _source: false},
       ...>     %{_index: "my-index-000001", _id: "BrS8nI4BpDBWjw9UUTk5"}
@@ -341,7 +341,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   Uses `get_ids/3`:
 
-      iex> ElasticsearchEx.Api.Document.multi_get(
+      iex> ElasticsearchEx.API.Document.multi_get(
       ...>   ["ArSqnI4BpDBWjw9UsTk-", "BrS8nI4BpDBWjw9UUTk5"],
       ...>   "my-index-000001",
       ...>   _source: false
@@ -367,7 +367,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   Raises an exception if not a list of map or a list of binary:
 
-      iex> ElasticsearchEx.Api.Document.multi_get([{"my-index-000001", "BrS8nI4BpDBWjw9UUTk5"}, "my-index-000001"])
+      iex> ElasticsearchEx.API.Document.multi_get([{"my-index-000001", "BrS8nI4BpDBWjw9UUTk5"}, "my-index-000001"])
       ** (ArgumentError) invalid value, expected a list of maps or document IDs, got: `[{"my-index-000001", "BrS8nI4BpDBWjw9UUTk5"}, "my-index-000001"]`
   """
   @doc since: "1.0.0"
@@ -396,7 +396,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.exists?(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.API.Document.exists?(index: "my-index-000001", id: "0")
       true
   """
   @doc since: "1.0.0"
@@ -416,7 +416,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.delete(index: "my-index-000001", id: "0")
+      iex> ElasticsearchEx.API.Document.delete(index: "my-index-000001", id: "0")
       {:ok,
        %{
          "_id" => "0",
@@ -428,7 +428,7 @@ defmodule ElasticsearchEx.Api.Document do
          "result" => "deleted"
        }}
 
-      iex> ElasticsearchEx.Api.Document.delete(index: "my-index-000001", id: "1")
+      iex> ElasticsearchEx.API.Document.delete(index: "my-index-000001", id: "1")
       {:error,
        %ElasticsearchEx.Error{
          reason: "Document with ID: `1` not found",
@@ -460,7 +460,7 @@ defmodule ElasticsearchEx.Api.Document do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Document.update(
+      iex> ElasticsearchEx.API.Document.update(
       ...>   %{
       ...>     script: %{
       ...>       source: "ctx._source.message = params.message",

@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.8.0 (2024-10-31)
+
+* **Changes:**
+  * Renamed the modules from `ElasticsearchEx.Api` to `ElasticsearchEx.API`
+
 ## v1.7.2 (2024-10-31)
 
 * **Changes:**

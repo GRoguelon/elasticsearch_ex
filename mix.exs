@@ -2,7 +2,7 @@ defmodule ElasticsearchEx.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/GRoguelon/elasticsearch_ex"
-  @version "1.7.2"
+  @version "1.8.0"
 
   def project do
     [
@@ -53,13 +53,13 @@ defmodule ElasticsearchEx.MixProject do
       source_url: @source_url,
       groups_for_modules: [
         API: [
-          ElasticsearchEx.Api.Cat,
-          ElasticsearchEx.Api.Document,
-          ElasticsearchEx.Api.Document.Source,
-          ElasticsearchEx.Api.Features,
-          ElasticsearchEx.Api.Info,
-          ElasticsearchEx.Api.Search,
-          ElasticsearchEx.Api.Usage
+          ElasticsearchEx.API.Cat,
+          ElasticsearchEx.API.Document,
+          ElasticsearchEx.API.Document.Source,
+          ElasticsearchEx.API.Features,
+          ElasticsearchEx.API.Info,
+          ElasticsearchEx.API.Search,
+          ElasticsearchEx.API.Usage
         ],
         Utils: [
           ElasticsearchEx.Client,

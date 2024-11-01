@@ -1,4 +1,4 @@
-defmodule ElasticsearchEx.Api.Info do
+defmodule ElasticsearchEx.API.Info do
   @moduledoc """
   Provides general information about the installed X-Pack features.
   """
@@ -16,7 +16,7 @@ defmodule ElasticsearchEx.Api.Info do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Info.xpack()
+      iex> ElasticsearchEx.API.Info.xpack()
       {:ok,
        %{
          "build" => %{

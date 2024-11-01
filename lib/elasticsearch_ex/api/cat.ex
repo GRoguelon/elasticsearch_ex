@@ -1,4 +1,4 @@
-defmodule ElasticsearchEx.Api.Cat do
+defmodule ElasticsearchEx.API.Cat do
   @moduledoc """
   Provides the functions to interact with the CAT APIs.
 
@@ -32,7 +32,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.aliases(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.aliases(nil, format: :json, v: true)
       {:ok,
        [
          %{
@@ -63,7 +63,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.allocation(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.allocation(nil, format: :json, v: true)
       {:ok,
        [
          %{
@@ -98,7 +98,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.anomaly_detectors(nil, format: :json, h: "id,s,dpr,mb", v: true)
+      iex> ElasticsearchEx.API.Cat.anomaly_detectors(nil, format: :json, h: "id,s,dpr,mb", v: true)
       {:ok,
        [
          %{
@@ -146,7 +146,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.component_templates(nil, format: :json, s: "name", v: true)
+      iex> ElasticsearchEx.API.Cat.component_templates(nil, format: :json, s: "name", v: true)
       {:ok,
        [
          %{
@@ -185,7 +185,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.count(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.count(nil, format: :json, v: true)
       {:ok, [%{"count" => "4", "epoch" => "1712153041", "timestamp" => "14:04:01"}]}
   """
   @doc since: "1.1.0"
@@ -206,7 +206,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.data_frame_analytics(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.data_frame_analytics(nil, format: :json, v: true)
       {:ok,
        [
          %{
@@ -259,7 +259,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.datafeeds(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.datafeeds(nil, format: :json, v: true)
       {:ok,
        [
          %{
@@ -306,7 +306,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.fielddata(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.fielddata(nil, format: :json, v: true)
       {:ok,
        [
          %{
@@ -353,7 +353,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.health(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.health(nil, format: :json, v: true)
       {:ok,
        [
          %{
@@ -392,7 +392,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.indices(nil,
+      iex> ElasticsearchEx.API.Cat.indices(nil,
       ...>   format: :json,
       ...>   include_unloaded_segments: true,
       ...>   v: true,
@@ -432,7 +432,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.master(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.master(format: :json, v: true)
       {:ok,
        [
          %{
@@ -459,7 +459,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.nodeattrs(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.nodeattrs(format: :json, v: true)
       {:ok,
        [
          %{
@@ -487,7 +487,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.nodes(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.nodes(format: :json, v: true)
       {:ok,
        [
          %{
@@ -518,7 +518,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.pending_tasks(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.pending_tasks(format: :json, v: true)
       {:ok,
        [
          %{
@@ -581,7 +581,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.plugins(format: :json, h: "name,component,version,description", s: "component", v: true)
+      iex> ElasticsearchEx.API.Cat.plugins(format: :json, h: "name,component,version,description", s: "component", v: true)
       {:ok,
        [
          %{
@@ -688,7 +688,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.recovery(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.recovery(format: :json, v: true)
       {:ok,
        [
          %{
@@ -735,7 +735,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.repositories(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.repositories(format: :json, v: true)
       {:ok, [%{"id" => "repo1", "type" => "fs"}, %{"id" => "repo2", "type" => "s3"}]}
   """
   @doc since: "1.1.0"
@@ -756,7 +756,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.segments(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.segments(nil, format: :json, v: true)
       {:ok,
        [
          %{
@@ -815,7 +815,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.shards(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.shards(nil, format: :json, v: true)
       {:ok,
        [
          %{
@@ -850,7 +850,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.snapshots(nil, format: :json, v: true, s: "id")
+      iex> ElasticsearchEx.API.Cat.snapshots(nil, format: :json, v: true, s: "id")
       {:ok,
        [
          %{
@@ -902,7 +902,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.tasks(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.tasks(format: :json, v: true)
       {:ok,
        [
          %{
@@ -946,7 +946,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.templates("my-template-*", format: :json, v: true, s: "name")
+      iex> ElasticsearchEx.API.Cat.templates("my-template-*", format: :json, v: true, s: "name")
       {:ok,
        [
          %{
@@ -989,7 +989,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.thread_pool(nil, format: :json, v: true, h: "id,name,active,rejected,completed")
+      iex> ElasticsearchEx.API.Cat.thread_pool(nil, format: :json, v: true, h: "id,name,active,rejected,completed")
       {:ok,
        [
          %{
@@ -1019,7 +1019,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.trained_models(format: :json, v: true, h: "c,o,l,ct,v")
+      iex> ElasticsearchEx.API.Cat.trained_models(format: :json, v: true, h: "c,o,l,ct,v")
       {:ok,
        [
          %{
@@ -1064,7 +1064,7 @@ defmodule ElasticsearchEx.Api.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Cat.transforms(nil, format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.transforms(nil, format: :json, v: true)
       {:ok,
        [
          {

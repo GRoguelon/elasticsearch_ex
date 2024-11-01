@@ -1,7 +1,7 @@
-defmodule ElasticsearchEx.Api.Search.GeospatialTest do
+defmodule ElasticsearchEx.API.Search.GeospatialTest do
   use ElasticsearchEx.ConnCase
 
-  alias ElasticsearchEx.Api.Search
+  alias ElasticsearchEx.API.Search
 
   ## Module attributes
 
@@ -14,7 +14,7 @@ defmodule ElasticsearchEx.Api.Search.GeospatialTest do
     create_index(@index_name, %{location: %{type: :geo_point}})
 
     {:ok, %{"_id" => doc_id}} =
-      ElasticsearchEx.Api.Document.index(
+      ElasticsearchEx.API.Document.index(
         %{location: %{type: "Point", coordinates: [-71.34, 41.12]}},
         @index_name
       )

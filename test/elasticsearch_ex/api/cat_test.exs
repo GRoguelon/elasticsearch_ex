@@ -1,7 +1,7 @@
-defmodule ElasticsearchEx.Api.CatTest do
+defmodule ElasticsearchEx.API.CatTest do
   use ElasticsearchEx.ConnCase
 
-  alias ElasticsearchEx.Api.Cat
+  alias ElasticsearchEx.API.Cat
 
   ## Tests
 

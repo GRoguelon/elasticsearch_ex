@@ -1,4 +1,4 @@
-defmodule ElasticsearchEx.Api.Usage do
+defmodule ElasticsearchEx.API.Usage do
   @moduledoc """
   Provides usage information about the installed X-Pack features.
   """
@@ -16,7 +16,7 @@ defmodule ElasticsearchEx.Api.Usage do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Usage.xpack()
+      iex> ElasticsearchEx.API.Usage.xpack()
       {:ok,
        %{
          "aggregate_metric" => %{"available" => true, "enabled" => true},

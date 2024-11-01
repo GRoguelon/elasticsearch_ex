@@ -1,7 +1,7 @@
-defmodule ElasticsearchEx.Api.Search.TemplateTest do
+defmodule ElasticsearchEx.API.Search.TemplateTest do
   use ElasticsearchEx.ConnCase
 
-  alias ElasticsearchEx.Api.Search
+  alias ElasticsearchEx.API.Search
 
   ## Module attributes
 

@@ -1,7 +1,7 @@
-defmodule ElasticsearchEx.Api.Document.SingleTest do
+defmodule ElasticsearchEx.API.Document.SingleTest do
   use ElasticsearchEx.ConnCase
 
-  alias ElasticsearchEx.Api.Document
+  alias ElasticsearchEx.API.Document
 
   ## Module attributes
 

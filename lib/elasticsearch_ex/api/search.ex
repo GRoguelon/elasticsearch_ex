@@ -1,4 +1,4 @@
-defmodule ElasticsearchEx.Api.Search do
+defmodule ElasticsearchEx.API.Search do
   @moduledoc """
   Search APIs are used to search and aggregate data stored in Elasticsearch indices and data streams. For an overview and related tutorials, see [The search API](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-your-data.html).
 
@@ -40,7 +40,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.search()
+      iex> ElasticsearchEx.API.Search.search()
       {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
   """
   @doc since: "1.5.0"
@@ -56,17 +56,17 @@ defmodule ElasticsearchEx.Api.Search do
 
   With a query:
 
-      iex> ElasticsearchEx.Api.Search.search(%{query: %{term: %{"user.id": "kimchy"}}})
+      iex> ElasticsearchEx.API.Search.search(%{query: %{term: %{"user.id": "kimchy"}}})
       {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
 
   With a index:
 
-      iex> ElasticsearchEx.Api.Search.search("my-index-000001")
+      iex> ElasticsearchEx.API.Search.search("my-index-000001")
       {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
 
   With options:
 
-      iex> ElasticsearchEx.Api.Search.search(_source: false)
+      iex> ElasticsearchEx.API.Search.search(_source: false)
       {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001"}]}}}
   """
   @doc since: "1.5.0"
@@ -94,17 +94,17 @@ defmodule ElasticsearchEx.Api.Search do
 
   With a query and index:
 
-      iex> ElasticsearchEx.Api.Search.search(%{query: %{term: %{"user.id": "kimchy"}}}, "my-index-000001")
+      iex> ElasticsearchEx.API.Search.search(%{query: %{term: %{"user.id": "kimchy"}}}, "my-index-000001")
       {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001", "_source" => %{}}]}}}
 
   With a index and options:
 
-      iex> ElasticsearchEx.Api.Search.search("my-index-000001", _source: false)
+      iex> ElasticsearchEx.API.Search.search("my-index-000001", _source: false)
       {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001"}]}}}
 
   With a query and options:
 
-      iex> ElasticsearchEx.Api.Search.search(%{query: %{term: %{"user.id": "kimchy"}}}, _source: false)
+      iex> ElasticsearchEx.API.Search.search(%{query: %{term: %{"user.id": "kimchy"}}}, _source: false)
       {:ok, %{"hits" => %{"hits" => [%{"_id" => "0", "_index" => "my-index-000001"}]}}}
   """
   @doc since: "1.5.0"
@@ -142,7 +142,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.search(
+      iex> ElasticsearchEx.API.Search.search(
       ...>   %{query: %{term: %{"user.id": "kimchy"}}},
       ...>   "my-index-000001",
       ...>   from: 40,
@@ -225,7 +225,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.multi_search(
+      iex> ElasticsearchEx.API.Search.multi_search(
       ...>   [
       ...>     %{},
       ...>     %{"query" => %{"match" => %{"message" => "this is a test"}}},
@@ -335,7 +335,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.async_search(
+      iex> ElasticsearchEx.API.Search.async_search(
       ...>   %{
       ...>     aggs: %{sale_date: %{date_histogram: %{calendar_interval: "1d", field: "date"}}},
       ...>     sort: [%{date: %{order: "asc"}}]
@@ -379,7 +379,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.get_async_search("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
+      iex> ElasticsearchEx.API.Search.get_async_search("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
       {:ok,
        %{
          "completion_time_in_millis" => 1583945903130,
@@ -419,7 +419,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.get_async_search_status("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
+      iex> ElasticsearchEx.API.Search.get_async_search_status("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
       {:ok,
        %{
          "_shards" => %{
@@ -448,7 +448,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.delete_async_search("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
+      iex> ElasticsearchEx.API.Search.delete_async_search("FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=")
       nil
   """
   @doc since: "1.0.0"
@@ -488,7 +488,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.create_pit(index: :my-index-000001, keep_alive: "5m")
+      iex> ElasticsearchEx.API.Search.create_pit(index: :my-index-000001, keep_alive: "5m")
       {:ok,
        %{
          "id" => "gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA=="
@@ -507,7 +507,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.close_pit("gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA==")
+      iex> ElasticsearchEx.API.Search.close_pit("gcSHBAEJb2Jhbl9qb2JzFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAFkF0Q1R5OUhqUXZtazhYaU5oRUVlN3cAAAAAAAAAAFUWdlpGWjkzbEdTM3VUV0tRTFNQMVc5QQABFmJsOTBBMHEwUTVld19yQ3RBYkEtSVEAAA==")
       {:ok, %{"num_freed" => 1, "succeeded" => true}}
   """
   @doc since: "1.0.0"
@@ -530,7 +530,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.terms_enum(%{"field" => "tags", "string" => "kiba"},
+      iex> ElasticsearchEx.API.Search.terms_enum(%{"field" => "tags", "string" => "kiba"},
       ...>   index: "stackoverflow"
       ...> )
       {:ok,
@@ -551,7 +551,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.get_scroll(
+      iex> ElasticsearchEx.API.Search.get_scroll(
       ...>   "FGluY2x1ZGVfY29udGV4dF91dWlkDXF1ZXJ5QW5kRmV0Y2gBFnZaRlo5M2xHUzN1VFdLUUxTUDFXOUEAAAAAAAAAWRZBdENUeTlIalF2bWs4WGlOaEVFZTd3",
       ...>   scroll: "1m"
       ...> )
@@ -584,7 +584,7 @@ defmodule ElasticsearchEx.Api.Search do
 
   ### Examples
 
-      iex> ElasticsearchEx.Api.Search.clear_scroll(
+      iex> ElasticsearchEx.API.Search.clear_scroll(
       ...>   "FGluY2x1ZGVfY29udGV4dF91dWlkDXF1ZXJ5QW5kRmV0Y2gBFnZaRlo5M2xHUzN1VFdLUUxTUDFXOUEAAAAAAAAAWRZBdENUeTlIalF2bWs4WGlOaEVFZTd3"
       ...> )
       {:ok, %{"num_freed" => 1, "succeeded" => true}}
