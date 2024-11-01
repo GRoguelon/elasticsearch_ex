@@ -1,11 +1,6 @@
 defmodule ElasticsearchEx.Utils do
   @moduledoc false
 
-  import ElasticsearchEx.Guards,
-    only: [
-      is_enum: 1
-    ]
-
   ## Typespecs
 
   @type single_target :: atom() | binary()
@@ -21,7 +16,7 @@ defmodule ElasticsearchEx.Utils do
     leading_slash_prefix = maybe_leading_slash(prefix)
 
     if target_as_str = target_to_string(target) do
-      maybe_leading_slash(target_as_str) <> leading_slash_prefix
+      leading_slash_prefix <> maybe_leading_slash(target_as_str)
     else
       leading_slash_prefix
     end
@@ -32,7 +27,7 @@ defmodule ElasticsearchEx.Utils do
     leading_slash_suffix = maybe_leading_slash(suffix)
 
     if target_as_str = target_to_string(target) do
-      leading_slash_suffix <> maybe_leading_slash(target_as_str)
+      maybe_leading_slash(target_as_str) <> leading_slash_suffix
     else
       leading_slash_suffix
     end
@@ -65,23 +60,6 @@ defmodule ElasticsearchEx.Utils do
 
   defp target_to_string(target) when is_binary(target) do
     target
-  end
-
-  @spec generate_index_values_for_path(path_indices()) :: nil | binary()
-  defp generate_index_values_for_path(value) do
-    cond do
-      is_nil(value) ->
-        nil
-
-      is_list(value) ->
-        Enum.map_join(value, ",", &to_string/1)
-
-      is_atom(value) ->
-        Atom.to_string(value)
-
-      is_binary(value) ->
-        value
-    end
   end
 
   @spec maybe_leading_slash(binary()) :: binary()

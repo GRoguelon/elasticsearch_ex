@@ -214,7 +214,7 @@ defmodule ElasticsearchEx.API.Search.TemplateTest do
 
   defp create_template do
     {:ok, %{"acknowledged" => true}} =
-      ElasticsearchEx.Client.put("_scripts/my-search-template", nil, %{
+      ElasticsearchEx.Client.request(:put, "_scripts/my-search-template", %{
         script: %{
           lang: "mustache",
           source: %{

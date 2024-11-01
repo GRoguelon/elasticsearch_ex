@@ -5,6 +5,8 @@ defmodule ElasticsearchEx.API.Document.Source do
 
   import ElasticsearchEx.Client, only: [request: 4]
 
+  import ElasticsearchEx.Utils, only: [generate_path_with_suffix: 2]
+
   import ElasticsearchEx.Guards,
     only: [
       is_identifier: 1,
@@ -48,7 +50,9 @@ defmodule ElasticsearchEx.API.Document.Source do
   @doc since: "1.0.0"
   @spec get(index(), document_id(), keyword()) :: ElasticsearchEx.response()
   def get(index, document_id, opts \\ []) when is_name!(index) and is_identifier(document_id) do
-    request(:get, [index, "_source", document_id], nil, opts)
+    path = generate_path_with_suffix(index, "/_source/" <> document_id)
+
+    request(:get, path, nil, opts)
   end
 
   @doc """
@@ -66,8 +70,9 @@ defmodule ElasticsearchEx.API.Document.Source do
   """
   @doc since: "1.0.0"
   @spec exists?(index(), document_id(), keyword()) :: boolean()
-  def exists?(index, document_id, opts \\ [])
-      when is_name!(index) and is_identifier(document_id) do
-    request(:head, [index, "_source", document_id], nil, opts) == {:ok, ""}
+  def exists?(index, document_id, opts \\ []) do
+    path = generate_path_with_suffix(index, "/_source/" <> document_id)
+
+    request(:head, path, nil, opts) == {:ok, ""}
   end
 end

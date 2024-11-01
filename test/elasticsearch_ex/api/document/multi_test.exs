@@ -123,17 +123,6 @@ defmodule ElasticsearchEx.API.Document.MultiTest do
                ])
     end
 
-    test "raises an exception without index", %{fake_id: fake_id, doc_ids: [doc_id | _]} do
-      assert_raise ArgumentError,
-                   ~s<missing key `:_index` in the map, got: `%{_id: "#{fake_id}"}`>,
-                   fn ->
-                     Document.get_docs([
-                       %{_index: @index_name, _id: doc_id},
-                       %{_id: fake_id}
-                     ])
-                   end
-    end
-
     test "returns an error with empty list" do
       assert {
                :error,

@@ -14,10 +14,10 @@ defmodule ElasticsearchEx.ConnCase do
   ## Private functions
 
   def create_index(index_name, properties) do
-    ElasticsearchEx.Client.delete("/#{index_name}", nil, nil)
+    ElasticsearchEx.Client.request(:delete, "/#{index_name}")
 
     {:ok, _} =
-      ElasticsearchEx.Client.put("/#{index_name}", nil, %{
+      ElasticsearchEx.Client.request(:put, "/#{index_name}", %{
         mappings: %{dynamic: :strict, properties: properties},
         settings: %{
           "index.number_of_shards": 1,
@@ -32,7 +32,7 @@ defmodule ElasticsearchEx.ConnCase do
   def generate_id, do: :crypto.strong_rand_bytes(15) |> Base.url_encode64(padding: false)
 
   def delete_index(index_name) do
-    {:ok, _} = ElasticsearchEx.Client.delete("/#{index_name}", nil, nil)
+    {:ok, _} = ElasticsearchEx.Client.request(:delete, "/#{index_name}")
 
     :ok
   end
@@ -46,7 +46,7 @@ defmodule ElasticsearchEx.ConnCase do
         doc_id
       end)
 
-    {:ok, _} = ElasticsearchEx.Client.get("/#{index_name}/_refresh", nil, nil)
+    {:ok, _} = ElasticsearchEx.Client.request(:get, "/#{index_name}/_refresh")
 
     doc_ids
   end
