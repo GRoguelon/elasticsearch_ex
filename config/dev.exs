@@ -1,8 +1,5 @@
 import Config
 
-# Clear the terminal when running mix test.watch
-config :mix_test_watch, clear: true
-
 # Configure ElasticsearchEx
 config :elasticsearch_ex,
   clusters: %{
