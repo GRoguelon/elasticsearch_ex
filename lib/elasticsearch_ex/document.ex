@@ -33,12 +33,6 @@ defmodule ElasticsearchEx.Document do
 
   ## Module attributes
 
-  @attributes @__struct__ |> Map.from_struct() |> Map.keys()
-
-  @attributes_as_map @attributes
-                     |> Enum.flat_map(fn key -> [{key, key}, {Atom.to_string(key), key}] end)
-                     |> Enum.into(%{})
-
   ## Public functions
 
   def new(attrs \\ %{})
@@ -50,13 +44,20 @@ defmodule ElasticsearchEx.Document do
 
   @spec new(map()) :: t()
   def new(attrs) when is_map(attrs) do
+    attributes = __struct__() |> Map.from_struct() |> Map.keys()
+
+    attributes_as_map =
+      attributes
+      |> Enum.flat_map(fn key -> [{key, key}, {Atom.to_string(key), key}] end)
+      |> Enum.into(%{})
+
     Enum.reduce(attrs, %__MODULE__{}, fn {key, value}, acc ->
-      if casted_key = Map.get(@attributes_as_map, key) do
+      if casted_key = Map.get(attributes_as_map, key) do
         Map.put(acc, casted_key, value)
       else
         raise ArgumentError,
               "unable to initialize the document with the key: `#{key}`, " <>
-                "valid keys are: #{Enum.map_join(@attributes, ", ", &to_string/1)}."
+                "valid keys are: #{Enum.map_join(attributes, ", ", &to_string/1)}."
       end
     end)
   end

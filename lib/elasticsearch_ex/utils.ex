@@ -69,7 +69,7 @@ defmodule ElasticsearchEx.Utils do
 
   if System.version() |> Version.parse!() |> Version.match?("~> 1.15") do
     @spec uri_append_path(URI.t(), binary()) :: URI.t()
-    defdelegate append_path(uri_or_url, path), to: URI
+    defdelegate uri_append_path(uri_or_url, path), to: URI, as: :append_path
   else
     @spec uri_append_path(URI.t(), binary()) :: URI.t()
     def uri_append_path(%URI{}, "//" <> _ = path) do
