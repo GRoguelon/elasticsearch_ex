@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v1.8.1 (2024-12-20)
+
+* **Changes:**
+  * Added support for Elixir 1.18
+  * Dropped support for Elixir 1.13
+
 ## v1.8.0 (2024-10-31)
 
 * **Changes:**

@@ -229,12 +229,12 @@ jobs:
           #   elasticsearch: "7.17.22"
 
           # Elixir 1.13.4 / Elasticsearch 8.14.1
-          - elixir: "1.13.4"
-            erlang: "25.3.2.12"
-            elasticsearch: "8.14.1"
-          - elixir: "1.13.4"
-            erlang: "24.3.4.17"
-            elasticsearch: "8.14.1"
+          # - elixir: "1.13.4"
+          #   erlang: "25.3.2.12"
+          #   elasticsearch: "8.14.1"
+          # - elixir: "1.13.4"
+          #   erlang: "24.3.4.17"
+          #   elasticsearch: "8.14.1"
 
           # Elixir 1.13.4 / Elasticsearch 7.17.22
           # - elixir: "1.13.4"
