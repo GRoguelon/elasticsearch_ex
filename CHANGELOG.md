@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.8.2 (2024-12-23)
+
+* **Changes:**
+  * Removed compilation dependency
+
 ## v1.8.1 (2024-12-20)
 
 * **Changes:**

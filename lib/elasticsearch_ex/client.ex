@@ -23,8 +23,6 @@ defmodule ElasticsearchEx.Client do
 
   ## Module attributes
 
-  @configured_clusters Application.compile_env!(:elasticsearch_ex, :clusters)
-
   @content_type_key "content-type"
 
   @application_json "application/json"
@@ -79,13 +77,15 @@ defmodule ElasticsearchEx.Client do
   # Extract the Elasticsearch configuration from the library configuration.
   @spec get_cluster_configuration(opts()) :: {cluster_config(), opts()}
   defp get_cluster_configuration(opts) do
+    configured_clusters = Application.fetch_env!(:elasticsearch_ex, :clusters)
+
     case Keyword.pop(opts, :cluster, :default) do
       {cluster_configuration, opts} when is_map(cluster_configuration) ->
         {cluster_configuration, opts}
 
       {cluster_name, opts}
-      when is_atom(cluster_name) and is_map_key(@configured_clusters, cluster_name) ->
-        cluster_configuration = Map.fetch!(@configured_clusters, cluster_name)
+      when is_atom(cluster_name) and is_map_key(configured_clusters, cluster_name) ->
+        cluster_configuration = Map.fetch!(configured_clusters, cluster_name)
 
         {cluster_configuration, opts}
 
