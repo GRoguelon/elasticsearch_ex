@@ -79,7 +79,8 @@ defmodule ElasticsearchEx.Deserializer do
     end
   end
 
-  def deserialize(value, %{"type" => "date", "format" => "strict_date_time"}) do
+  def deserialize(value, %{"type" => "date", "format" => "strict_date_time"})
+      when is_binary(value) do
     case DateTime.from_iso8601(value) do
       {:ok, date_time, 0} ->
         date_time
@@ -89,7 +90,7 @@ defmodule ElasticsearchEx.Deserializer do
     end
   end
 
-  def deserialize(value, %{"type" => "date", "format" => "strict_date"}) do
+  def deserialize(value, %{"type" => "date", "format" => "strict_date"}) when is_binary(value) do
     case Date.from_iso8601(value) do
       {:ok, date} ->
         date
