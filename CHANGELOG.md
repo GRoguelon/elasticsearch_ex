@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.8.3 (2025-02-03)
+
+* **Changes:**
+  * Fixed an issue with Date values being `nil`
+
 ## v1.8.2 (2024-12-23)
 
 * **Changes:**
