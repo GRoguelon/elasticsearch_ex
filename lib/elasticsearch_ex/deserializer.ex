@@ -38,6 +38,25 @@ defmodule ElasticsearchEx.Deserializer do
   @spec deserialize(value(), mappings()) :: value()
   def deserialize(value, mappings)
 
+  def deserialize(nil, _mapping) do
+    nil
+  end
+
+  def deserialize({key, value}, mapping) when is_atom(key) do
+    stringified_key = Atom.to_string(key)
+    key_mapping = Map.fetch!(mapping, stringified_key)
+    deserialized_value = deserialize(value, key_mapping)
+
+    {key, deserialized_value}
+  end
+
+  def deserialize({key, value}, mapping) do
+    key_mapping = Map.fetch!(mapping, key)
+    deserialized_value = deserialize(value, key_mapping)
+
+    {key, deserialized_value}
+  end
+
   def deserialize(stream, mapping) when is_struct(stream, Stream) do
     Stream.map(stream, &deserialize(&1, mapping))
   end
@@ -46,22 +65,16 @@ defmodule ElasticsearchEx.Deserializer do
     Enum.map(values, &deserialize(&1, mapping))
   end
 
-  def deserialize(document, mapping) when is_map_key(document, "_source") do
+  def deserialize(%{"_source" => _} = document, mapping) do
     Map.update!(document, "_source", &deserialize(&1, mapping))
   end
 
-  def deserialize(document, mapping) when is_map_key(document, :_source) do
+  def deserialize(%{_source: _} = document, mapping) do
     Map.update!(document, :_source, &deserialize(&1, mapping))
   end
 
-  def deserialize(nil, _mapping) do
-    nil
-  end
-
   def deserialize(value, %{"properties" => mapping}) when is_map(value) do
-    Map.new(value, fn {key, value} ->
-      deserialize_key_value(key, value, mapping)
-    end)
+    Map.new(value, &deserialize(&1, mapping))
   end
 
   def deserialize(blob, %{"type" => "binary"}) when is_binary(blob) do
@@ -103,17 +116,6 @@ defmodule ElasticsearchEx.Deserializer do
   end
 
   ## Private functions
-
-  defp deserialize_key_value(key, value, mapping) when is_atom(key) do
-    key |> Atom.to_string() |> deserialize_key_value(value, mapping)
-  end
-
-  defp deserialize_key_value(key, value, mapping) do
-    key_mapping = Map.fetch!(mapping, key)
-    deserialized_value = deserialize(value, key_mapping)
-
-    {key, deserialized_value}
-  end
 
   defp deserialize_range(gte, lte) do
     Range.new(gte, lte)

@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.8.4 (????-??-??)
+
+* **Changes:**
+  * Added the ability to deserialize where the document keys are atoms
+
 ## v1.8.3 (2025-02-03)
 
 * **Changes:**
