@@ -8,6 +8,16 @@ defmodule ElasticsearchEx.Deserializer do
 
   ## Module attributes
 
+  @range_types ~w[integer_range long_range]
+
+  @date_range_type %{"type" => "date_range", "format" => "strict_date"}
+
+  @date_type %{"type" => "date", "format" => "strict_date"}
+
+  @date_time_type %{"type" => "date", "format" => "strict_date_time"}
+
+  ## Typespecs
+
   @typedoc """
   Represents the Elasticsearch mappings which is represented by a `Map` with keys as `String`.
   """
@@ -36,18 +46,21 @@ defmodule ElasticsearchEx.Deserializer do
     Enum.map(values, &deserialize(&1, mapping))
   end
 
-  def deserialize(%{"_source" => source} = document, mapping) do
-    deserialized_source = deserialize(source, mapping)
+  def deserialize(document, mapping) when is_map_key(document, "_source") do
+    Map.update!(document, "_source", &deserialize(&1, mapping))
+  end
 
-    Map.put(document, "_source", deserialized_source)
+  def deserialize(document, mapping) when is_map_key(document, :_source) do
+    Map.update!(document, :_source, &deserialize(&1, mapping))
+  end
+
+  def deserialize(nil, _mapping) do
+    nil
   end
 
   def deserialize(value, %{"properties" => mapping}) when is_map(value) do
     Map.new(value, fn {key, value} ->
-      key_mapping = Map.fetch!(mapping, key)
-      deserialized_value = deserialize(value, key_mapping)
-
-      {key, deserialized_value}
+      deserialize_key_value(key, value, mapping)
     end)
   end
 
@@ -61,36 +74,62 @@ defmodule ElasticsearchEx.Deserializer do
     end
   end
 
-  def deserialize(%{"gte" => gte, "lte" => lte}, %{"type" => type})
-      when type in ~w[integer_range long_range] do
+  def deserialize(%{"gte" => gte, "lte" => lte} = value, @date_range_type) do
+    deserialize_date_range(gte, lte) || value
+  end
+
+  def deserialize(%{gte: gte, lte: lte} = value, @date_range_type) do
+    deserialize_date_range(gte, lte) || value
+  end
+
+  def deserialize(%{"gte" => gte, "lte" => lte}, %{"type" => type}) when type in @range_types do
+    deserialize_range(gte, lte)
+  end
+
+  def deserialize(%{gte: gte, lte: lte}, %{"type" => type}) when type in @range_types do
+    deserialize_range(gte, lte)
+  end
+
+  def deserialize(value, @date_time_type) when is_binary(value) do
+    deserialize_date_time(value)
+  end
+
+  def deserialize(value, @date_type) when is_binary(value) do
+    deserialize_date(value)
+  end
+
+  def deserialize(value, _mapping) do
+    value
+  end
+
+  ## Private functions
+
+  defp deserialize_key_value(key, value, mapping) when is_atom(key) do
+    key |> Atom.to_string() |> deserialize_key_value(value, mapping)
+  end
+
+  defp deserialize_key_value(key, value, mapping) do
+    key_mapping = Map.fetch!(mapping, key)
+    deserialized_value = deserialize(value, key_mapping)
+
+    {key, deserialized_value}
+  end
+
+  defp deserialize_range(gte, lte) do
     Range.new(gte, lte)
   end
 
-  def deserialize(%{"gte" => gte, "lte" => lte} = value, %{
-        "type" => "date_range",
-        "format" => "strict_date"
-      }) do
+  defp deserialize_date_range(gte, lte) do
     with {:ok, first} <- Date.from_iso8601(gte),
          {:ok, last} <- Date.from_iso8601(lte) do
       Date.range(first, last)
     else
       _ ->
-        value
+        nil
     end
   end
 
-  def deserialize(value, %{"type" => "date", "format" => "strict_date_time"})
-      when is_binary(value) do
-    case DateTime.from_iso8601(value) do
-      {:ok, date_time, 0} ->
-        date_time
-
-      _ ->
-        value
-    end
-  end
-
-  def deserialize(value, %{"type" => "date", "format" => "strict_date"}) when is_binary(value) do
+  defp deserialize_date(value) do
     case Date.from_iso8601(value) do
       {:ok, date} ->
         date
@@ -100,7 +139,13 @@ defmodule ElasticsearchEx.Deserializer do
     end
   end
 
-  def deserialize(value, _mapping) do
-    value
+  defp deserialize_date_time(value) do
+    case DateTime.from_iso8601(value) do
+      {:ok, date_time, 0} ->
+        date_time
+
+      _ ->
+        value
+    end
   end
 end
