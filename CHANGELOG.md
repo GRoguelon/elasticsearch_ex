@@ -4,7 +4,7 @@
 ## v1.8.4 (????-??-??)
 
 * **Changes:**
-  * Added the ability to deserialize where the document keys are atoms
+  * Added the ability to deserialize documents with keys as atoms
 
 ## v1.8.3 (2025-02-03)
 
