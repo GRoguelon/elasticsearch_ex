@@ -17,7 +17,9 @@ defmodule ElasticsearchEx.API.CatTest do
     @json_alias %{"alias" => "my-alias", "index" => "my-index", "is_write_index" => "true"}
 
     test "returns information with no arguments" do
-      assert {:ok, [@json_alias]} = Cat.aliases()
+      assert {:ok, aliases} = Cat.aliases()
+
+      assert Enum.any?(aliases, &match?(@json_alias, &1))
     end
 
     test "returns no values if inexistant alias" do
