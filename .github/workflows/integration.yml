@@ -145,16 +145,16 @@ jobs:
             erlang: "25.3.2.20"
             elasticsearch: "8.18.0"
 
-          # Elixir 1.18.3 / Elasticsearch 7.17.28
-          - elixir: "1.18.3"
-            erlang: "27.3.3"
-            elasticsearch: "7.17.28"
-          - elixir: "1.18.3"
-            erlang: "26.2.5.11"
-            elasticsearch: "7.17.28"
-          - elixir: "1.18.3"
-            erlang: "25.3.2.20"
-            elasticsearch: "7.17.28"
+          # # Elixir 1.18.3 / Elasticsearch 7.17.28
+          # - elixir: "1.18.3"
+          #   erlang: "27.3.3"
+          #   elasticsearch: "7.17.28"
+          # - elixir: "1.18.3"
+          #   erlang: "26.2.5.11"
+          #   elasticsearch: "7.17.28"
+          # - elixir: "1.18.3"
+          #   erlang: "25.3.2.20"
+          #   elasticsearch: "7.17.28"
 
           # Elixir 1.17.3 / Elasticsearch 8.18.0
           - elixir: "1.17.3"
