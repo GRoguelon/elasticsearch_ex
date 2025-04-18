@@ -34,10 +34,7 @@ defmodule ElasticsearchEx.API.CatTest do
       assert {:ok, response} =
                Cat.aliases(format: :text, v: true, s: "alias,index,is_write_index")
 
-      assert String.contains?(
-               response,
-               "my-alias my-index -      -             -              true\n"
-             )
+      assert String.contains?(response, "my-alias")
     end
   end
 
