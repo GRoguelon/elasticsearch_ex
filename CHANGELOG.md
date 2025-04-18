@@ -1,7 +1,7 @@
 # Changelog
 
 
-## v1.8.3 (2025-02-03)
+## v1.8.4 (2025-04-18)
 
 * **Chores:**
   * Upgraded Elixir requirement to Elixir 1.15
