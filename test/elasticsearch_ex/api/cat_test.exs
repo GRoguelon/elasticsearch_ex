@@ -31,7 +31,6 @@ defmodule ElasticsearchEx.API.CatTest do
     test "returns alias information with options" do
       assert {:ok, response} =
                Cat.aliases(format: :text, v: true, s: "alias,index,is_write_index")
-               |> IO.inspect()
 
       assert response ==
                "alias    index    filter routing.index routing.search is_write_index\nmy-alias my-index -      -             -              true\n"
