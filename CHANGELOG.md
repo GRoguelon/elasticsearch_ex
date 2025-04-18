@@ -3,6 +3,14 @@
 
 ## v1.8.3 (2025-02-03)
 
+* **Chores:**
+  * Upgraded Elixir requirement to Elixir 1.15
+  * Updated development dependencies
+  * Fixed Credo warning
+  * Updated CI matrix to support latest versions
+
+## v1.8.3 (2025-02-03)
+
 * **Changes:**
   * Fixed an issue with Date values being `nil`
 

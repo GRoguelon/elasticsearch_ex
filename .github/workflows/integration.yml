@@ -134,115 +134,93 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          # Elixir 1.17.0 / Elasticsearch 8.14.1
-          - elixir: "1.17.0"
-            erlang: "26.2.5"
-            elasticsearch: "8.14.1"
-          - elixir: "1.17.0"
-            erlang: "27.0"
-            elasticsearch: "8.14.1"
-          - elixir: "1.17.0"
-            erlang: "26.2.5"
-            elasticsearch: "8.14.1"
-          - elixir: "1.17.0"
-            erlang: "25.3.2.12"
-            elasticsearch: "8.14.1"
+          # Elixir 1.18.3 / Elasticsearch 8.18.0
+          - elixir: "1.18.3"
+            erlang: "27.3.3"
+            elasticsearch: "8.18.0"
+          - elixir: "1.18.3"
+            erlang: "26.2.5.11"
+            elasticsearch: "8.18.0"
+          - elixir: "1.18.3"
+            erlang: "25.3.2.20"
+            elasticsearch: "8.18.0"
 
-          # Elixir 1.17.0 / Elasticsearch 7.17.22
-          # - elixir: "1.17.0"
+          # Elixir 1.18.3 / Elasticsearch 7.17.28
+          - elixir: "1.18.3"
+            erlang: "27.3.3"
+            elasticsearch: "7.17.28"
+          - elixir: "1.18.3"
+            erlang: "26.2.5.11"
+            elasticsearch: "7.17.28"
+          - elixir: "1.18.3"
+            erlang: "25.3.2.20"
+            elasticsearch: "7.17.28"
+
+          # Elixir 1.17.3 / Elasticsearch 8.18.0
+          - elixir: "1.17.3"
+            erlang: "27.3.3"
+            elasticsearch: "8.18.0"
+          - elixir: "1.17.3"
+            erlang: "26.2.5.11"
+            elasticsearch: "8.18.0"
+          - elixir: "1.17.3"
+            erlang: "25.3.2.20"
+            elasticsearch: "8.18.0"
+
+          # Elixir 1.17.3 / Elasticsearch 7.17.28
+          # - elixir: "1.17.3"
           #   erlang: "27.0"
-          #   elasticsearch: "7.17.22"
-          # - elixir: "1.17.0"
-          #   erlang: "26.2.5"
-          #   elasticsearch: "7.17.22"
-          # - elixir: "1.17.0"
-          #   erlang: "25.3.2.12"
-          #   elasticsearch: "7.17.22"
+          #   elasticsearch: "7.17.28"
+          # - elixir: "1.17.3"
+          #   erlang: "26.2.5.11"
+          #   elasticsearch: "7.17.28"
+          # - elixir: "1.17.3"
+          #   erlang: "25.3.2.20"
+          #   elasticsearch: "7.17.28"
 
-          # Elixir 1.16.3 / Elasticsearch 8.14.1
+          # Elixir 1.16.3 / Elasticsearch 8.18.0
           - elixir: "1.16.3"
-            erlang: "26.2.5"
-            elasticsearch: "8.14.1"
+            erlang: "26.2.5.11"
+            elasticsearch: "8.18.0"
           - elixir: "1.16.3"
-            erlang: "26.2.5"
-            elasticsearch: "8.14.1"
-          - elixir: "1.16.3"
-            erlang: "25.3.2.12"
-            elasticsearch: "8.14.1"
+            erlang: "25.3.2.20"
+            elasticsearch: "8.18.0"
           - elixir: "1.16.3"
             erlang: "24.3.4.17"
-            elasticsearch: "8.14.1"
+            elasticsearch: "8.18.0"
 
-          # Elixir 1.16.3 / Elasticsearch 7.17.22
+          # Elixir 1.16.3 / Elasticsearch 7.17.28
           # - elixir: "1.16.3"
-          #   erlang: "26.2.5"
-          #   elasticsearch: "7.17.22"
+          #   erlang: "26.2.5.11"
+          #   elasticsearch: "7.17.28"
           # - elixir: "1.16.3"
-          #   erlang: "25.3.2.12"
-          #   elasticsearch: "7.17.22"
+          #   erlang: "25.3.2.20"
+          #   elasticsearch: "7.17.28"
           # - elixir: "1.16.3"
           #   erlang: "24.3.4.17"
-          #   elasticsearch: "7.17.22"
+          #   elasticsearch: "7.17.28"
 
-          # Elixir 1.15.8 / Elasticsearch 8.14.1
+          # Elixir 1.15.8 / Elasticsearch 8.18.0
           - elixir: "1.15.8"
-            erlang: "26.2.5"
-            elasticsearch: "8.14.1"
+            erlang: "26.2.5.11"
+            elasticsearch: "8.18.0"
           - elixir: "1.15.8"
-            erlang: "25.3.2.12"
-            elasticsearch: "8.14.1"
+            erlang: "25.3.2.20"
+            elasticsearch: "8.18.0"
           - elixir: "1.15.8"
             erlang: "24.3.4.17"
-            elasticsearch: "8.14.1"
+            elasticsearch: "8.18.0"
 
-          # Elixir 1.15.8 / Elasticsearch 7.17.22
+          # Elixir 1.15.8 / Elasticsearch 7.17.28
           # - elixir: "1.15.8"
-          #   erlang: "26.2.5"
-          #   elasticsearch: "7.17.22"
+          #   erlang: "26.2.5.11"
+          #   elasticsearch: "7.17.28"
           # - elixir: "1.15.8"
-          #   erlang: "25.3.2.12"
-          #   elasticsearch: "7.17.22"
+          #   erlang: "25.3.2.20"
+          #   elasticsearch: "7.17.28"
           # - elixir: "1.15.8"
           #   erlang: "24.3.4.17"
-          #   elasticsearch: "7.17.22"
-
-          # Elixir 1.14.5 / Elasticsearch 8.14.1
-          - elixir: "1.14.5"
-            erlang: "26.2.5"
-            elasticsearch: "8.14.1"
-          - elixir: "1.14.5"
-            erlang: "25.3.2.12"
-            elasticsearch: "8.14.1"
-          - elixir: "1.14.5"
-            erlang: "24.3.4.17"
-            elasticsearch: "8.14.1"
-
-          # Elixir 1.14.5 / Elasticsearch 7.17.22
-          # - elixir: "1.14.5"
-          #   erlang: "26.2.5"
-          #   elasticsearch: "7.17.22"
-          # - elixir: "1.14.5"
-          #   erlang: "25.3.2.12"
-          #   elasticsearch: "7.17.22"
-          # - elixir: "1.14.5"
-          #   erlang: "24.3.4.17"
-          #   elasticsearch: "7.17.22"
-
-          # Elixir 1.13.4 / Elasticsearch 8.14.1
-          # - elixir: "1.13.4"
-          #   erlang: "25.3.2.12"
-          #   elasticsearch: "8.14.1"
-          # - elixir: "1.13.4"
-          #   erlang: "24.3.4.17"
-          #   elasticsearch: "8.14.1"
-
-          # Elixir 1.13.4 / Elasticsearch 7.17.22
-          # - elixir: "1.13.4"
-          #   erlang: "25.3.2.12"
-          #   elasticsearch: "7.17.22"
-          # - elixir: "1.13.4"
-          #   erlang: "24.3.4.17"
-          #   elasticsearch: "7.17.22"
+          #   elasticsearch: "7.17.28"
 
     services:
       elasticsearch:
