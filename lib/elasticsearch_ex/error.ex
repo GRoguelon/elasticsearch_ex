@@ -36,10 +36,29 @@ defmodule ElasticsearchEx.Error do
   end
 
   @impl true
-  def exception(%Req.Response{
-        status: 404,
-        body: %{"_id" => doc_id} = body
-      }) do
+  def exception(%Req.Response{status: status, body: %{error: error}}) do
+    %__MODULE__{
+      status: status,
+      reason: error[:reason],
+      root_cause: error[:root_cause],
+      type: error[:type],
+      original: error
+    }
+  end
+
+  @impl true
+  def exception(%Req.Response{status: 404, body: %{"_id" => doc_id} = body}) do
+    %__MODULE__{
+      status: 404,
+      reason: "Document with ID: `#{doc_id}` not found",
+      root_cause: nil,
+      type: "not_found",
+      original: body
+    }
+  end
+
+  @impl true
+  def exception(%Req.Response{status: 404, body: %{_id: doc_id} = body}) do
     %__MODULE__{
       status: 404,
       reason: "Document with ID: `#{doc_id}` not found",

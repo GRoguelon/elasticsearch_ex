@@ -13,8 +13,8 @@ defmodule ElasticsearchEx.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
-      name: "Elasticsearch_ex",
-      description: "Elasticsearch_ex is a client library for Elasticsearch",
+      name: "Elasticsearch",
+      description: "elasticsearch_ex is a client library for Elasticsearch",
       docs: docs(),
       source_url: @source_url,
       dialyzer: dialyzer()

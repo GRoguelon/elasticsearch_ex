@@ -1,6 +1,14 @@
 # Changelog
 
 
+## v1.8.5 (2025-05-23)
+
+* **Chores:**
+  * Upgraded Elixir and Erlang development version to 1.15.8 and 25.3.2.21
+
+* **Bug fixes:**
+  * Ensure the exception to be generated independently of the map keys being atoms or strings
+
 ## v1.8.4 (2025-04-18)
 
 * **Chores:**
