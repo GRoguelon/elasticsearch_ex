@@ -10,8 +10,8 @@ defmodule ElasticsearchEx.Application do
     :erlang.system_flag(:backtrace_depth, 20)
 
     children = [
-      # Starts a worker by calling: ElasticsearchEx.Worker.start_link(arg)
-      # {ElasticsearchEx.Worker, arg}
+      {ElasticsearchEx.MappingsCacher,
+       [time_to_live: Application.get_env(:elasticseach_ex, :time_to_live)]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
