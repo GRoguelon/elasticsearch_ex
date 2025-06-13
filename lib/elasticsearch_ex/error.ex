@@ -25,9 +25,9 @@ defmodule ElasticsearchEx.Error do
   end
 
   @impl true
-  def exception(%Req.Response{status: status, body: %{"error" => error}}) do
+  def exception(%Req.Response{status: status, body: %{"error" => error} = body}) do
     %__MODULE__{
-      status: status,
+      status: body["status"] || status,
       reason: error["reason"],
       root_cause: error["root_cause"],
       type: error["type"],

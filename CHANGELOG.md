@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v1.9.0 (2025-06-13)
+
+* **Changes:**
+  * Added an option `deserialize: true` to `ElasticsearchEx.Client.request/4` to deserialize the documents
+  * Added an option `keys: :atoms` to `ElasticsearchEx.Client.request/4` to return a `Map` with keys as `atoms`
+  * Added a GenServer to cache the mappings based on the index name.
+
 ## v1.8.5 (2025-05-23)
 
 * **Chores:**
