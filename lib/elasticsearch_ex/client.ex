@@ -133,6 +133,10 @@ defmodule ElasticsearchEx.Client do
     {deserializer, opts} = Keyword.pop(opts, :deserializer)
     {req_opts, query_params} = generate_request_options(cluster_config, opts)
     req_keys_atoms = get_in(req_opts, [:decode_json, :keys])
+    # IO.inspect(cluster_config, label: "Clust")
+    # IO.inspect(url, label: "URL")
+
+    # IO.inspect(req_opts, label: "Req opts")
 
     if req_keys_atoms == :atoms and (deserialize == true or is_function(deserializer, 1)) do
       raise ArgumentError,
@@ -210,6 +214,11 @@ defmodule ElasticsearchEx.Client do
        )
        when status in 200..299 do
     {:ok, maybe_deserialize_documents(body, deserialize, deserializer, keys_atoms)}
+  end
+
+  defp parse_result({:ok, %Req.Response{status: status} = response}, _, _, _)
+       when status in 300..599 do
+    {:error, ElasticsearchEx.Error.exception(response)}
   end
 
   defp parse_result({:error, error}, _, _, _) when is_exception(error) do

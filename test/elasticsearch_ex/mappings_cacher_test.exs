@@ -4,6 +4,8 @@ defmodule ElasticsearchEx.MappingsCacherTest do
   alias ElasticsearchEx.MappingsCacher
   alias ElasticsearchEx.Client
 
+  @moduletag :capture_log
+
   ## Module attributes
 
   @index_name "test_index"
