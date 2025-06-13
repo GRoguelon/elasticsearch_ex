@@ -178,16 +178,16 @@ defmodule ElasticsearchEx.ClientTest do
       assert {:ok, ^document} = request(:get, "/my-index/_doc/1", nil, deserialize: true)
     end
 
-    test "deserializes with custom deserializer" do
+    test "deserializes with custom mapper" do
       document = %{"_index" => "my-index", "_source" => %{"field" => "value"}}
-      deserializer = fn _index -> %{"properties" => %{"field" => %{"type" => "text"}}} end
+      mapper = fn _index -> %{"properties" => %{"field" => %{"type" => "text"}}} end
 
       Req.Test.stub(ElasticsearchEx.ClientStub, fn
         %Plug.Conn{method: "GET", request_path: "/my-index/_doc/1"} = conn ->
           Req.Test.json(conn, document)
       end)
 
-      assert {:ok, ^document} = request(:get, "/my-index/_doc/1", nil, deserializer: deserializer)
+      assert {:ok, ^document} = request(:get, "/my-index/_doc/1", nil, mapper: mapper)
     end
 
     test "converts keys to atoms with :keys option" do
@@ -220,12 +220,12 @@ defmodule ElasticsearchEx.ClientTest do
       end
     end
 
-    test "raises for invalid deserializer" do
+    test "raises for invalid mapper" do
       Req.Test.stub(ElasticsearchEx.ClientStub, fn conn -> Req.Test.json(conn, @resp_success) end)
 
-      opts = [deserializer: :invalid]
+      opts = [mapper: :invalid]
 
-      assert_raise ArgumentError, ~r/option `deserializer` must be/, fn ->
+      assert_raise ArgumentError, ~r/option `mapper` must be/, fn ->
         request(:get, "/my-index/_search", nil, opts)
       end
     end

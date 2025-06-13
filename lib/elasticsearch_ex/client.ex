@@ -4,7 +4,7 @@ defmodule ElasticsearchEx.Client do
 
   This module handles HTTP requests (GET, POST, PUT, DELETE, HEAD) to Elasticsearch, supporting
   JSON and NDJSON content types. It integrates with `ElasticsearchEx.MappingsCacher` for automatic
-  deserialization of responses (via `:deserialize` and `:deserializer` options) and
+  deserialization of responses (via `:deserialize` and `:mapper` options) and
   `ElasticsearchEx.MapExt` for key transformation (via `:keys` option). Cluster configuration is
   fetched from the `:elasticsearch_ex` application environment or provided via options.
 
@@ -24,7 +24,7 @@ defmodule ElasticsearchEx.Client do
   - `:ndjson`: Set to `true` for NDJSON content type.
   - `:keys`: Set to `:atoms` to convert string keys to atoms using `ElasticsearchEx.MapExt`.
   - `:deserialize`: Set to `true` to deserialize responses using `ElasticsearchEx.Deserializer` with `ElasticsearchEx.MappingsCacher`.
-  - `:deserializer`: Custom function (`index -> mappings`) for deserialization.
+  - `:mapper`: Custom function (`index -> mappings`) for deserialization.
 
   ## Examples
       # GET request
@@ -67,7 +67,7 @@ defmodule ElasticsearchEx.Client do
   @type body :: any()
 
   @typedoc """
-  Request options, including `:cluster`, `:headers`, `:req_opts`, `:ndjson`, `:keys`, `:deserialize`, `:deserializer`.
+  Request options, including `:cluster`, `:headers`, `:req_opts`, `:ndjson`, `:keys`, `:deserialize`, `:mapper`.
   """
   @type opts :: keyword()
 
@@ -119,7 +119,7 @@ defmodule ElasticsearchEx.Client do
 
       # Deserialize with custom mapper
       mapper = fn _index -> %{"properties" => %{"field" => %{"type" => "text"}}} end
-      request(:get, "/my_index/_doc/1", nil, deserializer: mapper)
+      request(:get, "/my_index/_doc/1", nil, mapper: mapper)
       # => {:ok, %{"_index" => "my_index", "_source" => %{"field" => "value"}}}
   """
   @spec request(method(), path(), body(), opts()) :: {:ok, term()} | {:error, Exception.t()}
@@ -130,7 +130,7 @@ defmodule ElasticsearchEx.Client do
     {body_key, body_value} = generate_request_body(body, headers)
     {keys_atoms, opts} = Keyword.pop(opts, :keys)
     {deserialize, opts} = Keyword.pop(opts, :deserialize)
-    {deserializer, opts} = Keyword.pop(opts, :deserializer)
+    {mapper, opts} = Keyword.pop(opts, :mapper)
     {req_opts, query_params} = generate_request_options(cluster_config, opts)
     req_keys_atoms = get_in(req_opts, [:decode_json, :keys])
     # IO.inspect(cluster_config, label: "Clust")
@@ -138,7 +138,7 @@ defmodule ElasticsearchEx.Client do
 
     # IO.inspect(req_opts, label: "Req opts")
 
-    if req_keys_atoms == :atoms and (deserialize == true or is_function(deserializer, 1)) do
+    if req_keys_atoms == :atoms and (deserialize == true or is_function(mapper, 1)) do
       raise ArgumentError,
             "replace the req option `[decode_json: [keys: :atoms]]` by `keys: :atoms`"
     end
@@ -157,42 +157,42 @@ defmodule ElasticsearchEx.Client do
     |> Req.merge(req_opts)
     # |> Req.Request.append_request_steps(inspect: &IO.inspect/1)
     |> Req.request()
-    |> parse_result(deserialize, deserializer, keys_atoms)
+    |> parse_result(deserialize, mapper, keys_atoms)
   end
 
   ## Private functions
 
   @spec maybe_deserialize_documents(term(), nil | true, nil | (binary() -> map()), nil | :atoms) ::
           term()
-  defp maybe_deserialize_documents(result, _deserialize, _deserializer, _keys_atoms)
+  defp maybe_deserialize_documents(result, _deserialize, _mapper, _keys_atoms)
        when not is_map(result) do
     result
   end
 
   defp maybe_deserialize_documents(any_result, true, nil, keys_atoms) do
-    deserializer = &ElasticsearchEx.MappingsCacher.get/1
+    mapper = &ElasticsearchEx.MappingsCacher.get/1
 
-    maybe_deserialize_documents(any_result, true, deserializer, keys_atoms)
+    maybe_deserialize_documents(any_result, true, mapper, keys_atoms)
   end
 
-  defp maybe_deserialize_documents(result, deserialize, deserializer, keys_atoms)
-       when is_function(deserializer, 1) and (is_nil(deserialize) or deserialize == true) do
+  defp maybe_deserialize_documents(result, deserialize, mapper, keys_atoms)
+       when is_function(mapper, 1) and (is_nil(deserialize) or deserialize == true) do
     key_fun = if(keys_atoms == :atoms, do: &String.to_atom/1, else: &Function.identity/1)
 
-    ElasticsearchEx.Deserializer.deserialize(result, deserializer, key_fun)
+    ElasticsearchEx.Deserializer.deserialize(result, mapper, key_fun)
   end
 
-  defp maybe_deserialize_documents(_result, _deserialize, deserializer, _keys_atoms)
-       when not is_nil(deserializer) do
+  defp maybe_deserialize_documents(_result, _deserialize, mapper, _keys_atoms)
+       when not is_nil(mapper) do
     raise ArgumentError,
-          "option `deserializer` must be `nil` or a function of arity 1, got: `#{inspect(deserializer)}`"
+          "option `mapper` must be `nil` or a function of arity 1, got: `#{inspect(mapper)}`"
   end
 
-  defp maybe_deserialize_documents(result, _deserialize, _deserializer, :atoms) do
+  defp maybe_deserialize_documents(result, _deserialize, _mapper, :atoms) do
     ElasticsearchEx.MapExt.atomize_keys(result)
   end
 
-  defp maybe_deserialize_documents(any_result, _deserialize, _deserializer, _keys_atoms) do
+  defp maybe_deserialize_documents(any_result, _deserialize, _mapper, _keys_atoms) do
     any_result
   end
 
@@ -209,11 +209,11 @@ defmodule ElasticsearchEx.Client do
   defp parse_result(
          {:ok, %Req.Response{status: status, body: body}},
          deserialize,
-         deserializer,
+         mapper,
          keys_atoms
        )
        when status in 200..299 do
-    {:ok, maybe_deserialize_documents(body, deserialize, deserializer, keys_atoms)}
+    {:ok, maybe_deserialize_documents(body, deserialize, mapper, keys_atoms)}
   end
 
   defp parse_result({:ok, %Req.Response{status: status} = response}, _, _, _)
