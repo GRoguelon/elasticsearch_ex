@@ -178,18 +178,6 @@ defmodule ElasticsearchEx.ClientTest do
       assert {:ok, ^document} = request(:get, "/my-index/_doc/1", nil, deserialize: true)
     end
 
-    test "deserializes with custom mapper" do
-      document = %{"_index" => "my-index", "_source" => %{"field" => "value"}}
-      mapper = fn _index -> %{"properties" => %{"field" => %{"type" => "text"}}} end
-
-      Req.Test.stub(ElasticsearchEx.ClientStub, fn
-        %Plug.Conn{method: "GET", request_path: "/my-index/_doc/1"} = conn ->
-          Req.Test.json(conn, document)
-      end)
-
-      assert {:ok, ^document} = request(:get, "/my-index/_doc/1", nil, mapper: mapper)
-    end
-
     test "converts keys to atoms with :keys option" do
       document = %{"_index" => "my-index", "_source" => %{"field" => "value"}}
 
@@ -198,7 +186,9 @@ defmodule ElasticsearchEx.ClientTest do
           Req.Test.json(conn, document)
       end)
 
-      assert {:ok, response} = request(:get, "/my-index/_doc/1", nil, keys: :atoms)
+      assert {:ok, response} =
+               request(:get, "/my-index/_doc/1", nil, client_opts: [:keys_as_atoms])
+
       assert response == ElasticsearchEx.MapExt.atomize_keys(document)
     end
 
@@ -213,19 +203,9 @@ defmodule ElasticsearchEx.ClientTest do
     test "raises for conflicting req_opts and deserialize/keys" do
       Req.Test.stub(ElasticsearchEx.ClientStub, fn conn -> Req.Test.json(conn, @resp_success) end)
 
-      opts = [req_opts: [decode_json: [keys: :atoms]], deserialize: true]
+      opts = [req_opts: [decode_json: [keys: :atoms]], client_opts: [:deserialize]]
 
       assert_raise ArgumentError, ~r/replace the req option/, fn ->
-        request(:get, "/my-index/_search", nil, opts)
-      end
-    end
-
-    test "raises for invalid mapper" do
-      Req.Test.stub(ElasticsearchEx.ClientStub, fn conn -> Req.Test.json(conn, @resp_success) end)
-
-      opts = [mapper: :invalid]
-
-      assert_raise ArgumentError, ~r/option `mapper` must be/, fn ->
         request(:get, "/my-index/_search", nil, opts)
       end
     end

@@ -2,7 +2,7 @@ defmodule ElasticsearchEx.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/GRoguelon/elasticsearch_ex"
-  @version "1.9.0"
+  @version "1.9.1"
 
   def project do
     [
@@ -67,6 +67,8 @@ defmodule ElasticsearchEx.MixProject do
         Utils: [
           ElasticsearchEx.Client,
           ElasticsearchEx.Deserializer,
+          ElasticsearchEx.Document,
+          ElasticsearchEx.MappingsCacher,
           ElasticsearchEx.Ndjson,
           ElasticsearchEx.Serializer,
           ElasticsearchEx.Sharder,

@@ -1,27 +1,35 @@
 defmodule ElasticsearchEx.Deserializer do
   @moduledoc """
-  Converts Elasticsearch data structures (documents, sources, or hits) into Elixir data structures.
+  Utilities for converting Elasticsearch documents and responses into idiomatic Elixir data structures.
 
-  This module deserializes Elasticsearch responses, transforming string-keyed maps into Elixir types
-  such as `Range`, `Date.Range`, `Date`, or `DateTime` based on the provided mappings. It supports
-  nested maps, lists, and streams, and allows custom key transformation via a `key_mapper`.
+  This module provides functions to transform Elasticsearch data—such as documents, sources, or hits—into Elixir types, handling type conversions based on provided mappings. It supports nested structures, lists, and streams, and allows for custom key transformation.
 
-  ## Supported Types
-  - `"binary"`: Decodes base64-encoded strings.
-  - `"integer_range"`, `"long_range"`: Converts `%{gte: int, lte: int}` to `Range.t()`.
-  - `"date_range"`: Converts `%{gte: date_str, lte: date_str}` to `Date.Range.t()` for `"strict_date"` format.
-  - `"date"`: Converts strings to `Date.t()` or `DateTime.t()` for `"strict_date"` or `"strict_date_time"` formats.
+  ## Features
 
-  ## Examples
-      # Deserialize a document with a date field
-      document = %{"_index" => "test", "_source" => %{"date" => "2023-01-01"}}
-      mapping = %{"properties" => %{"date" => %{"type" => "date", "format" => "strict_date"}}}
-      deserialize(document, mapping)
-      # => %{"_index" => "test", "_source" => %{"date" => ~D[2023-01-01]}}
+    * Converts string-keyed Elasticsearch maps into Elixir maps, optionally transforming keys (e.g., to atoms).
+    * Deserializes special Elasticsearch types:
+      - `"binary"`: Decodes base64-encoded strings.
+      - `"integer_range"`, `"long_range"`: Converts range objects to `Range.t()`.
+      - `"date_range"`: Converts date range objects to `Date.Range.t()` (for `"strict_date"` format).
+      - `"date"`: Converts date strings to `Date.t()` or `DateTime.t()` (for `"strict_date"` or `"strict_date_time"` formats).
+    * Handles streams, lists, and single documents.
+    * Gracefully falls back to original values for invalid or unrecognized formats.
 
-      # Deserialize a stream of documents
-      stream = Stream.map([document], & &1)
-      Stream.run(deserialize(stream, mapping))
+  ## Example Usage
+
+      # Basic document deserialization
+      iex(1)> doc = %{"_index" => "test", "_source" => %{"date" => "2023-01-01"}}
+      iex(2)> ElasticsearchEx.Deserializer.deserialize(doc, &Function.identity/1)
+      %{"_index" => "test", "_source" => %{"date" => ~D[2023-01-01]}}
+
+      # Stream deserialization
+      iex(1)> stream = Stream.map([doc], & &1)
+      iex(2)> Stream.run(ElasticsearchEx.Deserializer.deserialize(stream, &Function.identity/1))
+      [%{_index: "test", _source: %{date: ~D[2023-01-01]}}]
+
+      # Custom key function (e.g., to atoms)
+      iex> ElasticsearchEx.Deserializer.deserialize(doc, &String.to_atom/1)
+      %{_index: "test", _source: %{date: ~D[2023-01-01]}}
   """
 
   alias ElasticsearchEx.MapExt
@@ -32,45 +40,43 @@ defmodule ElasticsearchEx.Deserializer do
   ## Module attributes
 
   @typedoc """
-  Elasticsearch mappings, a map with string keys describing field types and formats.
-
-  Must contain a `"properties"` key when provided as a map.
+  Elasticsearch mappings describing field types and formats.
+  Should contain a `"properties"` key when provided as a map.
   """
   @type mappings :: %{required(binary()) => any()}
 
   @typedoc """
-  Input data: a stream, list of documents, a single document, a document source, or a field value.
-
-  Documents are maps with `"_index"` and `"_source"` keys. Sources are string-keyed maps.
+  Input data to be deserialized: a stream, list of documents, a single document, a document source, or a field value.
   """
   @type value :: Enumerable.t() | %{required(binary()) => any()}
 
   ## Public functions
 
   @doc """
-  Deserializes a list of documents, a single document, a document source, or a stream.
+  Deserializes Elasticsearch documents, sources, or streams into Elixir data structures.
 
-  - `value`: The input data (stream, list, document, or source map).
-  - `key_mapper`: A function to transform keys in deserialized maps (defaults to `Function.identity/1`).
+  Accepts a stream, list, single document, or source map. Optionally, a `key_mapper` function can be provided to transform map keys (defaults to identity).
 
-  Returns a stream for stream input, a list for list input, or a map for document/source input.
+  Returns:
+    * A stream for stream input
+    * A list for list input
+    * A map for document/source input
 
   ## Examples
-      # Deserialize a document
-      document = %{"_index" => "test", "_source" => %{"field" => "data"}}
-      mapping = %{"properties" => %{"field" => %{"type" => "text"}}}
-      deserialize(document, mapping)
-      # => %{"_index" => "test", "_source" => %{"field" => "data"}}
+
+      # Document deserialization
+      iex(1)> doc = %{"_index" => "test", "_source" => %{"field" => "data"}}
+      iex(2)> ElasticsearchEx.Deserializer.deserialize(doc)
+      %{"_index" => "test", "_source" => %{"field" => "data"}}
 
       # With key transformation
-      deserialize(document, mapping, &String.to_atom/1)
-      # => %{"_index" => "test", "_source" => %{field: "data"}}
+      iex> ElasticsearchEx.Deserializer.deserialize(doc, &String.to_atom/1)
+      %{_index: "test", _source: %{field: "data"}}
 
-      # Handle invalid date gracefully
-      document = %{"_index" => "test", "_source" => %{"date" => "invalid"}}
-      mapping = %{"properties" => %{"date" => %{"type" => "date", "format" => "strict_date"}}}
-      deserialize(document, mapping)
-      # => %{"_index" => "test", "_source" => %{"date" => "invalid"}}
+      # Graceful handling of invalid dates
+      iex(1)> doc = %{"_index" => "test", "_source" => %{"date" => "invalid"}}
+      iex(2)> ElasticsearchEx.Deserializer.deserialize(doc)
+      %{"_index" => "test", "_source" => %{"date" => "invalid"}}
   """
   @spec deserialize(value(), (binary() -> any())) :: value()
   def deserialize(value, key_mapper \\ &Function.identity/1)
@@ -104,29 +110,30 @@ defmodule ElasticsearchEx.Deserializer do
     Map.put(atomized_document, mapped_key, deserialized_source)
   end
 
-  def deserialize(document, key_mapper), do: MapExt.map_keys(document, key_mapper)
+  def deserialize(document, key_mapper) when is_map(document),
+    do: MapExt.map_keys(document, key_mapper)
+
+  def deserialize(document, _key_mapper), do: document
 
   @doc """
-  Deserializes a field value based on its Elasticsearch mapping.
+  Deserializes a field value according to its Elasticsearch mapping.
 
-  - `value`: The field value (map, list, or scalar).
-  - `mapping`: The field’s mapping, typically containing `"type"` and optional `"format"`.
-  - `key_mapper`: A function to transform keys in deserialized maps (defaults to `Function.identity/1`).
+  Handles lists, nested maps (with `"properties"`), and scalar values. Supports special types such as `"binary"`, `"integer_range"`, `"long_range"`, `"date_range"`, and `"date"` (with format).
 
-  Supports specific types like `"binary"`, `"integer_range"`, `"long_range"`, `"date_range"`,
-  and `"date"`. Non-matching values or invalid formats are returned unchanged.
+  If the value or mapping does not match a supported type or format, the original value is returned.
 
   ## Examples
-      # Deserialize a binary field
-      deserialize_field("SGVsbG8=", %{"type" => "binary"})
-      # => "Hello"
 
-      # Deserialize a date range
-      deserialize_field(%{"gte" => "2023-01-01", "lte" => "2023-01-02"}, %{
-        "type" => "date_range",
-        "format" => "strict_date"
-      })
-      # => Date.Range.t()
+      # Binary field
+      iex> ElasticsearchEx.Deserializer.deserialize_field("SGVsbG8=", %{"type" => "binary"})
+      "Hello"
+
+      # Date range field
+      iex> ElasticsearchEx.Deserializer.deserialize_field(
+      ...>   %{"gte" => "2023-01-01", "lte" => "2023-01-02"},
+      ...>   %{"type" => "date_range", "format" => "strict_date"},
+      ...> )
+      #Date.Range<...>
   """
   @spec deserialize_field(any(), mappings(), (binary() -> any())) :: any()
   def deserialize_field(value, mapping, key_mapper \\ &Function.identity/1)

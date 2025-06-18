@@ -3,9 +3,7 @@ defmodule ElasticsearchEx.Client do
   Provides functions to make HTTP requests to an Elasticsearch cluster.
 
   This module handles HTTP requests (GET, POST, PUT, DELETE, HEAD) to Elasticsearch, supporting
-  JSON and NDJSON content types. It integrates with `ElasticsearchEx.MappingsCacher` for automatic
-  deserialization of responses (via `:deserialize` and `:mapper` options) and
-  `ElasticsearchEx.MapExt` for key transformation (via `:keys` option). Cluster configuration is
+  JSON and NDJSON content types. Cluster configuration is
   fetched from the `:elasticsearch_ex` application environment or provided via options.
 
   ## Configuration
@@ -22,9 +20,8 @@ defmodule ElasticsearchEx.Client do
   - `:headers`: Additional HTTP headers (map).
   - `:req_opts`: Req library options (e.g., `[timeout: 5000]`).
   - `:ndjson`: Set to `true` for NDJSON content type.
-  - `:keys`: Set to `:atoms` to convert string keys to atoms using `ElasticsearchEx.MapExt`.
-  - `:deserialize`: Set to `true` to deserialize responses using `ElasticsearchEx.Deserializer` with `ElasticsearchEx.MappingsCacher`.
-  - `:mapper`: Custom function (`index -> mappings`) for deserialization.
+  - `:keys_as_atoms`: Set to `true` to convert string keys to atoms.
+  - `:deserialize`: Set to `true` to deserialize responses using `ElasticsearchEx.Deserializer`.
 
   ## Examples
       # GET request
@@ -43,6 +40,11 @@ defmodule ElasticsearchEx.Client do
       request(:get, "/my_index/_doc/1", nil, deserialize: true)
       # => {:ok, %{"_index" => "my_index", "_source" => %{"field" => value}}}
   """
+
+  require Logger
+
+  alias ElasticsearchEx.Deserializer
+  alias ElasticsearchEx.MapExt
 
   ## Typespecs
 
@@ -128,17 +130,13 @@ defmodule ElasticsearchEx.Client do
     {url, auth} = generate_request_url_and_auth(cluster_config, path)
     {headers, opts} = generate_request_headers(cluster_config, opts)
     {body_key, body_value} = generate_request_body(body, headers)
-    {keys_atoms, opts} = Keyword.pop(opts, :keys)
-    {deserialize, opts} = Keyword.pop(opts, :deserialize)
-    {mapper, opts} = Keyword.pop(opts, :mapper)
+    {client_opts, opts} = Keyword.pop(opts, :client_opts, [])
+    client_opts = Enum.map(client_opts, &if(is_atom(&1), do: {&1, true}, else: &1))
     {req_opts, query_params} = generate_request_options(cluster_config, opts)
-    req_keys_atoms = get_in(req_opts, [:decode_json, :keys])
-    # IO.inspect(cluster_config, label: "Clust")
-    # IO.inspect(url, label: "URL")
+    deserialize = client_opts[:deserialize] == true
+    keys_as_atoms = client_opts[:keys_as_atoms] == true
 
-    # IO.inspect(req_opts, label: "Req opts")
-
-    if req_keys_atoms == :atoms and (deserialize == true or is_function(mapper, 1)) do
+    if req_opts[:decode_json][:keys] == :atoms and deserialize == true do
       raise ArgumentError,
             "replace the req option `[decode_json: [keys: :atoms]]` by `keys: :atoms`"
     end
@@ -157,75 +155,55 @@ defmodule ElasticsearchEx.Client do
     |> Req.merge(req_opts)
     # |> Req.Request.append_request_steps(inspect: &IO.inspect/1)
     |> Req.request()
-    |> parse_result(deserialize, mapper, keys_atoms)
+    |> parse_result(deserialize, keys_as_atoms)
   end
 
   ## Private functions
 
-  @spec maybe_deserialize_documents(term(), nil | true, nil | (binary() -> map()), nil | :atoms) ::
-          term()
-  defp maybe_deserialize_documents(result, _deserialize, _mapper, _keys_atoms)
-       when not is_map(result) do
-    result
-  end
-
-  defp maybe_deserialize_documents(any_result, true, nil, keys_atoms) do
-    mapper = &ElasticsearchEx.MappingsCacher.get/1
-
-    maybe_deserialize_documents(any_result, true, mapper, keys_atoms)
-  end
-
-  defp maybe_deserialize_documents(result, deserialize, mapper, keys_atoms)
-       when is_function(mapper, 1) and (is_nil(deserialize) or deserialize == true) do
-    key_fun = if(keys_atoms == :atoms, do: &String.to_atom/1, else: &Function.identity/1)
-
-    ElasticsearchEx.Deserializer.deserialize(result, mapper, key_fun)
-  end
-
-  defp maybe_deserialize_documents(_result, _deserialize, mapper, _keys_atoms)
-       when not is_nil(mapper) do
-    raise ArgumentError,
-          "option `mapper` must be `nil` or a function of arity 1, got: `#{inspect(mapper)}`"
-  end
-
-  defp maybe_deserialize_documents(result, _deserialize, _mapper, :atoms) do
-    ElasticsearchEx.MapExt.atomize_keys(result)
-  end
-
-  defp maybe_deserialize_documents(any_result, _deserialize, _mapper, _keys_atoms) do
-    any_result
-  end
-
-  @spec parse_result(
-          ElasticsearchEx.response(),
-          nil | true,
-          nil | (binary() -> map()),
-          nil | :atoms
-        ) :: ElasticsearchEx.response()
-  defp parse_result({:ok, %Req.Response{body: %{"error" => _}} = response}, _, _, _) do
+  @spec parse_result(ElasticsearchEx.response(), boolean(), boolean()) ::
+          ElasticsearchEx.response()
+  defp parse_result({:ok, %Req.Response{body: %{"error" => _}} = response}, _, _) do
     {:error, ElasticsearchEx.Error.exception(response)}
   end
 
   defp parse_result(
          {:ok, %Req.Response{status: status, body: body}},
          deserialize,
-         mapper,
-         keys_atoms
+         keys_as_atoms
        )
        when status in 200..299 do
-    {:ok, maybe_deserialize_documents(body, deserialize, mapper, keys_atoms)}
+    key_mapper =
+      if keys_as_atoms do
+        &String.to_atom/1
+      else
+        &Function.identity/1
+      end
+
+    result =
+      cond do
+        deserialize ->
+          Deserializer.deserialize(body, key_mapper)
+
+        is_list(body) or is_map(body) ->
+          MapExt.map_keys(body, key_mapper)
+
+        true ->
+          body
+      end
+
+    {:ok, result}
   end
 
-  defp parse_result({:ok, %Req.Response{status: status} = response}, _, _, _)
+  defp parse_result({:ok, %Req.Response{status: status} = response}, _, _)
        when status in 300..599 do
     {:error, ElasticsearchEx.Error.exception(response)}
   end
 
-  defp parse_result({:error, error}, _, _, _) when is_exception(error) do
+  defp parse_result({:error, error}, _, _) when is_exception(error) do
     {:error, error}
   end
 
-  defp parse_result({:error, error}, _, _, _) do
+  defp parse_result({:error, error}, _, _) do
     raise "Unknown error: #{inspect(error)}"
   end
 

@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v1.9.1 (2025-06-17)
+
+* **Changes:**
+  * Removed the option to specify custom mapper
+  * Wrapped the options `:deserialize` and `:keys_as_atoms` in a key: `client_opts: [deserialize: true, keys_as_atoms: true]`
+  * Fixed an issue where the response wasn't fully converted with keys as atoms
+
 ## v1.9.0 (2025-06-13)
 
 * **Changes:**

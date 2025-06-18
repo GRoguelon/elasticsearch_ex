@@ -1,72 +1,69 @@
 defmodule ElasticsearchEx.MapExtTest do
   use ExUnit.Case, async: true
 
+  alias ElasticsearchEx.MapExt
+
   ## Tests
 
-  describe "atomize_keys/1" do
-    import ElasticsearchEx.MapExt, only: [atomize_keys: 1]
-
-    test "converts string keys to atoms in a flat map" do
-      assert atomize_keys(%{"a" => :a, "b" => :b}) == %{a: :a, b: :b}
+  describe "map_keys/2" do
+    test "returns the map unchanged if key_mapper is nil" do
+      assert MapExt.map_keys(%{"a" => 1, "b" => 2}, nil) == %{"a" => 1, "b" => 2}
     end
 
-    test "converts string keys to atoms in nested maps" do
-      assert atomize_keys(%{"a" => :a, "b" => %{"c" => %{"d" => :d}}}) ==
-               %{a: :a, b: %{c: %{d: :d}}}
+    test "maps string keys to atoms in a flat map" do
+      assert MapExt.map_keys(%{"a" => 1, "b" => 2}, &String.to_atom/1) == %{a: 1, b: 2}
     end
 
-    test "converts string keys to atoms in maps within lists" do
-      assert atomize_keys(%{"a" => :a, "b" => [%{"c" => :c}, %{"d" => :d}]}) ==
-               %{a: :a, b: [%{c: :c}, %{d: :d}]}
+    test "maps string keys to uppercase in a flat map" do
+      assert MapExt.map_keys(%{"foo" => 1, "bar" => 2}, &String.upcase/1) == %{
+               "FOO" => 1,
+               "BAR" => 2
+             }
     end
 
-    test "preserves atom keys" do
-      assert atomize_keys(%{"a" => :a, b: %{"c" => :c}}) ==
-               %{a: :a, b: %{c: :c}}
+    test "maps keys recursively in nested maps" do
+      input = %{"a" => %{"b" => %{"c" => 1}}, "d" => 2}
+      expected = %{a: %{b: %{c: 1}}, d: 2}
+      assert MapExt.map_keys(input, &String.to_atom/1) == expected
+    end
+
+    test "maps keys in maps inside lists" do
+      input = %{"a" => [%{"b" => 1}, %{"c" => 2}]}
+      expected = %{a: [%{b: 1}, %{c: 2}]}
+      assert MapExt.map_keys(input, &String.to_atom/1) == expected
+    end
+
+    test "preserves atom keys and only maps string keys" do
+      input = %{"a" => 1, b: 2}
+      expected = %{a: 1, b: 2}
+      assert MapExt.map_keys(input, &String.to_atom/1) == expected
     end
 
     test "handles empty map" do
-      assert atomize_keys(%{}) == %{}
+      assert MapExt.map_keys(%{}, &String.to_atom/1) == %{}
     end
 
-    test "preserves non-map/non-list values" do
-      assert atomize_keys(%{"a" => 1, "b" => :atom, "c" => {1, 2}}) ==
-               %{a: 1, b: :atom, c: {1, 2}}
+    test "preserves non-map, non-list values" do
+      input = %{"a" => 1, "b" => :atom, "c" => {1, 2}}
+      expected = %{a: 1, b: :atom, c: {1, 2}}
+      assert MapExt.map_keys(input, &String.to_atom/1) == expected
     end
 
     test "handles nested lists" do
-      assert atomize_keys(%{"a" => [[%{"b" => :b}]]}) ==
-               %{a: [[%{b: :b}]]}
-    end
-
-    test "handles complex nested structures" do
-      input = %{
-        "a" => :a,
-        "b" => [%{"c" => %{"d" => :d}}, %{"e" => [1, %{"f" => :f}]}]
-      }
-
-      expected = %{
-        a: :a,
-        b: [%{c: %{d: :d}}, %{e: [1, %{f: :f}]}]
-      }
-
-      assert atomize_keys(input) == expected
+      input = %{"a" => [[%{"b" => 1}]]}
+      expected = %{a: [[%{b: 1}]]}
+      assert MapExt.map_keys(input, &String.to_atom/1) == expected
     end
 
     test "preserves structs" do
       date = DateTime.utc_now()
-      assert atomize_keys(%{"a" => date}) == %{a: date}
+      assert MapExt.map_keys(%{"a" => date}, &String.to_atom/1) == %{a: date}
     end
 
     test "handles edge case keys" do
-      assert atomize_keys(%{"" => :empty, "key with space" => :space}) ==
-               %{:"" => :empty, :"key with space" => :space}
-    end
-
-    test "raises FunctionClauseError for non-map input" do
-      assert_raise FunctionClauseError, fn -> atomize_keys(a: 1) end
-      assert_raise FunctionClauseError, fn -> atomize_keys(:atom) end
-      assert_raise FunctionClauseError, fn -> atomize_keys(123) end
+      input = %{"key with space" => 1, "" => 2}
+      expected = %{"key with space" => 1, "" => 2}
+      assert MapExt.map_keys(input, &Function.identity/1) == expected
     end
   end
 end
