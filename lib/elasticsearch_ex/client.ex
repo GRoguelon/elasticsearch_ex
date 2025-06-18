@@ -130,11 +130,16 @@ defmodule ElasticsearchEx.Client do
     {url, auth} = generate_request_url_and_auth(cluster_config, path)
     {headers, opts} = generate_request_headers(cluster_config, opts)
     {body_key, body_value} = generate_request_body(body, headers)
-    {client_opts, opts} = Keyword.pop(opts, :client_opts, [])
-    client_opts = Enum.map(client_opts, &if(is_atom(&1), do: {&1, true}, else: &1))
-    {req_opts, query_params} = generate_request_options(cluster_config, opts)
-    deserialize = client_opts[:deserialize] == true
-    keys_as_atoms = client_opts[:keys_as_atoms] == true
+    {deserialize, opts} = Keyword.pop(opts, :deserialize)
+    {keys_as_atoms, opts} = Keyword.pop(opts, :keys_as_atoms)
+    {req_opts, opts} = generate_request_options(cluster_config, opts)
+    {params, remaining_opts} = Keyword.pop(opts, :params, [])
+
+    if remaining_opts != [] do
+      Logger.warning(
+        "Wrap `#{inspect(remaining_opts)}` into: `params: #{inspect(remaining_opts)}`"
+      )
+    end
 
     if req_opts[:decode_json][:keys] == :atoms and deserialize == true do
       raise ArgumentError,
@@ -149,7 +154,7 @@ defmodule ElasticsearchEx.Client do
       {body_key, body_value},
       {:compress_body, body_value != ""},
       {:compressed, true},
-      {:params, query_params}
+      {:params, Keyword.merge(params, remaining_opts)}
     ]
     |> Req.new()
     |> Req.merge(req_opts)
@@ -275,9 +280,9 @@ defmodule ElasticsearchEx.Client do
   @spec generate_request_options(cluster_config(), opts()) :: {keyword(), keyword()}
   defp generate_request_options(cluster_config, opts) do
     global_req_opts = Map.get(cluster_config, :req_opts, [])
-    {request_req_opts, query_params} = Keyword.pop(opts, :req_opts, [])
+    {request_req_opts, opts} = Keyword.pop(opts, :req_opts, [])
     req_opts = Keyword.merge(global_req_opts, request_req_opts)
 
-    {req_opts, query_params}
+    {req_opts, opts}
   end
 end

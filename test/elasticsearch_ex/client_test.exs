@@ -187,7 +187,7 @@ defmodule ElasticsearchEx.ClientTest do
       end)
 
       assert {:ok, response} =
-               request(:get, "/my-index/_doc/1", nil, client_opts: [:keys_as_atoms])
+               request(:get, "/my-index/_doc/1", nil, keys_as_atoms: true)
 
       assert response == ElasticsearchEx.MapExt.atomize_keys(document)
     end
@@ -203,7 +203,7 @@ defmodule ElasticsearchEx.ClientTest do
     test "raises for conflicting req_opts and deserialize/keys" do
       Req.Test.stub(ElasticsearchEx.ClientStub, fn conn -> Req.Test.json(conn, @resp_success) end)
 
-      opts = [req_opts: [decode_json: [keys: :atoms]], client_opts: [:deserialize]]
+      opts = [req_opts: [decode_json: [keys: :atoms]], deserialize: true]
 
       assert_raise ArgumentError, ~r/replace the req option/, fn ->
         request(:get, "/my-index/_search", nil, opts)
