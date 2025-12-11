@@ -236,7 +236,7 @@ defmodule ElasticsearchEx.Client do
           {URI.t(), nil | {:basic, binary()}}
   defp generate_request_url_and_auth(%{endpoint: endpoint}, path) do
     path_as_str = path |> to_string() |> ElasticsearchEx.Utils.maybe_leading_slash()
-    uri = endpoint |> URI.new!() |> ElasticsearchEx.Utils.uri_append_path(path_as_str)
+    uri = endpoint |> URI.new!() |> URI.append_path(path_as_str)
     auth = uri.userinfo && {:basic, uri.userinfo}
 
     {%{uri | userinfo: nil}, auth}

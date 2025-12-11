@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v1.9.2 (2025-12-11)
+
+* **Changes:**
+  * Removed custom `uri_append_path/2` implementation for Elixir version < 1.15
+  * Added option to `MappingsCacher` to lazy load the mappings when starting
+
 ## v1.9.1 (2025-06-17)
 
 * **Changes:**

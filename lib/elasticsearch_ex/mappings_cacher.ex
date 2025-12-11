@@ -40,20 +40,19 @@ defmodule ElasticsearchEx.MappingsCacher do
   def init(opts) do
     time_to_live = Keyword.get(opts, :time_to_live)
     lazy = Keyword.get(opts, :lazy)
-    lazy? = lazy == true
 
     mappings =
-      if lazy? do
-        fetch_all_mappings!(time_to_live)
-      else
+      if lazy == true do
         %{}
+      else
+        fetch_all_mappings!(time_to_live)
       end
 
     if is_integer(time_to_live) do
       schedule_cleanup(mappings)
     end
 
-    {:ok, %{mappings: mappings, time_to_live: time_to_live, lazy?: lazy?}}
+    {:ok, %{mappings: mappings, time_to_live: time_to_live, lazy: lazy == true}}
   end
 
   @impl true
@@ -65,7 +64,7 @@ defmodule ElasticsearchEx.MappingsCacher do
       nil ->
         {mapping, %{mappings: new_mappings} = new_state} = update_mapping_state(state, index_name)
 
-        if state.lazy? do
+        if is_integer(state.time_to_live) do
           schedule_cleanup(new_mappings)
         end
 
@@ -82,7 +81,12 @@ defmodule ElasticsearchEx.MappingsCacher do
 
   @impl true
   def handle_cast(:clear, %{time_to_live: time_to_live} = state) do
-    mappings = fetch_all_mappings!(time_to_live)
+    mappings =
+      if state.lazy do
+        %{}
+      else
+        fetch_all_mappings!(time_to_live)
+      end
 
     {:noreply, %{state | mappings: mappings}}
   end
