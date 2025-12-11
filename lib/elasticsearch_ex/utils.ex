@@ -63,34 +63,7 @@ defmodule ElasticsearchEx.Utils do
   end
 
   @spec maybe_leading_slash(binary()) :: binary()
+  def maybe_leading_slash(<<"//", path::binary>>), do: maybe_leading_slash("/" <> path)
   def maybe_leading_slash(<<"/", _::binary>> = path), do: path
-
   def maybe_leading_slash(path), do: "/" <> path
-
-  if System.version() |> Version.parse!() |> Version.match?("~> 1.15") do
-    @spec uri_append_path(URI.t(), binary()) :: URI.t()
-    defdelegate uri_append_path(uri_or_url, path), to: URI, as: :append_path
-  else
-    @spec uri_append_path(URI.t(), binary()) :: URI.t()
-    def uri_append_path(%URI{}, "//" <> _ = path) do
-      raise ArgumentError, ~s|path cannot start with "//", got: #{inspect(path)}|
-    end
-
-    def uri_append_path(%URI{path: path} = uri, "/" <> rest = all) do
-      cond do
-        path == nil ->
-          %{uri | path: all}
-
-        path != "" and :binary.last(path) == ?/ ->
-          %{uri | path: path <> rest}
-
-        true ->
-          %{uri | path: path <> all}
-      end
-    end
-
-    def uri_append_path(%URI{}, path) when is_binary(path) do
-      raise ArgumentError, ~s|path must start with "/", got: #{inspect(path)}|
-    end
-  end
 end
