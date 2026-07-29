@@ -659,7 +659,10 @@ defmodule ElasticsearchEx.API.Search do
   def field_capabilities(fields, opts) do
     fields_str = prepare_fields(fields)
 
-    request(:get, "/_field_caps", nil, [{:fields, fields_str} | opts])
+    opts =
+      Keyword.update(opts, :params, [fields: fields_str], &Keyword.put(&1, :fields, fields_str))
+
+    request(:get, "/_field_caps", nil, opts)
   end
 
   @doc """
@@ -679,7 +682,10 @@ defmodule ElasticsearchEx.API.Search do
     fields_str = prepare_fields(fields)
     path = generate_path_with_suffix(index, "_field_caps")
 
-    request(:get, path, nil, [{:fields, fields_str} | opts])
+    opts =
+      Keyword.update(opts, :params, [fields: fields_str], &Keyword.put(&1, :fields, fields_str))
+
+    request(:get, path, nil, opts)
   end
 
   @doc "Check `profile/3` for more information."

@@ -101,7 +101,7 @@ defmodule ElasticsearchEx.Streamer do
   @spec create_pit(index(), binary()) :: (-> acc())
   defp create_pit(index, keep_alive) do
     fn ->
-      case SearchApi.create_pit(index, keep_alive: keep_alive) do
+      case SearchApi.create_pit(index, params: [keep_alive: keep_alive]) do
         {:ok, %{"id" => pit_id}} ->
           Logger.debug("Created the PIT: #{pit_id}")
 

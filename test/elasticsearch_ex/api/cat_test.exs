@@ -32,7 +32,7 @@ defmodule ElasticsearchEx.API.CatTest do
 
     test "returns alias information with options" do
       assert {:ok, response} =
-               Cat.aliases(format: :text, v: true, s: "alias,index,is_write_index")
+               Cat.aliases(params: [format: :text, v: true, s: "alias,index,is_write_index"])
 
       assert String.contains?(response, "my-alias")
     end
@@ -40,168 +40,168 @@ defmodule ElasticsearchEx.API.CatTest do
 
   describe "allocation/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.allocation(nil, v: true)
+      assert {:ok, response} = Cat.allocation(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "anomaly_detectors/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.anomaly_detectors(nil, v: true)
+      assert {:ok, response} = Cat.anomaly_detectors(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "component_templates/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.component_templates(nil, v: true)
+      assert {:ok, response} = Cat.component_templates(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "count/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.count(nil, v: true)
+      assert {:ok, response} = Cat.count(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "data_frame_analytics/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.data_frame_analytics(nil, v: true)
+      assert {:ok, response} = Cat.data_frame_analytics(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "datafeeds/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.datafeeds(nil, v: true)
+      assert {:ok, response} = Cat.datafeeds(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "fielddata/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.fielddata(nil, v: true)
+      assert {:ok, response} = Cat.fielddata(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "health/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.health(nil, v: true)
+      assert {:ok, response} = Cat.health(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "indices/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.indices(nil, v: true)
+      assert {:ok, response} = Cat.indices(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "master/1" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.master(v: true)
+      assert {:ok, response} = Cat.master(params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "nodeattrs/1" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.nodeattrs(v: true)
+      assert {:ok, response} = Cat.nodeattrs(params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "nodes/1" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.nodes(v: true)
+      assert {:ok, response} = Cat.nodes(params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "pending_tasks/1" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.pending_tasks(v: true)
+      assert {:ok, response} = Cat.pending_tasks(params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "plugins/1" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.plugins(v: true)
+      assert {:ok, response} = Cat.plugins(params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "recovery/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.recovery(nil, v: true)
+      assert {:ok, response} = Cat.recovery(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "repositories/1" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.repositories(v: true)
+      assert {:ok, response} = Cat.repositories(params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "segments/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.segments(nil, v: true)
+      assert {:ok, response} = Cat.segments(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "shards/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.shards(nil, v: true)
+      assert {:ok, response} = Cat.shards(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "snapshots/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.snapshots(nil, v: true)
+      assert {:ok, response} = Cat.snapshots(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "tasks/1" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.tasks(v: true)
+      assert {:ok, response} = Cat.tasks(params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "templates/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.templates(nil, v: true)
+      assert {:ok, response} = Cat.templates(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "thread_pool/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.thread_pool(nil, v: true)
+      assert {:ok, response} = Cat.thread_pool(nil, params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "trained_models/1" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.trained_models(v: true)
+      assert {:ok, response} = Cat.trained_models(params: [v: true])
       assert is_list(response)
     end
   end
 
   describe "transforms/2" do
     test "returns a successful response" do
-      assert {:ok, response} = Cat.transforms(nil, v: true)
+      assert {:ok, response} = Cat.transforms(nil, params: [v: true])
       assert is_list(response)
     end
   end

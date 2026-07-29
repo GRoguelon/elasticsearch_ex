@@ -48,7 +48,9 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
     end
 
     test "search/1 returns a sucessful response with opts false" do
-      assert {:ok, %{"hits" => %{"hits" => [hit1 | _] = hits}}} = Search.search(_source: false)
+      assert {:ok, %{"hits" => %{"hits" => [hit1 | _] = hits}}} =
+               Search.search(params: [_source: false])
+
       assert length(hits) >= 3
       refute is_map_key(hit1, "_source")
     end
@@ -81,7 +83,8 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
     end
 
     test "search/2 returns a sucessful response with index and opts" do
-      assert {:ok, %{"hits" => %{"hits" => hits}}} = Search.search(@index_name, _source: false)
+      assert {:ok, %{"hits" => %{"hits" => hits}}} =
+               Search.search(@index_name, params: [_source: false])
 
       assert length(hits) == 3
     end
@@ -95,14 +98,14 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
     end
 
     test "search/2 returns a sucessful response with index as nil and opts as false" do
-      assert {:ok, %{"hits" => %{"hits" => hits}}} = Search.search(nil, _source: false)
+      assert {:ok, %{"hits" => %{"hits" => hits}}} = Search.search(nil, params: [_source: false])
 
       assert length(hits) >= 3
     end
 
     test "search/2 returns a sucessful response with query and opts", %{doc_ids: [doc_id | _]} do
       assert {:ok, %{"hits" => %{"hits" => [hit1]}}} =
-               Search.search(%{query: %{term: %{_id: doc_id}}, size: 1}, _source: false)
+               Search.search(%{query: %{term: %{_id: doc_id}}, size: 1}, params: [_source: false])
 
       refute is_map_key(hit1, "_source")
     end
@@ -110,7 +113,7 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
     test "search/3 returns a sucessful response", %{doc_ids: [doc_id | _]} do
       assert {:ok, %{"hits" => %{"hits" => [hit1]}}} =
                Search.search(%{query: %{term: %{_id: doc_id}}, size: 1}, @index_name,
-                 _source: false
+                 params: [_source: false]
                )
 
       refute is_map_key(hit1, "_source")
@@ -124,7 +127,7 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
                 type: "index_not_found_exception"
               }} =
                Search.search(%{query: %{term: %{_id: doc_id}}, size: 1}, :fake_index,
-                 _source: false
+                 params: [_source: false]
                )
     end
   end
@@ -326,7 +329,7 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
                Search.search(
                  %{query: %{match_all: %{}}, size: 1},
                  @index_name,
-                 scroll: "5s"
+                 params: [scroll: "5s"]
                )
 
       assert {
@@ -358,7 +361,7 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
                Search.search(
                  %{query: %{match_all: %{}}, size: 1},
                  @index_name,
-                 scroll: "5s"
+                 params: [scroll: "5s"]
                )
 
       assert {:ok, %{"num_freed" => 1, "succeeded" => true}} = Search.clear_scroll(scroll_id)
@@ -372,12 +375,11 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
       Search.async_search(
         %{query: %{term: %{_id: doc_id}}, size: 1},
         @index_name,
-        keep_on_completion: true,
-        keep_alive: "5s"
+        params: [keep_on_completion: true, keep_alive: "5s"]
       )
   end
 
   defp create_pit do
-    {:ok, _} = Search.create_pit(@index_name, keep_alive: "5s")
+    {:ok, _} = Search.create_pit(@index_name, params: [keep_alive: "5s"])
   end
 end
