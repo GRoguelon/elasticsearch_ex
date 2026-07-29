@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.9.4 (2026-07-29)
+
+* **Bug fixes:**
+  * Fixed the files included in the Hex package: added `README.md`, `CHANGELOG.md`, `LICENSE.txt` and `.formatter.exs`
+
 ## v1.9.3 (2026-07-29)
 
 * **Changes:**
