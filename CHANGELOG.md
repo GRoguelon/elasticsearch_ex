@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v1.9.3 (2026-07-29)
+
+* **Changes:**
+  * Added support for `Req` v0.7: the request no longer includes a body when there is none, preventing `GET` requests from being changed into `POST` requests by `Req`
+  * Wrapped the URL query parameters into the `:params` option across the `ElasticsearchEx.API.Cat`, `ElasticsearchEx.API.Search` and `ElasticsearchEx.Streamer` modules
+  * Changed `ElasticsearchEx.Streamer` to forward the options (`:cluster`, `:headers`, `:req_opts`) to the point-in-time creation, deletion and search requests
+
+* **Bug fixes:**
+  * Fixed a typo in the application supervisor preventing the `:time_to_live` configuration from being read by `ElasticsearchEx.MappingsCacher`
+  * Fixed a type checker warning on Elixir 1.20 in `ElasticsearchEx.API.Search`
+
+* **Chores:**
+  * Updated the dependencies
+  * Updated the CI matrix: added Elixir 1.20/Erlang 29 and Elasticsearch 9.x, dropped Erlang 24
+  * Fixed the tests for Elasticsearch 9.x and the lazy `ElasticsearchEx.MappingsCacher`
+
 ## v1.9.2 (2025-12-11)
 
 * **Changes:**
