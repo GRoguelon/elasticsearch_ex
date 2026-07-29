@@ -89,12 +89,12 @@ defmodule ElasticsearchEx.MixProject do
     [
       {:castore, "~> 1.0", optional: true},
       {:jason, "~> 1.4"},
-      {:req, "~> 0.5"},
+      {:req, "~> 0.7"},
 
       ## Dev dependencies
       {:benchee, "~> 1.0", only: :dev},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
-      {:mix_test_interactive, "~> 4.1", only: :dev, runtime: false},
+      {:mix_test_interactive, "~> 5.1", only: :dev, runtime: false},
 
       ## Test dependencies
       {:plug, "~> 1.15", only: :test},
