@@ -80,18 +80,31 @@ defmodule ElasticsearchEx.MappingsCacherTest do
   describe "clear/1" do
     import MappingsCacher, only: [clear: 0, get: 1]
 
-    test "refreshes all mappings" do
+    test "empties the cache when lazy" do
       # Populate cache
       get(@index_name)
+
+      # Clear cache (the cacher is lazy outside prod, so nothing is refetched)
+      clear()
+
+      state = :sys.get_state(MappingsCacher)
+      assert state.mappings == %{}
+
+      # Mappings are fetched again on demand
+      assert %{"properties" => %{"field" => %{"type" => "keyword"}}} = get(@index_name)
+    end
+
+    test "refreshes all mappings when not lazy" do
+      pid = start_supervised!({MappingsCacher, name: EagerMappingsCacher, lazy: false})
 
       # Create another index
       Client.request(:put, "/#{@index_name_2}", @mapping_2)
 
       # Clear cache
-      clear()
+      MappingsCacher.clear(pid)
 
       # Verify new mappings are loaded
-      state = :sys.get_state(MappingsCacher)
+      state = :sys.get_state(pid)
 
       assert Map.has_key?(state.mappings, @index_name_2)
       assert Map.has_key?(state.mappings, @index_name)

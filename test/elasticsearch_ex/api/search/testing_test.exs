@@ -106,7 +106,7 @@ defmodule ElasticsearchEx.API.Search.TestingTest do
                             %{
                               "children" => [
                                 %{
-                                  "name" => "SimpleTopScoreDocCollector",
+                                  "name" => collector_name,
                                   "reason" => "search_top_hits",
                                   "time_in_nanos" => _
                                 }
@@ -155,6 +155,9 @@ defmodule ElasticsearchEx.API.Search.TestingTest do
                 "timed_out" => false,
                 "took" => _
               }} = Search.profile(%{query: %{term: %{_id: fake_id}}}, @index_name)
+
+      # Lucene 10 (Elasticsearch 9.x) renamed SimpleTopScoreDocCollector to TopScoreDocCollector
+      assert collector_name in ["SimpleTopScoreDocCollector", "TopScoreDocCollector"]
     end
   end
 

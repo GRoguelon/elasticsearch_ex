@@ -14,7 +14,7 @@ defmodule ElasticsearchEx.Application do
     children = [
       {ElasticsearchEx.MappingsCacher,
        [
-         time_to_live: Application.get_env(:elasticseach_ex, :time_to_live),
+         time_to_live: Application.get_env(:elasticsearch_ex, :time_to_live),
          lazy: Application.get_env(:elasticsearch_ex, :lazy, not @prod?)
        ]}
     ]
