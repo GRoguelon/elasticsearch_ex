@@ -72,21 +72,25 @@ defmodule ElasticsearchEx.Streamer do
     prepared_query = prepare_query(query)
     {pit_id, opts} = Keyword.pop(opts, :pit_id)
     {keep_alive, opts} = Keyword.pop(opts, :keep_alive, "10s")
-    pit_id = if(is_binary(pit_id) and pit_alive?(pit_id), do: pit_id)
+    pit_id = if(is_binary(pit_id) and pit_alive?(pit_id, opts), do: pit_id)
 
     do_stream(prepared_query, index, pit_id, keep_alive, opts)
   end
 
   ## Private functions
 
-  defp pit_alive?(pit_id) do
-    {status, _} = SearchApi.search(%{query: %{match_none: %{}}, pit: %{id: pit_id}})
+  defp pit_alive?(pit_id, opts) do
+    {status, _} = SearchApi.search(%{query: %{match_none: %{}}, pit: %{id: pit_id}}, opts)
 
     status == :ok
   end
 
   defp do_stream(query, index, nil, keep_alive, opts) do
-    Stream.resource(create_pit(index, keep_alive), next_fun(query, opts), &close_pit/1)
+    Stream.resource(
+      create_pit(index, keep_alive, opts),
+      next_fun(query, opts),
+      &close_pit(&1, opts)
+    )
   end
 
   defp do_stream(query, _index, pit_id, keep_alive, opts) do
@@ -98,10 +102,18 @@ defmodule ElasticsearchEx.Streamer do
     fn -> do_return_acc(pit_id, keep_alive) end
   end
 
-  @spec create_pit(index(), binary()) :: (-> acc())
-  defp create_pit(index, keep_alive) do
+  @spec create_pit(index(), binary(), keyword()) :: (-> acc())
+  defp create_pit(index, keep_alive, opts) do
     fn ->
-      case SearchApi.create_pit(index, params: [keep_alive: keep_alive]) do
+      opts =
+        Keyword.update(
+          opts,
+          :params,
+          [keep_alive: keep_alive],
+          &Keyword.put(&1, :keep_alive, keep_alive)
+        )
+
+      case SearchApi.create_pit(index, opts) do
         {:ok, %{"id" => pit_id}} ->
           Logger.debug("Created the PIT: #{pit_id}")
 
@@ -134,12 +146,12 @@ defmodule ElasticsearchEx.Streamer do
     end
   end
 
-  @spec close_pit(acc()) :: :ok
-  defp close_pit({pit, _search_after}), do: close_pit(pit)
+  @spec close_pit(acc(), keyword()) :: :ok
+  defp close_pit({pit, _search_after}, opts), do: close_pit(pit, opts)
 
-  @spec close_pit(pit()) :: :ok
-  defp close_pit(%{id: pit_id}) do
-    case SearchApi.close_pit(pit_id) do
+  @spec close_pit(pit(), keyword()) :: :ok
+  defp close_pit(%{id: pit_id}, opts) do
+    case SearchApi.close_pit(pit_id, opts) do
       {:ok, %{"num_freed" => _, "succeeded" => true}} ->
         Logger.debug("Deleted the PIT: #{pit_id}")
 
