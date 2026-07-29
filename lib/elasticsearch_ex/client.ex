@@ -141,9 +141,9 @@ defmodule ElasticsearchEx.Client do
       )
     end
 
-    if req_opts[:decode_json][:keys] == :atoms and deserialize == true do
+    if is_function(req_opts[:decoders][:json]) and deserialize == true do
       raise ArgumentError,
-            "replace the req option `[decode_json: [keys: :atoms]]` by `keys: :atoms`"
+            "replace the req option `[decoders: [json: &Jason.decode(&1, keys: :atoms)]]` by `keys: :atoms`"
     end
 
     [

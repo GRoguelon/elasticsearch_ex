@@ -203,7 +203,7 @@ defmodule ElasticsearchEx.ClientTest do
     test "raises for conflicting req_opts and deserialize/keys" do
       Req.Test.stub(ElasticsearchEx.ClientStub, fn conn -> Req.Test.json(conn, @resp_success) end)
 
-      opts = [req_opts: [decode_json: [keys: :atoms]], deserialize: true]
+      opts = [req_opts: [decoders: [json: &Jason.decode(&1, keys: :atoms)]], deserialize: true]
 
       assert_raise ArgumentError, ~r/replace the req option/, fn ->
         request(:get, "/my-index/_search", nil, opts)
