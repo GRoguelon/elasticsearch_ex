@@ -36,7 +36,7 @@ defmodule ElasticsearchEx.MixProject do
   defp package do
     [
       name: :elasticsearch_ex,
-      files: ["lib", "mix.exs"],
+      files: ~w[lib .formatter.exs mix.exs README* CHANGELOG* LICENSE*],
       maintainers: ["Geoffrey Roguelon"],
       licenses: ["MIT"],
       links: %{
