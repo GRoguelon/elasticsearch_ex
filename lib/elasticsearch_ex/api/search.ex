@@ -908,14 +908,14 @@ defmodule ElasticsearchEx.API.Search do
   @spec prepare_fields(binary() | [binary()]) :: binary()
   defp prepare_fields(fields) do
     fields_str =
-      cond do
-        is_enum(fields) ->
+      case fields do
+        fields when is_enum(fields) ->
           Enum.map_join(fields, ",", &to_string/1)
 
-        is_binary(fields) ->
+        fields when is_binary(fields) ->
           fields
 
-        true ->
+        _ ->
           raise ArgumentError, "the argument `fields` must be a binary or a list of binaries"
       end
 

@@ -35,8 +35,6 @@ defmodule ElasticsearchEx.Deserializer do
   alias ElasticsearchEx.MapExt
   alias ElasticsearchEx.MappingsCacher
 
-  require Logger
-
   ## Module attributes
 
   @typedoc """

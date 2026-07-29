@@ -9,8 +9,6 @@ defmodule ElasticsearchEx.API.Document do
 
   import ElasticsearchEx.Guards, only: [is_identifier: 1, is_name!: 1]
 
-  require Logger
-
   ## Typespecs
 
   @type source :: ElasticsearchEx.source()
