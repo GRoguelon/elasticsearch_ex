@@ -273,9 +273,6 @@ jobs:
           - elixir: "1.16.3"
             erlang: "25.3.2.21"
             elasticsearch: "9.4.4"
-          - elixir: "1.16.3"
-            erlang: "24.3.4.17"
-            elasticsearch: "9.4.4"
 
           # Elixir 1.16.3 / Elasticsearch 8.19.19
           - elixir: "1.16.3"
@@ -283,9 +280,6 @@ jobs:
             elasticsearch: "8.19.19"
           - elixir: "1.16.3"
             erlang: "25.3.2.21"
-            elasticsearch: "8.19.19"
-          - elixir: "1.16.3"
-            erlang: "24.3.4.17"
             elasticsearch: "8.19.19"
 
           # Elixir 1.16.3 / Elasticsearch 7.17.29
@@ -295,9 +289,6 @@ jobs:
           # - elixir: "1.16.3"
           #   erlang: "25.3.2.21"
           #   elasticsearch: "7.17.29"
-          # - elixir: "1.16.3"
-          #   erlang: "24.3.4.17"
-          #   elasticsearch: "7.17.29"
 
           # Elixir 1.15.8 / Elasticsearch 9.4.4
           - elixir: "1.15.8"
@@ -305,9 +296,6 @@ jobs:
             elasticsearch: "9.4.4"
           - elixir: "1.15.8"
             erlang: "25.3.2.21"
-            elasticsearch: "9.4.4"
-          - elixir: "1.15.8"
-            erlang: "24.3.4.17"
             elasticsearch: "9.4.4"
 
           # Elixir 1.15.8 / Elasticsearch 8.19.19
@@ -317,9 +305,6 @@ jobs:
           - elixir: "1.15.8"
             erlang: "25.3.2.21"
             elasticsearch: "8.19.19"
-          - elixir: "1.15.8"
-            erlang: "24.3.4.17"
-            elasticsearch: "8.19.19"
 
           # Elixir 1.15.8 / Elasticsearch 7.17.29
           # - elixir: "1.15.8"
@@ -327,9 +312,6 @@ jobs:
           #   elasticsearch: "7.17.29"
           # - elixir: "1.15.8"
           #   erlang: "25.3.2.21"
-          #   elasticsearch: "7.17.29"
-          # - elixir: "1.15.8"
-          #   erlang: "24.3.4.17"
           #   elasticsearch: "7.17.29"
 
     services:
