@@ -40,7 +40,9 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
     end
 
     test "search/1 returns a sucessful response with opts true" do
-      assert {:ok, %{"hits" => %{"hits" => [hit1 | _] = hits}}} = Search.search(_source: true)
+      assert {:ok, %{"hits" => %{"hits" => [hit1 | _] = hits}}} =
+               Search.search(params: [_source: true])
+
       assert length(hits) >= 3
       assert is_map_key(hit1, "_source")
     end
@@ -86,7 +88,7 @@ defmodule ElasticsearchEx.API.Search.CoreTest do
 
     test "search/2 returns a sucessful response with index as nil and opts as true" do
       assert {:ok, %{"hits" => %{"hits" => [hit1 | _] = hits}}} =
-               Search.search(nil, _source: true)
+               Search.search(nil, params: [_source: true])
 
       assert length(hits) >= 3
       assert is_map_key(hit1, "_source")

@@ -20,11 +20,11 @@ defmodule ElasticsearchEx.API.Document.SourceTest do
   describe "get/1" do
     test "returns a sucessful response", %{doc_ids: [doc_id | _]} do
       assert {:ok, %{"message" => "Hello World 1!"}} =
-               Source.get(@index_name, doc_id, _source_includes: "message")
+               Source.get(@index_name, doc_id, params: [_source_includes: "message"])
     end
 
     test "returns a sucessful response 2", %{doc_ids: [doc_id | _]} do
-      assert {:ok, %{}} = Source.get(@index_name, doc_id, _source_includes: "message2")
+      assert {:ok, %{}} = Source.get(@index_name, doc_id, params: [_source_includes: "message2"])
     end
   end
 

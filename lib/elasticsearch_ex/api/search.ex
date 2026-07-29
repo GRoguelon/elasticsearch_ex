@@ -640,7 +640,7 @@ defmodule ElasticsearchEx.API.Search do
   def field_capabilities(fields) do
     fields_str = prepare_fields(fields)
 
-    request(:get, "/_field_caps", nil, fields: fields_str)
+    request(:get, "/_field_caps", nil, params: [fields: fields_str])
   end
 
   @doc "Check `field_capabilities/3` for more information."
@@ -652,7 +652,7 @@ defmodule ElasticsearchEx.API.Search do
     fields_str = prepare_fields(fields)
     path = generate_path_with_suffix(index, "_field_caps")
 
-    request(:get, path, nil, fields: fields_str)
+    request(:get, path, nil, params: [fields: fields_str])
   end
 
   @spec field_capabilities(fields, opts()) :: response() when fields: binary() | [binary()]

@@ -456,7 +456,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.master(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.master(params: [format: :json, v: true])
       {:ok,
        [
          %{
@@ -485,7 +485,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.nodeattrs(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.nodeattrs(params: [format: :json, v: true])
       {:ok,
        [
          %{
@@ -515,7 +515,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.nodes(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.nodes(params: [format: :json, v: true])
       {:ok,
        [
          %{
@@ -548,7 +548,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.pending_tasks(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.pending_tasks(params: [format: :json, v: true])
       {:ok,
        [
          %{
@@ -722,7 +722,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.recovery(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.recovery(params: [format: :json, v: true])
       {:ok,
        [
          %{
@@ -770,7 +770,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.repositories(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.repositories(params: [format: :json, v: true])
       {:ok, [%{"id" => "repo1", "type" => "fs"}, %{"id" => "repo2", "type" => "s3"}]}
   """
   @doc since: "1.1.0"
@@ -942,7 +942,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.tasks(format: :json, v: true)
+      iex> ElasticsearchEx.API.Cat.tasks(params: [format: :json, v: true])
       {:ok,
        [
          %{
@@ -1063,7 +1063,7 @@ defmodule ElasticsearchEx.API.Cat do
 
   ### Examples
 
-      iex> ElasticsearchEx.API.Cat.trained_models(format: :json, v: true, h: "c,o,l,ct,v")
+      iex> ElasticsearchEx.API.Cat.trained_models(params: [format: :json, v: true, h: "c,o,l,ct,v"])
       {:ok,
        [
          %{
