@@ -129,7 +129,7 @@ defmodule ElasticsearchEx.Client do
     {cluster_config, opts} = get_cluster_configuration(opts)
     {url, auth} = generate_request_url_and_auth(cluster_config, path)
     {headers, opts} = generate_request_headers(cluster_config, opts)
-    {body_key, body_value} = generate_request_body(body, headers)
+    body_options = generate_request_body(body, headers)
     {deserialize, opts} = Keyword.pop(opts, :deserialize)
     {keys_as_atoms, opts} = Keyword.pop(opts, :keys_as_atoms)
     {req_opts, opts} = generate_request_options(cluster_config, opts)
@@ -151,10 +151,9 @@ defmodule ElasticsearchEx.Client do
       {:url, url},
       {:auth, auth},
       {:headers, headers},
-      {body_key, body_value},
-      {:compress_body, body_value != ""},
       {:compressed, true},
       {:params, Keyword.merge(params, remaining_opts)}
+      | body_options
     ]
     |> Req.new()
     |> Req.merge(req_opts)
@@ -258,22 +257,24 @@ defmodule ElasticsearchEx.Client do
     {headers, opts}
   end
 
-  @spec generate_request_body(body(), headers()) :: {:json | :body, any()}
+  # Since Req 0.7.0, providing a body (even an empty one) changes a GET request into a POST
+  # request, so the `:body`/`:json` options must be omitted entirely when there is no body.
+  @spec generate_request_body(body(), headers()) :: keyword()
   defp generate_request_body(body, headers) do
     cond do
-      is_nil(body) ->
-        {:body, ""}
+      is_nil(body) or body == "" ->
+        []
 
       Map.fetch!(headers, @content_type_key) == @application_ndjson ->
         body = ElasticsearchEx.Ndjson.encode!(body)
 
-        {:body, body}
+        [body: body, compress_body: true]
 
       Map.fetch!(headers, @content_type_key) == @application_json ->
-        {:json, body}
+        [json: body, compress_body: true]
 
       true ->
-        {:body, body}
+        [body: body, compress_body: true]
     end
   end
 

@@ -40,7 +40,9 @@ defmodule ElasticsearchEx.ClientTest do
   }
 
   @my_body %{"query" => %{"match_all" => %{}}}
-  @compressed_body @my_body |> Jason.encode!() |> :zlib.gzip()
+  # Since Req 0.7.0, `Req.Plug` decompresses the request body before calling the plug, so the
+  # stubs receive the plain body even though it is gzipped on the wire.
+  @encoded_body Jason.encode!(@my_body)
 
   setup do
     clusters = Application.get_env(:elasticsearch_ex, :clusters)
@@ -70,7 +72,7 @@ defmodule ElasticsearchEx.ClientTest do
     test "returns ok for successful POST request with JSON body" do
       Req.Test.stub(ElasticsearchEx.ClientStub, fn
         %Plug.Conn{method: "POST", request_path: "/my-index/_search"} = conn ->
-          {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
+          {:ok, @encoded_body, conn} = Plug.Conn.read_body(conn)
           assert conn.query_string == "q=test"
           assert conn |> Plug.Conn.get_req_header("content-type") == ["application/json"]
           assert conn |> Plug.Conn.get_req_header("x-test") == ["test"]
@@ -84,7 +86,7 @@ defmodule ElasticsearchEx.ClientTest do
     test "returns error for unsuccessful POST request" do
       Req.Test.stub(ElasticsearchEx.ClientStub, fn
         %Plug.Conn{method: "POST", request_path: "/my-index/_search"} = conn ->
-          {:ok, @compressed_body, conn} = Plug.Conn.read_body(conn)
+          {:ok, @encoded_body, conn} = Plug.Conn.read_body(conn)
           assert conn.query_string == "q=test"
 
           Req.Test.json(conn, @resp_error)
@@ -119,11 +121,11 @@ defmodule ElasticsearchEx.ClientTest do
 
     test "handles NDJSON request" do
       ndjson_body = [%{"index" => %{"_index" => "my-index"}}, %{"field" => "value"}]
-      compressed_ndjson = ndjson_body |> ElasticsearchEx.Ndjson.encode!() |> :zlib.gzip()
+      encoded_ndjson = ElasticsearchEx.Ndjson.encode!(ndjson_body)
 
       Req.Test.stub(ElasticsearchEx.ClientStub, fn
         %Plug.Conn{method: "POST", request_path: "/_bulk"} = conn ->
-          {:ok, ^compressed_ndjson, conn} = Plug.Conn.read_body(conn)
+          {:ok, ^encoded_ndjson, conn} = Plug.Conn.read_body(conn)
           assert Plug.Conn.get_req_header(conn, "content-type") == ["application/x-ndjson"]
 
           Req.Test.json(conn, %{"items" => []})
