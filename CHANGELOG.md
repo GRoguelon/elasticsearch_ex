@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.9.5 (2026-07-30)
+
+* **Bug fixes:**
+  * Fixed a `CaseClauseError` in `ElasticsearchEx.Streamer` when streaming with `keys_as_atoms: true` or `deserialize: true`: since v1.9.3 the options were forwarded to the requests made by the Streamer, whose responses are expected to keep their raw string keys. The Streamer now consumes raw responses everywhere (point-in-time management, hits navigation, `search_after` extraction) and applies these options only to the documents yielded to the caller
 
 ## v1.9.4 (2026-07-29)
 
