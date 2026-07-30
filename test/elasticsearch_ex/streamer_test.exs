@@ -83,5 +83,41 @@ defmodule ElasticsearchEx.StreamerTest do
                }
              ] = Enum.to_list(stream)
     end
+
+    @tag capture_log: true
+    test "runs the Stream with keys_as_atoms without breaking the PIT management", %{
+      doc_ids: [doc_id1, doc_id2, doc_id3]
+    } do
+      stream =
+        @query
+        |> Map.put(:size, 1)
+        |> Streamer.stream(@index_name, keep_alive: "5s", keys_as_atoms: true)
+
+      assert [
+               %{_id: ^doc_id1, _source: %{message: "Hello World 1!"}, sort: [0]},
+               %{_id: ^doc_id2, _source: %{message: "Hello World 2!"}, sort: [1]},
+               %{_id: ^doc_id3, _source: %{message: "Hello World 3!"}, sort: [2]}
+             ] = Enum.to_list(stream)
+    end
+
+    @tag capture_log: true
+    test "runs the Stream with deserialize and keys_as_atoms", %{
+      doc_ids: [doc_id1, doc_id2, doc_id3]
+    } do
+      stream =
+        @query
+        |> Map.put(:size, 1)
+        |> Streamer.stream(@index_name,
+          keep_alive: "5s",
+          deserialize: true,
+          keys_as_atoms: true
+        )
+
+      assert [
+               %{_id: ^doc_id1, _source: %{message: "Hello World 1!"}, sort: [0]},
+               %{_id: ^doc_id2, _source: %{message: "Hello World 2!"}, sort: [1]},
+               %{_id: ^doc_id3, _source: %{message: "Hello World 3!"}, sort: [2]}
+             ] = Enum.to_list(stream)
+    end
   end
 end

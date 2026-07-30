@@ -8,6 +8,8 @@ defmodule ElasticsearchEx.Streamer do
   import ElasticsearchEx.Guards, only: [is_name!: 1]
 
   alias ElasticsearchEx.API.Search, as: SearchApi
+  alias ElasticsearchEx.Deserializer
+  alias ElasticsearchEx.MapExt
 
   ## Types
 
@@ -72,29 +74,54 @@ defmodule ElasticsearchEx.Streamer do
     prepared_query = prepare_query(query)
     {pit_id, opts} = Keyword.pop(opts, :pit_id)
     {keep_alive, opts} = Keyword.pop(opts, :keep_alive, "10s")
+    {shaper, opts} = pop_shaper(opts)
     pit_id = if(is_binary(pit_id) and pit_alive?(pit_id, opts), do: pit_id)
 
-    do_stream(prepared_query, index, pit_id, keep_alive, opts)
+    do_stream(prepared_query, index, pit_id, keep_alive, shaper, opts)
   end
 
   ## Private functions
 
+  # `:deserialize` and `:keys_as_atoms` only shape the documents returned to the caller: the
+  # Streamer applies them to the yielded hits. They are removed from the options so that all
+  # the requests made by the Streamer return raw string-keyed responses.
+  @spec pop_shaper(keyword()) :: {(list() -> list()), keyword()}
+  defp pop_shaper(opts) do
+    {deserialize, opts} = Keyword.pop(opts, :deserialize)
+    {keys_as_atoms, opts} = Keyword.pop(opts, :keys_as_atoms)
+    key_mapper = if(keys_as_atoms, do: &String.to_atom/1, else: &Function.identity/1)
+
+    shaper =
+      cond do
+        deserialize == true -> &Deserializer.deserialize(&1, key_mapper)
+        keys_as_atoms == true -> &MapExt.map_keys(&1, key_mapper)
+        true -> &Function.identity/1
+      end
+
+    {shaper, opts}
+  end
+
   defp pit_alive?(pit_id, opts) do
-    {status, _} = SearchApi.search(%{query: %{match_none: %{}}, pit: %{id: pit_id}}, opts)
+    query = %{query: %{match_none: %{}}, pit: %{id: pit_id}}
+    {status, _} = SearchApi.search(query, opts)
 
     status == :ok
   end
 
-  defp do_stream(query, index, nil, keep_alive, opts) do
+  defp do_stream(query, index, nil, keep_alive, shaper, opts) do
     Stream.resource(
       create_pit(index, keep_alive, opts),
-      next_fun(query, opts),
+      next_fun(query, shaper, opts),
       &close_pit(&1, opts)
     )
   end
 
-  defp do_stream(query, _index, pit_id, keep_alive, opts) do
-    Stream.resource(return_acc(pit_id, keep_alive), next_fun(query, opts), &Function.identity/1)
+  defp do_stream(query, _index, pit_id, keep_alive, shaper, opts) do
+    Stream.resource(
+      return_acc(pit_id, keep_alive),
+      next_fun(query, shaper, opts),
+      &Function.identity/1
+    )
   end
 
   @spec return_acc(binary(), binary()) :: (-> acc())
@@ -127,8 +154,9 @@ defmodule ElasticsearchEx.Streamer do
     end
   end
 
-  @spec next_fun(query(), keyword()) :: (acc() -> {:halt, pit()} | {nonempty_list(), acc()})
-  defp next_fun(query, opts) do
+  @spec next_fun(query(), (list() -> list()), keyword()) ::
+          (acc() -> {:halt, pit()} | {nonempty_list(), acc()})
+  defp next_fun(query, shaper, opts) do
     per_page = Map.get(query, :size, 10)
 
     fn
@@ -143,8 +171,14 @@ defmodule ElasticsearchEx.Streamer do
         |> generate_search_after_query(search_after)
         |> SearchApi.search(opts)
         |> parse_response(pit, per_page)
+        |> shape_hits(shaper)
     end
   end
+
+  @spec shape_hits({:halt, pit()} | {nonempty_list(), acc()}, (list() -> list())) ::
+          {:halt, pit()} | {nonempty_list(), acc()}
+  defp shape_hits({:halt, pit}, _shaper), do: {:halt, pit}
+  defp shape_hits({hits, acc}, shaper), do: {shaper.(hits), acc}
 
   @spec close_pit(acc(), keyword()) :: :ok
   defp close_pit({pit, _search_after}, opts), do: close_pit(pit, opts)
@@ -185,27 +219,12 @@ defmodule ElasticsearchEx.Streamer do
     {:halt, pit}
   end
 
-  defp parse_response({:ok, %{hits: %{hits: []}}}, pit, _per_page) do
-    {:halt, pit}
-  end
-
   defp parse_response({:ok, %{"hits" => %{"hits" => hits}}}, pit, per_page) do
     search_after =
       if length(hits) < per_page do
         :end_of_stream
       else
         hits |> List.last() |> Map.fetch!("sort")
-      end
-
-    {hits, {pit, search_after}}
-  end
-
-  defp parse_response({:ok, %{hits: %{hits: hits}}}, pit, per_page) do
-    search_after =
-      if length(hits) < per_page do
-        :end_of_stream
-      else
-        hits |> List.last() |> Map.fetch!(:sort)
       end
 
     {hits, {pit, search_after}}
