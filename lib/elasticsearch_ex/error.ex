@@ -68,6 +68,18 @@ defmodule ElasticsearchEx.Error do
     }
   end
 
+  # Some error responses carry a body without an `error` key: a plain-text
+  # body from a proxy or gateway, or a JSON body with another shape (e.g. the
+  # `failures` of a `_delete_by_query`).
+  @impl true
+  def exception(%Req.Response{status: status, body: body}) do
+    %__MODULE__{
+      status: status,
+      reason: "Response returned #{status} status code",
+      original: body
+    }
+  end
+
   @impl true
   @spec message(t()) :: binary()
   def message(%__MODULE__{reason: reason}) do
