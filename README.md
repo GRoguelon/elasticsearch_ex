@@ -1,7 +1,12 @@
 # Elasticsearch
 
-> [!WARNING]
-> The library is still unstable and the API might be broken with the next releases.
+> ⚠️ **This project is deprecated and no longer maintained.**
+>
+> `elasticsearch_ex` will not receive further updates, including bug fixes
+> and security patches. If you're starting a new project or maintaining an
+> existing one, please migrate to
+> [`dowser_elasticsearch`](https://hex.pm/packages/dowser_elasticsearch)
+> ([docs](https://hexdocs.pm/dowser_elasticsearch)) instead.
 
 `elasticsearch_ex` allows to interact with [Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html) cluster.
 
